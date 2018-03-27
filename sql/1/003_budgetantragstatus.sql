@@ -22,6 +22,7 @@ CREATE OR REPLACE FUNCTION extension_budget_create_table () RETURNS TEXT AS $$
 	ALTER TABLE extension.tbl_budgetantrag_status ALTER COLUMN budgetantrag_status_id SET DEFAULT nextval('extension.tbl_budgetantrag_status_budgetantrag_status_id_seq');
 
 	ALTER TABLE extension.tbl_budgetantrag_status ADD CONSTRAINT fk_budgetantrag_status_budgetstatus_kurzbz FOREIGN KEY (budgetstatus_kurzbz) REFERENCES extension.tbl_budgetstatus(budgetstatus_kurzbz) ON UPDATE CASCADE ON DELETE RESTRICT;
+	ALTER TABLE extension.tbl_budgetantrag_status ADD CONSTRAINT fk_budgetantrag_status_budgetantrag_id FOREIGN KEY (budgetantrag_id) REFERENCES extension.tbl_budgetantrag(budgetantrag_id) ON UPDATE CASCADE ON DELETE RESTRICT;
 	ALTER TABLE extension.tbl_budgetantrag_status ADD CONSTRAINT fk_budgetantrag_status_uid FOREIGN KEY (uid) REFERENCES public.tbl_benutzer(uid) ON UPDATE CASCADE ON DELETE RESTRICT;
 	ALTER TABLE extension.tbl_budgetantrag_status ADD CONSTRAINT fk_budgetantrag_status_oe_kurzbz FOREIGN KEY (oe_kurzbz) REFERENCES public.tbl_organisationseinheit(oe_kurzbz) ON UPDATE CASCADE ON DELETE RESTRICT;
 

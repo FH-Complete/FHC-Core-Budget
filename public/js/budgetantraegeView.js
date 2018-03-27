@@ -89,9 +89,17 @@ function appendBudgetantrag(budgetantragid, bezeichnung, sum, opened)
 	$("#remove_" + budgetantragid).click(
 		function ()
 		{
-			deleteBudgetantrag(budgetantragid);
-			$("#" + budgetantragPrefix + "_" + budgetantragid + " + br").remove();
-			$("#" + budgetantragPrefix + "_" + budgetantragid).remove();
+			$("#delBudgetantragBez").html(bezeichnung);
+			$("#delModalConfirm").click(
+				function ()
+				{
+					$("#delAntragModal").modal('hide');
+					deleteBudgetantrag(budgetantragid);
+					$("#" + budgetantragPrefix + "_" + budgetantragid + " + br").remove();
+					$("#" + budgetantragPrefix + "_" + budgetantragid).remove();
+				}
+			);
+			$("#delAntragModal").modal('show');
 		}
 	);
 }
@@ -110,10 +118,12 @@ function appendBudgetantragFooter(budgetantragid, isNewAntrag)
 	{
 		html +=
 			'<div class="row">'+
-				'<div class="col-lg-7">'+
+				'<div class="col-lg-5">'+
 					'<button class="btn btn-default" id="save_'+budgetantragid+'">Speichern</button>&nbsp;&nbsp;'+
 					'<button class="btn btn-default">Abschicken</button>&nbsp;&nbsp;' +
 					'<button class="btn btn-default">Freigeben</button>'+
+				'</div>'+
+				'<div class="col-lg-2 text-center antragMsg" id="msg_'+budgetantragid+'">'+
 				'</div>'+
 				'<div class="col-lg-5 text-right">'+
 					'<button class="btn btn-default">Genehmigen</button>&nbsp;&nbsp;'+
@@ -185,7 +195,7 @@ function appendBudgetposition(budgetantragid, positionid, positionobj, opened)
 				'<div class="row">'+
 					'<div class="col-lg-11">'+
 					'<a data-toggle="collapse" href="#collapsePosition'+positionid+'">'+
-					budgetposten+' | € '+formatDecimalGerman(parseFloat(betrag))+
+					budgetposten+' | € '+formatDecimalGerman(betrag)+
 					'</a>'+
 					'</div>'+
 					'<div class="col-lg-1 text-right">'+
@@ -241,7 +251,7 @@ function appendBudgetposition(budgetantragid, positionid, positionobj, opened)
 					'<span class = "input-group-addon">'+
 						'<i class="fa fa-eur"></i>'+
 					'</span>'+
-					'<input type="text" class="form-control" name="betrag" value="'+formatDecimalGerman(parseFloat(betrag))+'">'+
+					'<input type="text" class="form-control" name="betrag" value="'+formatDecimalGerman(betrag)+'">'+
 				'</div>'+//input-group
 			'</div>'+//column
 		'</div>'+//form-group row
@@ -291,16 +301,38 @@ function refreshBudgetantrag(budgetantragid, budgetAntrag)
 	}
 	setSum(budgetantragid, sum);
 	appendBudgetantragFooter(budgetantragid, false);
+	setMessage(budgetantragid, 'text-success', 'Budgetantrag erfolgreich gespeichert!');
 }
 
 /**
- * Sets the given sum for a Budgetantrag
+ * Adds the given sum to a Budgetantrag html
  * @param budgetantragid
  * @param sum
  */
 function setSum(budgetantragid, sum)
 {
 	$("#sum_" + budgetantragid).text('€ ' + formatDecimalGerman(sum));
+}
+
+/**
+ * Adds all sums (gespeichert, freigegeben) to totals table on top
+ * @param sums
+ */
+function setTotalSums(sums)
+{
+	$("#savedSum").text('€ '+formatDecimalGerman(sums.savedsum));
+}
+
+/**
+ * Adds a message to a Budgetantrag html
+ * @param budgetantragid
+ * @param classname
+ * @param msg
+ */
+function setMessage(budgetantragid, classname, msg)
+{
+	$(".antragMsg").html("");
+	$("#msg_"+budgetantragid).html('<span class="'+classname+'">'+msg+'</span>');
 }
 
 // -----------------------------------------------------------------------------------------------------------------

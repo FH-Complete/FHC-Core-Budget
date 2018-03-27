@@ -29,6 +29,7 @@ $this->load->view(
 	}
 </style>
 <div id="wrapper">
+	<?php echo $this->widgetlib->widget('NavigationWidget'); ?>
 	<div id="page-wrapper">
 		<div class="container-fluid">
 			<div class="row">
@@ -67,6 +68,20 @@ $this->load->view(
 						</div>
 					</div>
 				</div> <!-- ./first column -->
+				<div class="col-lg-5">
+					<table class="table table-bordered">
+						<thead>
+							<tr>
+								<th>Gespeichert</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td id="savedSum">€ 0,00</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
 			</div> <!-- ./main row -->
 			<br>
 			<div class="row">
@@ -86,6 +101,24 @@ $this->load->view(
 			<div class="row">
 				<div class="col-lg-12">
 					<div class="panel-group" id="budgetantraege"></div>
+				</div>
+			</div>
+			<!-- modal for deleting of a budgetantrag -->
+			<div id="delAntragModal" class="modal fade">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+							<h4 class="modal-title">Budgetantrag l&ouml;schen</h4>
+							</div>
+						<div class="modal-body">
+							<p>Sind Sie sicher, dass Sie den Budgetantrag <span id="delBudgetantragBez"></span> l&ouml;schen m&ouml;chten?</p>
+							</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" data-dismiss="modal">Abbrechen</button>
+							<button type="button" class="btn btn-primary" id="delModalConfirm">Budgetantrag l&ouml;schen</button>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div> <!-- ./container-fluid -->

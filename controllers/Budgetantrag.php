@@ -24,7 +24,7 @@ class Budgetantrag extends VileSci_Controller
 		//$this->load->model('accounting/budgetstatus_model', 'BudgetstatusModel');
 
 		// Loads libraries
-		//$this->load->library('PersonLogLib');
+		$this->load->library('WidgetLib');
 
 		$this->_setAuthUID(); // sets property uid
 

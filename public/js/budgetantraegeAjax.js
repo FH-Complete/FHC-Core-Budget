@@ -44,10 +44,14 @@ function getKontenAjax()
 
 function getBudgetantraegeAjax(geschaeftsjahr, kostenstelle)
 {
-	return $.ajax({
+  	$.ajax({
 		type: "GET",
 		dataType: "json",
 		url: './Budgetantrag/getBudgetantraege/'+geschaeftsjahr+'/'+kostenstelle,
+		success: function (data, textStatus, jqXHR)
+		{
+			afterBudgetantraegeGet(data);
+		},
 		error: function (jqXHR, textStatus, errorThrown)
 		{
 			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
@@ -114,6 +118,10 @@ function deleteBudgetantragAjax(budgetantragid)
 		type: "POST",
 		dataType: "json",
 		url: './Budgetantrag/deleteBudgetantrag/'+budgetantragid,
+		success: function (data, textStatus, jqXHR)
+		{
+			calculateBudgetantragSums();
+		},
 		error: function (jqXHR, textStatus, errorThrown)
 		{
 			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);

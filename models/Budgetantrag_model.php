@@ -54,7 +54,7 @@ class Budgetantrag_model extends DB_Model
 	}
 
 	/**
-	 * Gets a Budgetantrag with a given id together with its Budgetpositionen
+	 * Gets a Budgetantrag by a given id together with its Budgetpositionen
 	 * @param $budgetantrag_id
 	 * @return array
 	 */
@@ -81,7 +81,7 @@ class Budgetantrag_model extends DB_Model
 	}
 
 	/**
-	 * adds a new budgetantrag with status "new", links it to given Budgetpositions
+	 * Adds a new Budgetantrag with status "new", links it to given Budgetpositions
 	 * @param $data
 	 * @param $budgetPositionen
 	 * @return array
@@ -90,7 +90,6 @@ class Budgetantrag_model extends DB_Model
 	{
 		$this->load->model('extensions/FHC-Core-Budget/budgetposition_model', 'BudgetpositionModel');
 		$this->load->model('extensions/FHC-Core-Budget/budgetantragstatus_model', 'BudgetantragstatusModel');
-		//$this->load->model('extensions/FHC-Core-Budget/budgetstatus_model', 'BudgetstatusModel');
 
 		// Start DB transaction
 		$this->db->trans_start(false);
@@ -144,6 +143,11 @@ class Budgetantrag_model extends DB_Model
 		return $result;
 	}
 
+	/**
+	 * Deletes a Budgetantrag AND all linked Budgetpositionen and Budgetantragstatus, returns id of deleted Budgetantrag on success
+	 * @param $budgetantrag_id
+	 * @return mixed
+	 */
 	public function deleteBudgetantrag($budgetantrag_id)
 	{
 		$this->load->model('extensions/FHC-Core-Budget/budgetposition_model', 'BudgetpositionModel');

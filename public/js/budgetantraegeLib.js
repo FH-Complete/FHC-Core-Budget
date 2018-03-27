@@ -51,7 +51,6 @@ function checkDecimalFormat(value)
  */
 function formatDecimalGerman(sum)
 {
-	//console.log(sum === null);
 	if(sum === null) return parseFloat(0).toFixed(2);
-	return sum.toFixed(2).replace(".", ",");
+	return parseFloat(sum).toFixed(2).replace(".", ",");
 }

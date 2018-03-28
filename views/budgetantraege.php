@@ -40,31 +40,33 @@ $this->load->view(
 				</div>
 			</div>
 			<div class="row">
-				<div class="col-lg-7 form-horizontal">
-					<div class="form-group row" id="gjgroup">
-						<label for="geschaeftsjahr" class="col-lg-2 control-label">Geschäftsjahr</label>
-						<div class="col-lg-10">
-							<select class="form-control" id="geschaeftsjahr">
-								<option value="null">Geschäftsjahr wählen...</option>
-								<?php foreach ($geschaeftsjahre as $geschaeftsjahr): ?>
-									<option value="<?php echo $geschaeftsjahr->geschaeftsjahr_kurzbz; ?>">
-										<?php echo $geschaeftsjahr->geschaeftsjahr_kurzbz ?>
-									</option>
-								<?php endforeach; ?>
-							</select>
+				<div class="col-lg-7">
+					<div class="row">
+						<div class="col-lg-5">
+							<div class="form-group" id="gjgroup">
+								<label for="geschaeftsjahr">Geschäftsjahr</label>
+								<select class="form-control" id="geschaeftsjahr">
+									<option value="null">Geschäftsjahr wählen...</option>
+									<?php foreach ($geschaeftsjahre as $geschaeftsjahr): ?>
+										<option value="<?php echo $geschaeftsjahr->geschaeftsjahr_kurzbz; ?>">
+											<?php echo $geschaeftsjahr->geschaeftsjahr_kurzbz ?>
+										</option>
+									<?php endforeach; ?>
+								</select>
+							</div>
 						</div>
-					</div>
-					<div class="form-group row" id="kstgroup">
-						<label for="kostenstelle" class="col-lg-2 control-label">Kostenstelle</label>
-						<div class="col-lg-10">
-							<select class="form-control" id="kostenstelle">
-								<option value="null">Kostenstelle wählen...</option>
-								<?php foreach ($kostenstellen as $kostenstelle): ?>
-									<option value="<?php echo $kostenstelle->kostenstelle_id; ?>">
-										<?php echo $kostenstelle->bezeichnung ?>
-									</option>
-								<?php endforeach; ?>
-							</select>
+						<div class="col-lg-7">
+							<div class="form-group" id="kstgroup">
+								<label for="kostenstelle">Kostenstelle</label>
+								<select class="form-control" id="kostenstelle">
+									<option value="null">Kostenstelle wählen...</option>
+									<?php foreach ($kostenstellen as $kostenstelle): ?>
+										<option value="<?php echo $kostenstelle->kostenstelle_id; ?>">
+											<?php echo $kostenstelle->bezeichnung ?>
+										</option>
+									<?php endforeach; ?>
+								</select>
+							</div>
 						</div>
 					</div>
 				</div> <!-- ./first column -->

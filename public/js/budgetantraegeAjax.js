@@ -120,7 +120,7 @@ function deleteBudgetantragAjax(budgetantragid)
 		url: './Budgetantrag/deleteBudgetantrag/'+budgetantragid,
 		success: function (data, textStatus, jqXHR)
 		{
-			calculateBudgetantragSums();
+			afterBudgetantragDelete(data);
 		},
 		error: function (jqXHR, textStatus, errorThrown)
 		{

@@ -196,7 +196,7 @@ function afterBudgetantraegeGet(data)
 }
 
 /**
- * Executes after Ajax for adding Budgetantrag is finished. Updates Budgetantrag by calling Ajax.
+ * Executes after Ajax for adding Budgetantrag is finished. Updates Budgetantrag after adding by calling Ajax.
  * @param budgetantragid
  * @param oldid
  */
@@ -214,9 +214,24 @@ function afterBudgetantragAdd(budgetantragid, oldid)
  */
 function afterBudgetantragGet(data)
 {
-	if (data[0].budgetantrag_id !== null)
-		addAntragToExistingAntraegeArray(data[0]);
+	if (!$.isNumeric(data[0].budgetantrag_id)) return;
+	addAntragToExistingAntraegeArray(data[0]);
 	refreshBudgetantrag(data[0].budgetantrag_id, data[0]);
+	calculateBudgetantragSums();
+}
+
+/**
+ * Executes after Ajax for deleting a single Budgetantrag is finished, refreshes array and sums
+ * @param budgetantragid
+ */
+function afterBudgetantragDelete(budgetantragid)
+{
+	global_budgetantraege.existentBudgetantraege = global_budgetantraege.existentBudgetantraege.filter(
+		function(el)
+		{
+			return el.id !== budgetantragid;
+		}
+	);
 	calculateBudgetantragSums();
 }
 

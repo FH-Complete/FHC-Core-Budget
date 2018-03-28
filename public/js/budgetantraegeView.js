@@ -193,12 +193,12 @@ function appendBudgetposition(budgetantragid, positionid, positionobj, opened)
 		'<div class="panel panel-default" id="'+positionPrefix+'_'+positionid+'">'+
 			'<div class="panel-heading">' +
 				'<div class="row">'+
-					'<div class="col-lg-11">'+
+					'<div class="col-lg-11 col-sm-11">'+
 					'<a data-toggle="collapse" href="#collapsePosition'+positionid+'">'+
 					budgetposten+' | € '+formatDecimalGerman(betrag)+
 					'</a>'+
 					'</div>'+
-					'<div class="col-lg-1 text-right">'+
+					'<div class="col-lg-1 col-sm-1 text-right">'+
 					'<i class="fa fa-times text-danger" id="removePosition_'+positionid+'" role="button"></i>'+
 					'</div>'+
 				'</div>'+
@@ -209,12 +209,12 @@ function appendBudgetposition(budgetantragid, positionid, positionobj, opened)
 		'<div class="panel-body">'+
 		'<form id="form_'+positionid+'">'+
 		'<div class="form-group row">'+
-			'<label class="col-lg-1 control-label">Budgetposten</label>'+
+			'<label class="col-lg-2 control-label">Budgetposten</label>'+
 			'<div class="col-lg-5">'+
 				'<input type="text" class="form-control" name="budgetposten" value="'+budgetposten+'">'+
 			'</div>'+
 			'<label class="col-lg-1 control-label">Projekt</label>'+
-			'<div class="col-lg-5">'+
+			'<div class="col-lg-3">'+
 				'<select class="form-control" name="projekt_id">'+
 					'<option value="null">Projekt wählen...</option>';
 
@@ -227,10 +227,10 @@ function appendBudgetposition(budgetantragid, positionid, positionobj, opened)
 
 	html +=
 				'</select>'+
-			'</div>'+
+			'</div>'+ //column
 		'</div>'+//form-group row
 		'<div class="form-group row">'+
-			'<label class="col-lg-1 control-label">Konto</label>'+
+			'<label class="col-lg-2 control-label">Konto</label>'+
 			'<div class="col-lg-5">'+
 				'<select class="form-control" name="konto_id">'+
 					'<option value="null">Konto wählen...</option>';
@@ -246,7 +246,7 @@ function appendBudgetposition(budgetantragid, positionid, positionobj, opened)
 				'</select>'+
 			'</div>'+
 			'<label class="col-lg-1 control-label">Betrag</label>'+
-			'<div class="col-lg-5">'+
+			'<div class="col-lg-3">'+
 				'<div class="input-group">'+
 					'<span class = "input-group-addon">'+
 						'<i class="fa fa-eur"></i>'+
@@ -256,8 +256,8 @@ function appendBudgetposition(budgetantragid, positionid, positionobj, opened)
 			'</div>'+//column
 		'</div>'+//form-group row
 		'<div class="form-group row">'+
-			'<label class="col-lg-1 control-label">Kommentar</label>'+
-			'<div class="col-lg-11">'+
+			'<label class="col-lg-2 control-label">Kommentar</label>'+
+			'<div class="col-lg-9">'+
 				'<textarea class="form-control" name="kommentar">'+kommentar+'</textarea>'+
 			'</div>'+
 		'</div>'+
@@ -454,16 +454,16 @@ function getBudgetantragHtml(args)
 {
 	return '<div class="panel-heading">'+
 				'<div class="row">'+
-					'<div class="col-lg-3">'+
+					'<div class="col-lg-3 col-sm-3">'+
 						'<h4 class="panel-title">'+
 						'<a class="accordion-toggle'+args.collapseHtml+'" data-toggle="collapse" data-parent="#budgetantraege" href="#collapse'+args.budgetantragid+'">'+
 						args.budgetname+
 						'</a>'+
 						'</h4>'+
 					'</div>'+
-					'<div class="col-lg-2 col-lg-offset-2 text-center" id="sum_'+args.budgetantragid+'">'+
+					'<div class="col-lg-2 col-lg-offset-2 col-sm-2 col-sm-offset-2 text-center" id="sum_'+args.budgetantragid+'">'+
 					'</div>'+
-					'<div class="col-lg-1 col-lg-offset-4 text-right">'+
+					'<div class="col-lg-1 col-lg-offset-4 col-sm-1 col-sm-offset-4 text-right">'+
 					'<i class="fa fa-times text-danger" id="remove_'+args.budgetantragid+'" role="button"></i>'+
 					'</div>'+
 				'</div>'+

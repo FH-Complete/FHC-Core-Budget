@@ -23,11 +23,6 @@ $this->load->view(
 ?>
 
 <body>
-<style>
-	.form-horizontal .control-label{
-		text-align: left;
-	}
-</style>
 <div id="wrapper">
 	<?php echo $this->widgetlib->widget('NavigationWidget'); ?>
 	<div id="page-wrapper">
@@ -71,7 +66,7 @@ $this->load->view(
 					</div>
 				</div> <!-- ./first column -->
 				<div class="col-lg-5">
-					<table class="table table-bordered">
+					<table class="table table-bordered table-condensed">
 						<thead>
 							<tr>
 								<th>Gespeichert</th>
@@ -89,7 +84,7 @@ $this->load->view(
 			<div class="row">
 				<div class="col-lg-7">
 					<div class="input-group" id="budgetbezgroup">
-						<input type="text" class="form-control" id="budgetbezeichnung">
+						<input type="text" class="form-control" id="budgetbezeichnung" placeholder="Budgetantragsbezeichnung eingeben">
 						<span class="input-group-btn">
 						<button class="btn btn-default" id="addBudgetantrag">
 							<i class="fa fa-plus"></i>

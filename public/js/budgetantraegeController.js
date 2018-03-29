@@ -25,7 +25,7 @@ var global_inputparams = {"geschaeftsjahr": null, "kostenstelle": null};
 //global objects for storing current state of Budgetanträge together with their positions: how many added, deleted, updated
 var global_preloads = {"projekte": [], "konten": []};
 var global_budgetantraege = {"newBudgetantraege": [], "existentBudgetantraege": []};
-var global_counters = {"countNewAntraege": 0, "countNewPosition": 0};//counter for giving unique id to every new position, [positionPrefix]_[counter]
+var global_counters = {"countNewAntraege": 0, "countNewPosition": 0, "lastAddedOldId": ""};//counter for giving unique id to every new position, [positionPrefix]_[counter]
 
 $(document).ready(
 	function ()
@@ -38,8 +38,10 @@ $(document).ready(
 		).done(
 			function (projekteResponse, kontenResponse)
 			{
-				global_preloads.projekte = projekteResponse[0];
-				global_preloads.konten = kontenResponse[0];
+				if(projekteResponse[0].error === 1 || kontenResponse[0].error === 1)
+					return;
+				global_preloads.projekte = projekteResponse[0].retval;
+				global_preloads.konten = kontenResponse[0].retval;
 				getBudgetantraege();
 			}
 		);
@@ -48,7 +50,13 @@ $(document).ready(
 		$("#geschaeftsjahr").change(
 			function ()
 			{
-				global_inputparams.geschaeftsjahr = $(this).val();
+				var geschaeftsjahr = $(this).val();
+				if (geschaeftsjahr === "null")
+				{
+					$("#budgetantraege").empty();
+					return;
+				}
+				global_inputparams.geschaeftsjahr = geschaeftsjahr;
 				$("#gjgroup").removeClass("has-error");
 				getBudgetantraege();
 			}
@@ -57,7 +65,13 @@ $(document).ready(
 		$("#kostenstelle").change(
 			function ()
 			{
-				global_inputparams.kostenstelle = $(this).val();
+				var kostenstelle = $(this).val();
+				if (kostenstelle === "null")
+				{
+					$("#budgetantraege").empty();
+					return;
+				}
+				global_inputparams.kostenstelle = kostenstelle;
 				$("#kstgroup").removeClass("has-error");
 				getBudgetantraege();
 			}
@@ -169,8 +183,18 @@ function updateBudgetpositionen(budgetantragid)
  */
 function deleteBudgetantrag(budgetantragid)
 {
-	if (findInArray(global_budgetantraege.existentBudgetantraege, budgetantragid) !== false)
-		deleteBudgetantragAjax(budgetantragid);
+	if (findInArray(global_budgetantraege.existentBudgetantraege, budgetantragid) === false)
+		removeBudgetantrag(budgetantragid);
+	else
+	{
+		showDelBudgetantragModal('');
+		$("#delModalConfirm").click(
+			function ()
+			{
+				deleteBudgetantragAjax(budgetantragid);
+			}
+		);
+	}
 }
 
 // -----------------------------------------------------------------------------------------------------------------
@@ -178,61 +202,91 @@ function deleteBudgetantrag(budgetantragid)
 
 /**
  * Executes after Ajax for getting all Budgetanträge is finished.
- * @param budgetantragid
- * @param oldid
+ * @param data
  */
 function afterBudgetantraegeGet(data)
 {
+	if (data.error === 1) return;
+	var budgetantraege = data.retval;
+	
 	global_budgetantraege.existentBudgetantraege = [];
 
-	for (var i = 0; i < data.length; i++)
+	for (var i = 0; i < budgetantraege.length; i++)
 	{
-		var budgetantrag = data[i];
+		var budgetantrag = budgetantraege[i];
 		addAntragToExistingAntraegeArray(budgetantrag);
 	}
 	$("#budgetantraege").empty();
-	appendBudgetantraege(data);
+	appendBudgetantraege(budgetantraege);
 	calculateBudgetantragSums();
 }
 
 /**
  * Executes after Ajax for adding Budgetantrag is finished. Updates Budgetantrag after adding by calling Ajax.
- * @param budgetantragid
+ * @param data
  * @param oldid
  */
-function afterBudgetantragAdd(budgetantragid, oldid)
+function afterBudgetantragAdd(data, oldid)
 {
+	if (data.error === 1)
+	{
+		setMessage(oldid, "text-danger", "Fehler beim Speichern des Budgetantrags!");
+		return;
+	}
+	//save old id for showing message
+	global_counters.lastAddedOldId = oldid;
 	//update Budgetantragid in the view to the id of newly added Antrag
-	$("#"+budgetantragPrefix+"_"+oldid).attr("id", budgetantragPrefix+"_"+budgetantragid);
-	getBudgetantragAjax(budgetantragid);
+	$("#"+budgetantragPrefix+"_"+oldid).attr("id", budgetantragPrefix+"_"+data.retval);
+	getBudgetantragAjax(data.retval);
+}
+
+function afterBudgetantragUpdate(data, budgetantragid)
+{
+	if (data.error === 1)
+	{
+		setMessage(budgetantragid, "text-danger", "Fehler beim Speichern des Budgetantrags!");
+		return;
+	}
+	getBudgetantragAjax(budgetantragid)
 }
 
 /**
  * Executes after Ajax for getting a single Budgetantrag is finished, for refreshing html and array.
- * @param budgetantragid
- * @param oldid
+ * @param data
+ * @param oldbudgetantragid id before update for messaging (in case of error)
  */
-function afterBudgetantragGet(data)
+function afterBudgetantragGet(data, oldbudgetantragid)
 {
-	if (!$.isNumeric(data[0].budgetantrag_id)) return;
-	addAntragToExistingAntraegeArray(data[0]);
-	refreshBudgetantrag(data[0].budgetantrag_id, data[0]);
+	if (data.error === 1)
+	{
+		console.log(global_counters.lastAddedOldId);
+		var msgid = $("#"+budgetantragPrefix+"_"+global_counters.lastAddedOldId).length ? global_counters.lastAddedOldId : oldbudgetantragid;
+		setMessage(msgid, "text-danger", "Fehler beim Speichern des Budgetantrags!");
+		return;
+	}
+	var budgetantrag = data.retval[0];
+	addAntragToExistingAntraegeArray(budgetantrag);
+	refreshBudgetantrag(data.retval[0], budgetantrag.budgetantrag_id);
 	calculateBudgetantragSums();
+	setMessage(oldbudgetantragid, 'text-success', 'Budgetantrag erfolgreich gespeichert!');
 }
 
 /**
  * Executes after Ajax for deleting a single Budgetantrag is finished, refreshes array and sums
- * @param budgetantragid
+ * @param data
  */
-function afterBudgetantragDelete(budgetantragid)
+function afterBudgetantragDelete(data)
 {
+	if(data.error === 1) return;
+
 	global_budgetantraege.existentBudgetantraege = global_budgetantraege.existentBudgetantraege.filter(
-		function(el)
+		function (el)
 		{
-			return el.id !== budgetantragid;
+			return el.id !== data.retval;
 		}
 	);
 	calculateBudgetantragSums();
+	removeBudgetantrag(data.retval);
 }
 
 // -----------------------------------------------------------------------------------------------------------------
@@ -312,6 +366,7 @@ function addAntragToExistingAntraegeArray(budgetantragToAdd)
 
 	var budgetantragData = {
 		"id": newBudgetantragId,
+		"bezeichnung":budgetantragToAdd.bezeichnung,
 		"positionen": updatedPositionen,
 		"positionentoadd": [],
 		"positionentodelete": []

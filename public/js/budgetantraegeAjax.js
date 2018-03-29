@@ -67,7 +67,7 @@ function getBudgetantragAjax(budgetantragid)
 		url: './Budgetantrag/getBudgetantrag/'+budgetantragid,
 		success: function (data, textStatus, jqXHR)
 		 {
-		 	afterBudgetantragGet(data);
+		 	afterBudgetantragGet(data, budgetantragid);
 		 },
 		error: function (jqXHR, textStatus, errorThrown)
 		{
@@ -103,7 +103,7 @@ function updateBudgetpositionenAjax(budgetantragid, data)
 		url: './Budgetantrag/updateBudgetantragPositionen/'+budgetantragid,
 		success: function (data, textStatus, jqXHR)
 		{
-			getBudgetantragAjax(budgetantragid);
+			afterBudgetantragUpdate(data, budgetantragid);
 		},
 		error: function (jqXHR, textStatus, errorThrown)
 		{

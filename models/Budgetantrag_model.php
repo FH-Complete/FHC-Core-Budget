@@ -81,7 +81,7 @@ class Budgetantrag_model extends DB_Model
 	}
 
 	/**
-	 * Adds a new Budgetantrag with status "new", links it to given Budgetpositions
+	 * Adds a new Budgetantrag with status "new", links it to given Budgetpositionen
 	 * @param $data
 	 * @param $budgetPositionen
 	 * @return array
@@ -95,12 +95,12 @@ class Budgetantrag_model extends DB_Model
 		$this->db->trans_start(false);
 
 		$result = $this->insert($data);
-		$budgetantrag_id = $result->retval;
 
 		if (isSuccess($result))
 		{
+			$budgetantrag_id = $result->retval;
 			//add with budgetstatus new
-			$this->BudgetantragstatusModel->insert(
+			$result = $this->BudgetantragstatusModel->insert(
 				array(
 					'budgetantrag_id' => $budgetantrag_id,
 					'budgetstatus_kurzbz' => 'new',
@@ -120,7 +120,8 @@ class Budgetantrag_model extends DB_Model
 					$position['betrag'] = $position['betrag'] === '' ? null : $position['betrag'];
 					$position['projekt_id'] = empty($position['projekt_id']) ? null : $position['projekt_id'];
 					$position['konto_id'] = empty($position['konto_id']) ? null : $position['konto_id'];
-					$this->BudgetpositionModel->insert($position);
+					$position['insertvon'] = $data['insertvon'];
+					$result = $this->BudgetpositionModel->insert($position);
 				}
 			}
 		}
@@ -168,12 +169,12 @@ class Budgetantrag_model extends DB_Model
 
 		foreach ($positionen->retval as $position)
 		{
-			$this->BudgetpositionModel->delete($position->budgetposition_id);
+			$result = $this->BudgetpositionModel->delete($position->budgetposition_id);
 		}
 
 		foreach ($stati->retval as $status)
 		{
-			$this->BudgetantragstatusModel->delete($status->budgetantrag_status_id);
+			$result = $this->BudgetantragstatusModel->delete($status->budgetantrag_status_id);
 		}
 
 		$result = $this->BudgetantragModel->delete($budgetantrag_id);

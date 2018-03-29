@@ -17,7 +17,7 @@
  */
 
 // -----------------------------------------------------------------------------------------------------------------
-// Appenders (append html)
+// HTML-modifiers (append, remove html)
 
 /**
  * Appends an array of Budgetantraegen and their positions
@@ -89,17 +89,7 @@ function appendBudgetantrag(budgetantragid, bezeichnung, sum, opened)
 	$("#remove_" + budgetantragid).click(
 		function ()
 		{
-			$("#delBudgetantragBez").html(bezeichnung);
-			$("#delModalConfirm").click(
-				function ()
-				{
-					$("#delAntragModal").modal('hide');
-					deleteBudgetantrag(budgetantragid);
-					$("#" + budgetantragPrefix + "_" + budgetantragid + " + br").remove();
-					$("#" + budgetantragPrefix + "_" + budgetantragid).remove();
-				}
-			);
-			$("#delAntragModal").modal('show');
+			deleteBudgetantrag(budgetantragid);
 		}
 	);
 }
@@ -135,8 +125,10 @@ function appendBudgetantragFooter(budgetantragid, isNewAntrag)
 	{
 		html +=
 			'<div class="row">'+
-				'<div class="col-lg-12">'+
+				'<div class="col-lg-5">'+
 					'<button class="btn btn-default" id="save_'+budgetantragid+'">Speichern</button>'+
+				'</div>'+
+				'<div class="col-lg-2 text-center antragMsg" id="msg_'+budgetantragid+'">'+
 				'</div>'+
 			'</div>';
 	}
@@ -278,11 +270,11 @@ function appendBudgetposition(budgetantragid, positionid, positionobj, opened)
 
 /**
  * Refreshes a Budgetantrag after it is updated, includes emptying the Budgetantrag element and appending it again.
- * @param budgetantragid
  * @param budgetAntrag
  */
-function refreshBudgetantrag(budgetantragid, budgetAntrag)
+function refreshBudgetantrag(budgetAntrag)
 {
+	var budgetantragid = budgetAntrag.budgetantrag_id;
 	var budgetantragEl = $("#" + budgetantragPrefix + "_" + budgetantragid);
 
 	budgetantragEl.empty();
@@ -301,7 +293,27 @@ function refreshBudgetantrag(budgetantragid, budgetAntrag)
 	}
 	setSum(budgetantragid, sum);
 	appendBudgetantragFooter(budgetantragid, false);
-	setMessage(budgetantragid, 'text-success', 'Budgetantrag erfolgreich gespeichert!');
+}
+
+/**
+ * Removes Budgetantrag html for a given id, hides deletemodal
+ * @param budgetantragid
+ */
+function removeBudgetantrag(budgetantragid)
+{
+	$("#delAntragModal").modal('hide');
+	$("#" + budgetantragPrefix + "_" + budgetantragid + " + br").remove();
+	$("#" + budgetantragPrefix + "_" + budgetantragid).remove();
+}
+
+/**
+ * Shows Modal for confirmation of deletion of a Budgetantrag
+ * @param budgetantragbezeichnung
+ */
+function showDelBudgetantragModal(budgetantragbezeichnung)
+{
+	$("#delBudgetantragBez").html(budgetantragbezeichnung);
+	$("#delAntragModal").modal('show');
 }
 
 /**
@@ -353,8 +365,6 @@ function retrieveBudgetantragPositionen(budgetantragid, withid)
 		var konto_id = positionFormDom.find("select[name=konto_id]").val();
 		var betragelem = positionFormDom.find("input[name=betrag]");
 		var betrag = betragelem.val();
-		//console.log(JSON.stringify(betraginput));
-		//console.log(betrag);
 		var kommentar = positionFormDom.find("textarea[name=kommentar]").val();
 
 		//check for correct numeric input, and html sanitize
@@ -371,6 +381,12 @@ function retrieveBudgetantragPositionen(budgetantragid, withid)
 			betrag = betrag.replace(',', '.');
 		}
 
+		//check if Budgetposten with same name already exists in Budgetantrag
+/*		for (var j = i; j < positionenForms.length; j++)
+		{
+
+		}*/
+
 		projekt_id = projekt_id === 'null' ? null : projekt_id;
 		konto_id = konto_id === 'null' ? null : konto_id;
 
@@ -382,7 +398,7 @@ function retrieveBudgetantragPositionen(budgetantragid, withid)
 			"kommentar": kommentar
 		};
 
-		//console.log(position);
+		//id wrapper for update
 		if (withid === true)
 		{
 			position = {
@@ -391,7 +407,6 @@ function retrieveBudgetantragPositionen(budgetantragid, withid)
 			};
 		}
 
-		//console.log(budgetposten);
 		positionen.push(position);
 	}
 
@@ -436,6 +451,31 @@ function checkBudgetantragDataBeforeAdd()
 	{
 		$("#budgetbezgroup").addClass("has-error");
 		passed = false;
+	}
+	else
+	{
+		//check if Budgetantrag with this Bezeichnung already exists or is added
+		for (var i = 0; i < global_budgetantraege.existentBudgetantraege.length; i++){
+			if (global_budgetantraege.existentBudgetantraege[i].bezeichnung === budgetBezeichnung)
+			{
+				$("#budgetbezgroup").addClass("has-error");
+				passed = false;
+				break;
+			}
+		}
+
+		if (passed !== false)
+		{
+			for (var i = 0; i < global_budgetantraege.newBudgetantraege.length; i++)
+			{
+				if (global_budgetantraege.newBudgetantraege[i].bezeichnung === budgetBezeichnung)
+				{
+					$("#budgetbezgroup").addClass("has-error");
+					passed = false;
+					break;
+				}
+			}
+		}
 	}
 
 	//remove Bezeichnung if everything ok

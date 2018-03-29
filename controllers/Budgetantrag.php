@@ -21,7 +21,6 @@ class Budgetantrag extends VileSci_Controller
 		$this->load->model('extensions/FHC-Core-Budget/budgetposition_model', 'BudgetpositionModel');
 		$this->load->model('accounting/konto_model', 'KontoModel');
 		$this->load->model('project/projekt_model', 'ProjektModel');
-		//$this->load->model('accounting/budgetstatus_model', 'BudgetstatusModel');
 
 		// Loads libraries
 		$this->load->library('WidgetLib');
@@ -81,15 +80,6 @@ class Budgetantrag extends VileSci_Controller
 	{
 		$result = $this->BudgetantragModel->getBudgetantraege($geschaefsjahr, $kostenstelle);
 
-		if (isError($result))
-		{
-			$result = 'Error: '.$result->retval;
-		}
-		else
-		{
-			$result = $result->retval;
-		}
-
 		$this->output
 			->set_content_type('application/json')
 			->set_output(json_encode($result));
@@ -102,15 +92,6 @@ class Budgetantrag extends VileSci_Controller
 	public function getBudgetantrag($budgetantragid)
 	{
 		$result = $this->BudgetantragModel->getBudgetantrag($budgetantragid);
-
-		if (isError($result))
-		{
-			$result = 'Error: '.$result->retval;
-		}
-		else
-		{
-			$result = $result->retval;
-		}
 
 		$this->output
 			->set_content_type('application/json')
@@ -136,15 +117,6 @@ class Budgetantrag extends VileSci_Controller
 
 		$result = $this->BudgetantragModel->addBudgetantrag($budgetantragData, $positionen);
 
-		if (isError($result))
-		{
-			$result = 'Error: '.$result->retval;
-		}
-		else
-		{
-			$result = $result->retval;
-		}
-
 		$this->output
 			->set_content_type('application/json')
 			->set_output(json_encode($result));
@@ -163,12 +135,8 @@ class Budgetantrag extends VileSci_Controller
 		$positionen_todelete = $this->input->post('positionentodelete');
 
 		$inserted = $updated = $deleted = array();
+		$errors = 0;
 
-/*		var_dump($positionen_toadd);
-		var_dump($positionen_toupdate);
-		var_dump($positionen_todelete);
-
-		die();*/
 		if (is_array($positionen_toadd))
 		{
 			foreach ($positionen_toadd as $position)
@@ -182,6 +150,8 @@ class Budgetantrag extends VileSci_Controller
 
 				if (isSuccess($result))
 					$inserted[] = $result->retval;
+				else
+					$errors = 1;
 			}
 		}
 
@@ -189,12 +159,14 @@ class Budgetantrag extends VileSci_Controller
 		{
 			foreach ($positionen_toupdate as $position)
 			{
-				$this->_preparePositionArray($position['position']/*, $budgetantrag_id*/);
+				$this->_preparePositionArray($position['position']);
 
 				$result = $this->BudgetpositionModel->update($position['budgetposition_id'], $position['position']);
 
 				if (isSuccess($result))
 					$updated[] = $result->retval;
+				else
+					$errors = 1;
 			}
 		}
 
@@ -202,15 +174,15 @@ class Budgetantrag extends VileSci_Controller
 		{
 			foreach ($positionen_todelete as $position)
 			{
-				//$this->_preparePositionArray($position['position'], $budgetantrag_id);
-
 				$result = $this->BudgetpositionModel->delete($position['budgetposition_id']);
 
 				if (isSuccess($result))
 					$deleted[] = $result->retval;
+				else
+					$errors = 1;
 			}
 		}
-		$result = array('inserted' => $inserted, 'updated' => $updated, 'deleted' => $deleted);
+		$result = array('error' => $errors, 'inserted' => $inserted, 'updated' => $updated, 'deleted' => $deleted);
 
 		$this->output
 			->set_content_type('application/json')
@@ -225,15 +197,6 @@ class Budgetantrag extends VileSci_Controller
 	{
 		$result = $this->BudgetantragModel->deleteBudgetantrag($budgetantrag_id);
 
-		if (isError($result))
-		{
-			$result = 'Error: '.$result->retval;
-		}
-		else
-		{
-			$result = $result->retval;
-		}
-
 		$this->output
 			->set_content_type('application/json')
 			->set_output(json_encode($result));
@@ -247,15 +210,6 @@ class Budgetantrag extends VileSci_Controller
 		$this->ProjektModel->addSelect('projekt_id, projekt_kurzbz, titel');
 		$result = $this->ProjektModel->load();
 
-		if (isError($result))
-		{
-			$result = 'Error: '.$result->retval;
-		}
-		else
-		{
-			$result = $result->retval;
-		}
-
 		$this->output
 			->set_content_type('application/json')
 			->set_output(json_encode($result));
@@ -268,15 +222,6 @@ class Budgetantrag extends VileSci_Controller
 	{
 		$this->KontoModel->addSelect('konto_id, kontonr, kurzbz');
 		$result = $this->KontoModel->load();
-
-		if (isError($result))
-		{
-			$result = 'Error: '.$result->retval;
-		}
-		else
-		{
-			$result = $result->retval;
-		}
 
 		$this->output
 			->set_content_type('application/json')
@@ -293,8 +238,6 @@ class Budgetantrag extends VileSci_Controller
 	 */
 	private function _preparePositionArray(&$position)
 	{
-		/*if (isset($budgetantrag_id))
-			$position['budgetantrag_id'] = $budgetantrag_id;*/
 		$position['budgetposten'] = html_escape($position['budgetposten']);
 		$position['konto_id'] = empty($position['konto_id']) ? null : $position['konto_id'];
 		$position['projekt_id'] = empty($position['projekt_id']) ? null : $position['projekt_id'];

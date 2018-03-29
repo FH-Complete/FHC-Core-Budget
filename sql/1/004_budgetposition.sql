@@ -8,7 +8,7 @@ CREATE OR REPLACE FUNCTION extension_budget_create_table () RETURNS TEXT AS $$
 		betrag numeric(12,4),
 		kommentar text,
 		projekt_id integer,
-		insertamum timestamp,
+		insertamum timestamp DEFAULT now(),
 		insertvon varchar(32),
 		updateamum timestamp,
 		updatevon varchar(32)

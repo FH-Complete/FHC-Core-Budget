@@ -27,10 +27,6 @@ class Budgetantrag extends VileSci_Controller
 
 		$this->_setAuthUID(); // sets property uid
 
-/*		$this->load->library('PermissionLib');
-		if(!$this->permissionlib->isBerechtigt('basis/person'))
-			show_error('You have no Permission! You need Infocenter Role');*/
-
 /*		$this->_setNavigationMenuArray(); // sets property navigationMenuArray
 
 		$this->navigationHeaderArray = array(
@@ -63,7 +59,7 @@ class Budgetantrag extends VileSci_Controller
 		}
 
 		$this->load->view(
-			'extensions/FHC-Core-Budget/budgetantraege.php',
+			'extensions/FHC-Core-Budget/budgetantraegeverwalten.php',
 			array(
 			'geschaeftsjahre' => $geschaeftsjahre->retval,
 			'kostenstellen' => $kostenstellen->retval

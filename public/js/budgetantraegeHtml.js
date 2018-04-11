@@ -213,6 +213,7 @@ function getBudgetpositionHtml(args)
 		var konto = global_preloads.konten[i];
 		var selected = args.konto_id === konto.konto_id ? ' selected=""' : '';
 
+		//strikethrough if inactive (unicode character)
 		if (konto.aktiv === false)
 			konto.kurzbz = konto.kurzbz.split("").join("̶")+"̶";
 

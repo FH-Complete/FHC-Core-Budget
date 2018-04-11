@@ -369,7 +369,7 @@ function retrieveBudgetantragPositionen(budgetantragid, withid)
 
 	//clear error marks
 	$("#budgetPosition_"+budgetantragid+" .has-error").removeClass("has-error");
-	$("#budgetPosition_"+budgetantragid+" .text-danger").removeClass("text-danger");
+	$("#budgetPosition_"+budgetantragid+" .accordion-toggle").removeClass("text-danger");
 
 	var valid = true;
 

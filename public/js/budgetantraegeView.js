@@ -20,11 +20,29 @@
 // HTML-modifiers (append, remove html)
 
 /**
+ * Appends the html before the Budgetantraege panels, i.e. input field for adding new Budgetantrag and sums
+ */
+function appendPreBudgetantraegeHtml()
+{
+	var html = getPreBudgetantragHtml();
+
+	$("#budgetantraegehtml").html(html);
+
+	$("#addBudgetantrag").click(
+		function ()
+		{
+			appendNewBudgetantrag(newBudgetPrefix + global_counters.countNewAntraege);
+		}
+	);
+}
+
+/**
  * Appends an array of Budgetantraegen and their positions
  * @param antraege
  */
 function appendBudgetantraege(antraege)
 {
+	appendPreBudgetantraegeHtml();
 	for (var i = 0; i < antraege.length; i++)
 	{
 		var antrag = antraege[i];
@@ -37,8 +55,10 @@ function appendBudgetantraege(antraege)
 		{
 			var position = antrag.budgetpositionen[j];
 			var positionid = position.budgetposition_id;
+
 			if (position.betrag !== null)
 				sum += parseFloat(position.betrag);
+
 			appendBudgetposition(antragid, positionid, position, false);
 
 			//save initial state of form for tracking changes
@@ -68,7 +88,7 @@ function appendBudgetantrag(budgetantragid, bezeichnung, sum, opened)
 		"collapseHtml": collapseHtml
 	});
 
-	var budgetantragEl = $("#" + budgetantragPrefix + '_' + budgetantragid);
+	var budgetantragEl = $("#" + budgetantragPrefix + "_" + budgetantragid);
 
 	if (budgetantragEl.length)
 		budgetantragEl.append(budgetantrHtml);
@@ -102,36 +122,7 @@ function appendBudgetantrag(budgetantragid, bezeichnung, sum, opened)
  */
 function appendBudgetantragFooter(budgetantragid, isNewAntrag)
 {
-	var html = '';
-
-	if (isNewAntrag === false)
-	{
-		html +=
-			'<div class="row">'+
-				'<div class="col-lg-5">'+
-					'<button class="btn btn-default" id="save_'+budgetantragid+'">Speichern</button>&nbsp;&nbsp;'+
-					'<button class="btn btn-default">Abschicken</button>&nbsp;&nbsp;' +
-					'<button class="btn btn-default">Freigeben</button>'+
-				'</div>'+
-				'<div class="col-lg-2 text-center antragMsg" id="msg_'+budgetantragid+'">'+
-				'</div>'+
-				'<div class="col-lg-5 text-right">'+
-					'<button class="btn btn-default">Genehmigen</button>&nbsp;&nbsp;'+
-					'<button class="btn btn-default">Ablehnen</button>'+
-				'</div>'+
-			'</div>';
-	}
-	else
-	{
-		html +=
-			'<div class="row">'+
-				'<div class="col-lg-5">'+
-					'<button class="btn btn-default" id="save_'+budgetantragid+'">Speichern</button>'+
-				'</div>'+
-				'<div class="col-lg-2 text-center antragMsg" id="msg_'+budgetantragid+'">'+
-				'</div>'+
-			'</div>';
-	}
+	var html = getBudgetantragFooterHtml({"budgetantragid": budgetantragid, "isNewAntrag": isNewAntrag});
 
 	$("#" + budgetantragPrefix + "_" + budgetantragid + " .panel-footer").append(html);
 
@@ -164,99 +155,28 @@ function appendBudgetantragFooter(budgetantragid, isNewAntrag)
  */
 function appendBudgetposition(budgetantragid, positionid, positionobj, opened)
 {
-	var budgetposten = "";
-	var projekt_id = "null";
-	var konto_id = "null";
-	var betrag = 0;
-	var kommentar = "";
+	var positionargs = {
+		"positionid": positionid,
+		"budgetposten": "",
+		"projekt_id": "null",
+		"konto_id": "null",
+		"betrag": 0,
+		"kommentar": ""
+	};
 
 	if (positionobj !== null)
 	{
-		if (positionobj.bezeichnung !== null) budgetposten = positionobj.budgetposten;
-		if (positionobj.projekt_id !== null) projekt_id = positionobj.projekt_id;
-		if (positionobj.konto_id !== null) konto_id = positionobj.konto_id;
-		if (positionobj.betrag !== null) betrag = positionobj.betrag;
-		if (positionobj.kommentar !== null) kommentar = positionobj.kommentar;
+		if (positionobj.bezeichnung !== null) positionargs.budgetposten = positionobj.budgetposten;
+		if (positionobj.projekt_id !== null) positionargs.projekt_id = positionobj.projekt_id;
+		if (positionobj.konto_id !== null) positionargs.konto_id = positionobj.konto_id;
+		if (positionobj.betrag !== null) positionargs.betrag = positionobj.betrag;
+		if (positionobj.kommentar !== null) positionargs.kommentar = positionobj.kommentar;
 	}
 
-	var collapseHtml = opened === true ? ' in' : '';
+	positionargs.collapseInHtml = opened === true ? " in" : "";
+	positionargs.collapseHtml = opened === true ? "" : " collapsed";
 
-	var html =
-		'<div class="panel panel-default" id="'+positionPrefix+'_'+positionid+'">'+
-			'<div class="panel-heading">' +
-				'<div class="row">'+
-					'<div class="col-lg-11 col-sm-11">'+
-					'<a data-toggle="collapse" href="#collapsePosition'+positionid+'">'+
-					budgetposten+' | € '+formatDecimalGerman(betrag)+
-					'</a>'+
-					'</div>'+
-					'<div class="col-lg-1 col-sm-1 text-right">'+
-					'<i class="fa fa-times text-danger" id="removePosition_'+positionid+'" role="button"></i>'+
-					'</div>'+
-				'</div>'+
-			'</div>'+//panel-heading
-		'<div class="panel-collapse collapse'+collapseHtml+'" id="collapsePosition'+positionid+'">';
-
-	html +=
-		'<div class="panel-body">'+
-		'<form id="form_'+positionid+'">'+
-		'<div class="form-group row">'+
-			'<label class="col-lg-2 control-label">Budgetposten</label>'+
-			'<div class="col-lg-5">'+
-				'<input type="text" class="form-control" name="budgetposten" value="'+budgetposten+'">'+
-			'</div>'+
-			'<label class="col-lg-1 control-label">Projekt</label>'+
-			'<div class="col-lg-3">'+
-				'<select class="form-control" name="projekt_id">'+
-					'<option value="null">Projekt wählen...</option>';
-
-	for (var i = 0; i < global_preloads.projekte.length; i++)
-	{
-		var projekt = global_preloads.projekte[i];
-		var selected = projekt_id === projekt.projekt_id ? ' selected=""' : '';
-		html += '<option value="' + projekt.projekt_id + '"' + selected + '>' + projekt.titel + '</option>';
-	}
-
-	html +=
-				'</select>'+
-			'</div>'+ //column
-		'</div>'+//form-group row
-		'<div class="form-group row">'+
-			'<label class="col-lg-2 control-label">Konto</label>'+
-			'<div class="col-lg-5">'+
-				'<select class="form-control" name="konto_id">'+
-					'<option value="null">Konto wählen...</option>';
-
-	for (var i = 0; i < global_preloads.konten.length; i++)
-	{
-		var konto = global_preloads.konten[i];
-		var selected = konto_id === konto.konto_id ? ' selected=""' : '';
-		html += '<option value="' + konto.konto_id + '"' + selected + '>' + konto.kurzbz + '</option>';
-	}
-
-	html +=
-				'</select>'+
-			'</div>'+
-			'<label class="col-lg-1 control-label">Betrag</label>'+
-			'<div class="col-lg-3">'+
-				'<div class="input-group">'+
-					'<span class = "input-group-addon">'+
-						'<i class="fa fa-eur"></i>'+
-					'</span>'+
-					'<input type="text" class="form-control" name="betrag" value="'+formatDecimalGerman(betrag)+'">'+
-				'</div>'+//input-group
-			'</div>'+//column
-		'</div>'+//form-group row
-		'<div class="form-group row">'+
-			'<label class="col-lg-2 control-label">Kommentar</label>'+
-			'<div class="col-lg-9">'+
-				'<textarea class="form-control" name="kommentar">'+kommentar+'</textarea>'+
-			'</div>'+
-		'</div>'+
-		'</form>'+
-		'</div>'+// ./panel-body
-		'</div>';// ./panel-collapse
-
+	var html = getBudgetpositionHtml(positionargs);
 
 	$("#budgetPosition_" + budgetantragid).append(html);
 	$("#removePosition_" + positionid).click(
@@ -264,6 +184,22 @@ function appendBudgetposition(budgetantragid, positionid, positionobj, opened)
 		{
 			deleteBudgetposition(budgetantragid, positionid);
 			$("#" + positionPrefix + "_" + positionid).remove();
+			checkIfSaved(budgetantragid);
+		}
+	);
+
+	//events - on change of form show that unsaved
+	$("#form_"+positionid).find("input[type=text], textarea").keyup(
+		function()
+		{
+			checkIfSaved(budgetantragid);
+		}
+	);
+
+	$("#form_"+positionid+" select").change(
+		function()
+		{
+			checkIfSaved(budgetantragid);
 		}
 	);
 }
@@ -304,6 +240,75 @@ function removeBudgetantrag(budgetantragid)
 	$("#delAntragModal").modal('hide');
 	$("#" + budgetantragPrefix + "_" + budgetantragid + " + br").remove();
 	$("#" + budgetantragPrefix + "_" + budgetantragid).remove();
+}
+
+/**
+ * Removes all Budgetantraege form HTML, including "pre-budgetantraege-html"
+ */
+function removeBudgetantraege()
+{
+	$("#budgetantraegehtml").empty();
+}
+
+/**
+ * Checks if a Budgetantrag is saved, and initializes html modifications accordingly
+ * @param budgetantragid
+ */
+function checkIfSaved(budgetantragid)
+{
+	var budgetantrag = findInArray(global_budgetantraege.existentBudgetantraege, budgetantragid);
+
+	//if not found in existent, assuming it is a new Budgetantrag - not saved yet!
+	//if it has new positions - unsaved too
+	if (budgetantrag === false || budgetantrag.positionentoadd.length > 0)
+	{
+		markUnsaved(budgetantragid);
+		return;
+	}
+
+	//otherwise set unsaved icon if form changed
+	var positionen = budgetantrag.positionen;
+
+	for (var i = 0; i < positionen.length; i++)
+	{
+		if (checkIfBudgetpositionFormChanged(positionen[i]))
+		{
+			markUnsaved(budgetantragid);
+			return;
+		}
+	}
+
+	markSaved(budgetantragid);
+}
+
+/**
+ * Marks a Budgetantrag html as unsaved
+ * @param budgetantragid
+ */
+function markUnsaved(budgetantragid)
+{
+	var savebtn = $("#save_"+budgetantragid);
+
+	$("#unsaved_" + budgetantragid).removeClass("hidden");
+	$("#"+budgetantragPrefix+"_"+budgetantragid+" > .panel-heading > .row").addClass("text-danger");
+	setMessage(budgetantragid, "text-danger", "Budgetantrag noch nicht gespeichert!");
+	savebtn.find(".glyphicon-floppy-disk").addClass("text-danger");
+	savebtn.css("border-color", "#a94442");
+}
+
+/**
+ * Marks a Budgetantrag html as saved
+ * @param budgetantragid
+ */
+function markSaved(budgetantragid)
+{
+	var savebtn = $("#save_"+budgetantragid);
+
+	$("#unsaved_" + budgetantragid).addClass("hidden");
+	$("#"+budgetantragPrefix+"_"+budgetantragid+" > .panel-heading > .row").removeClass("text-danger");
+	setMessage(budgetantragid, "", "");
+	savebtn.find(".glyphicon-floppy-disk").removeClass("text-danger");
+	savebtn.css("border-color", "#adadad");
 }
 
 /**
@@ -350,52 +355,59 @@ function setMessage(budgetantragid, classname, msg)
 // -----------------------------------------------------------------------------------------------------------------
 // Retrievers (get values from html)
 
+/**
+ * Retrieves all Budgetpositionen from the Budgetantragform with a given id,
+ * initializes check if Positiondata is valid before
+ * @param budgetantragid
+ * @param withid specifies format of returnarray: each Position wrapped with id or not
+ * @returns {*} the Budgetpositionen if retrieved successfully, null otherwise (e.g. when wrong input)
+ */
 function retrieveBudgetantragPositionen(budgetantragid, withid)
 {
 	var positionenForms = $("#" + budgetantragPrefix + "_" + budgetantragid + " form");
-	var positionen = [];
+	var positionen = [], messages = [];
+
+	//clear error marks
+	$("#budgetPosition_"+budgetantragid+" .has-error").removeClass("has-error");
+	$("#budgetPosition_"+budgetantragid+" .text-danger").removeClass("text-danger");
+
+	var valid = true;
+
 	for (var i = 0; i < positionenForms.length; i++)
 	{
 		var positionForm = positionenForms[i];
 		var position_id = positionForm.id.substr(positionForm.id.indexOf("_") + 1);
+
+/*		if (withid === true)*/
+
 		var positionFormDom = $(positionForm);
 
-		var budgetposten = positionFormDom.find("input[name=budgetposten]").val();
-		var projekt_id = positionFormDom.find("select[name=projekt_id]").val();
-		var konto_id = positionFormDom.find("select[name=konto_id]").val();
-		var betragelem = positionFormDom.find("input[name=betrag]");
-		var betrag = betragelem.val();
-		var kommentar = positionFormDom.find("textarea[name=kommentar]").val();
+		var positionFields = checkBudgetpositionDataBeforeAdd(positionFormDom, budgetantragid);
 
-		//check for correct numeric input, and html sanitize
-		if (!betrag.trim())
-			betrag = null;
-		else if (!checkDecimalFormat(betrag))
+		if (positionFields.error === 1 || !valid)
 		{
-			betragelem.parent().addClass('has-error');
-			return null;
-		}
-		else
-		{
-			betragelem.parent().removeClass('has-error');
-			betrag = betrag.replace(',', '.');
+			for (var j = 0; j < positionFields.data.length; j++)
+			{
+				if (messages.indexOf(positionFields.data[j]) === -1)
+					messages.push(positionFields.data[j]);
+			}
+			valid = false;
 		}
 
-		//check if Budgetposten with same name already exists in Budgetantrag
-/*		for (var j = i; j < positionenForms.length; j++)
-		{
+		var positiondata = positionFields.data;
 
-		}*/
+		if (!valid)
+			continue;
 
-		projekt_id = projekt_id === 'null' ? null : projekt_id;
-		konto_id = konto_id === 'null' ? null : konto_id;
+		positiondata.projekt_id.val = positiondata.projekt_id.val === 'null' ? null : positiondata.projekt_id.val;
+		//positiondata.konto_id.val = positiondata.konto_id.val === 'null' ? null : positiondata.konto_id.val;
 
 		var position = {
-			"budgetposten": budgetposten,
-			"projekt_id": projekt_id,
-			"konto_id": konto_id,
-			"betrag": betrag,
-			"kommentar": kommentar
+			"budgetposten": positiondata.budgetposten.val,
+			"projekt_id": positiondata.projekt_id.val,
+			"konto_id": positiondata.konto_id.val,
+			"betrag": positiondata.betrag.val,
+			"kommentar": positiondata.kommentar.val
 		};
 
 		//id wrapper for update
@@ -410,6 +422,38 @@ function retrieveBudgetantragPositionen(budgetantragid, withid)
 		positionen.push(position);
 	}
 
+	if (!valid)
+	{
+		setMessage(budgetantragid, "text-danger", messages.join(" "));
+		return null;
+	}
+	else
+	{
+		//check if Budgetposten with same name already exists in Budgetantrag
+		var seen = {};
+		for (var i = 0; i < positionenForms.length; i++)
+		{
+			var positionForm = positionenForms[i];
+			var position_id = positionForm.id.substr(positionForm.id.indexOf("_") + 1);
+
+			var budgetpostenel = $(positionForm).find("input[name=budgetposten]");
+			var budgetpostenbez = $(positionForm).find("input[name=budgetposten]").val();
+			if (seen[budgetpostenbez])
+			{
+				setMessage(budgetantragid, "text-danger", "Positionen mit gleichem Namen vorhanden!");
+				$("#position_"+position_id+" .panel-heading .accordion-toggle").addClass("text-danger");
+				budgetpostenel.closest(".form-group").addClass("has-error");
+
+				$("#position_"+seen[budgetpostenbez]+" .panel-heading .accordion-toggle").addClass("text-danger");
+				$("#form_"+seen[budgetpostenbez]).find("input[name=budgetposten]").closest(".form-group").addClass("has-error");;
+
+				return null;
+			}
+			else
+				seen[budgetpostenbez] = position_id;
+		}
+	}
+
 	return positionen;
 }
 
@@ -418,7 +462,7 @@ function retrieveBudgetantragPositionen(budgetantragid, withid)
 
 /**
  * Checks if a Budgetantrag can be appended, and shows errors if not
- * @returns {*|jQuery}
+ * @returns {*|jQuery} - the Budgetbezeichnung if passed, false otherwise
  */
 function checkBudgetantragDataBeforeAdd()
 {
@@ -486,43 +530,65 @@ function checkBudgetantragDataBeforeAdd()
 }
 
 /**
- * Gets the html for a Budgetantrag, filling it with Budgetantrag data
- * @param args the Budgetantrag data, but also other formatting data
- * @returns {string} html string
+ * Checks entries for a Budgetposition before it is saved.
+ * @param positionFormDom
+ * @returns {*} object inidicating if data has an error (is invalid)
+ * and containing either error messages or the positiondata
  */
-function getBudgetantragHtml(args)
+function checkBudgetpositionDataBeforeAdd(positionFormDom)
 {
-	return '<div class="panel-heading">'+
-				'<div class="row">'+
-					'<div class="col-lg-3 col-sm-3">'+
-						'<h4 class="panel-title">'+
-						'<a class="accordion-toggle'+args.collapseHtml+'" data-toggle="collapse" data-parent="#budgetantraege" href="#collapse'+args.budgetantragid+'">'+
-						args.budgetname+
-						'</a>'+
-						'</h4>'+
-					'</div>'+
-					'<div class="col-lg-2 col-lg-offset-2 col-sm-2 col-sm-offset-2 text-center" id="sum_'+args.budgetantragid+'">'+
-					'</div>'+
-					'<div class="col-lg-1 col-lg-offset-4 col-sm-1 col-sm-offset-4 text-right">'+
-					'<i class="fa fa-times text-danger" id="remove_'+args.budgetantragid+'" role="button"></i>'+
-					'</div>'+
-				'</div>'+
-			'</div>'+//panel-heading
-			'<div id="collapse'+args.budgetantragid+'" class="panel-collapse collapse'+args.collapseInHtml+'">'+
-				'<div class="panel-body form-horizontal">'+
-					'<div id="budgetPosition_'+args.budgetantragid+'" class="panel-group"></div>'+
-						'<div class="row">'+
-							'<div class="col-lg-12 text-right">'+
-							'<button class="btn btn-default" id="addPosition_'+args.budgetantragid+'">'+
-							'<i class="fa fa-plus"></i>&nbsp;'+
-							'Budgetposten hinzufügen'+
-							'</button>'+
-							'</div>'+
-						'</div>'+
-				'</div>'+//panel-body
-				'<div class="panel-footer">'+
-				'</div>'+//panel-footer
-			'</div>';//collapse item
+	var valid = true;
+
+	var budgetpostenelem = positionFormDom.find("input[name=budgetposten]");
+	var projektidelem = positionFormDom.find("select[name=projekt_id]");
+	var kontoidelem = positionFormDom.find("select[name=konto_id]");
+	var betragelem = positionFormDom.find("input[name=betrag]");
+	var kommentarelem = positionFormDom.find("textarea[name=kommentar]");
+
+	var positionFields = {};
+	var messages = [];
+
+	positionFields.budgetposten = {"elem": budgetpostenelem, "val": budgetpostenelem.val(), "required": true};
+	positionFields.projekt_id = {"elem": projektidelem, "val": projektidelem.val(), "required": false};
+	positionFields.konto_id = {"elem": kontoidelem, "val": kontoidelem.val(), "required": true};
+	positionFields.betrag = {"elem": betragelem, "val": betragelem.val(), "required": true};
+	positionFields.kommentar= {"elem": kommentarelem, "val": kommentarelem.val(), "required": false};
+
+	//check required fields
+	$.each(positionFields, function(name, value) {
+		if (value.required === true && (value.val === null || value.val === "" || value.val === "null"))
+		{
+			value.elem.closest(".form-group").addClass("has-error");
+			valid = false;
+		}
+	});
+
+	if (!valid)
+	{
+		messages.push("Pflichtfelder nicht ausgefüllt!");
+	}
+
+	//check for correct numeric input
+/*	if (!positionFields.betrag.val.trim())
+		positionFields.betrag.val = null;*/
+
+	if (!checkDecimalFormat(positionFields.betrag.val))
+	{
+		valid = false;
+		betragelem.parent().addClass("has-error");
+		messages.push("Ungültiges Zahlenformat!");
+	}
+	else
+	{
+		positionFields.betrag.val = positionFields.betrag.val.replace(",", ".");
+	}
+
+	if (!valid)
+	{
+		return {"error": 1, "data": messages};
+	}
+
+	return {"error": 0, "data": positionFields};
 }
 
 /**
@@ -531,9 +597,10 @@ function getBudgetantragHtml(args)
  * @param position_id
  * @returns {boolean} wether the Budgetposition form was modified
  */
-function checkIfBudgetpositionFormChanged(initBudgetposition, position_id)
+function checkIfBudgetpositionFormChanged(initBudgetposition/*, position_id*/)
 {
-	return initBudgetposition.initialForm !== $("#form_"+position_id).serialize();
+	//console.log(initBudgetposition.initialForm + " comparing with "+$("#form_"+initBudgetposition.id).serialize());
+	return initBudgetposition.initialForm !== $("#form_"+initBudgetposition.id).serialize();
 }
 
 /**

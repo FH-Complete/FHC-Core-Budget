@@ -21,7 +21,7 @@ function getProjekteAjax()
 	return $.ajax({
 		type: "GET",
 		dataType: "json",
-		url: './Budgetantrag/getProjekte',
+		url: full_url+"getProjekte",/*'./Budgetantrag/getProjekte',*/
 		error: function (jqXHR, textStatus, errorThrown)
 		{
 			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
@@ -29,12 +29,12 @@ function getProjekteAjax()
 	});
 }
 
-function getKontenAjax()
+function getKontenAjax(kostenstelle)
 {
 	return $.ajax({
 		type: "GET",
 		dataType: "json",
-		url: './Budgetantrag/getKonten',
+		url: full_url+"getKonten/"+kostenstelle,
 		error: function (jqXHR, textStatus, errorThrown)
 		{
 			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
@@ -47,7 +47,7 @@ function getBudgetantraegeAjax(geschaeftsjahr, kostenstelle)
   	$.ajax({
 		type: "GET",
 		dataType: "json",
-		url: './Budgetantrag/getBudgetantraege/'+geschaeftsjahr+'/'+kostenstelle,
+		url: full_url+"getBudgetantraege/"+geschaeftsjahr+'/'+kostenstelle,
 		success: function (data, textStatus, jqXHR)
 		{
 			afterBudgetantraegeGet(data);
@@ -64,7 +64,7 @@ function getBudgetantragAjax(budgetantragid)
 	$.ajax({
 		type: "GET",
 		dataType: "json",
-		url: './Budgetantrag/getBudgetantrag/'+budgetantragid,
+		url: full_url+"getBudgetantrag/"+budgetantragid,
 		success: function (data, textStatus, jqXHR)
 		 {
 		 	afterBudgetantragGet(data, budgetantragid);
@@ -81,7 +81,7 @@ function addBudgetantragAjax(data, oldid)
 	$.ajax({
 		type: "POST",
 		dataType: "json",
-		url: './Budgetantrag/newBudgetantrag',
+		url: full_url+"newBudgetantrag",
 		data: data,
 		success: function (data, textStatus, jqXHR)
 		{
@@ -100,7 +100,7 @@ function updateBudgetpositionenAjax(budgetantragid, data)
 		type: "POST",
 		dataType: "json",
 		data: data,
-		url: './Budgetantrag/updateBudgetantragPositionen/'+budgetantragid,
+		url: full_url+"updateBudgetantragPositionen/"+budgetantragid,
 		success: function (data, textStatus, jqXHR)
 		{
 			afterBudgetantragUpdate(data, budgetantragid);
@@ -117,7 +117,7 @@ function deleteBudgetantragAjax(budgetantragid)
 	$.ajax({
 		type: "POST",
 		dataType: "json",
-		url: './Budgetantrag/deleteBudgetantrag/'+budgetantragid,
+		url: full_url+"deleteBudgetantrag/"+budgetantragid,
 		success: function (data, textStatus, jqXHR)
 		{
 			afterBudgetantragDelete(data);

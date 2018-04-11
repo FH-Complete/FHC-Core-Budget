@@ -15,14 +15,19 @@ $this->load->view(
 			array(
 				'public/extensions/FHC-Core-Budget/js/budgetantraegeController.js',
 				'public/extensions/FHC-Core-Budget/js/budgetantraegeView.js',
+				'public/extensions/FHC-Core-Budget/js/budgetantraegeHtml.js',
 				'public/extensions/FHC-Core-Budget/js/budgetantraegeAjax.js',
 				'public/extensions/FHC-Core-Budget/js/budgetantraegeLib.js'
 			)
 	)
 );
 ?>
-
 <body>
+<?php
+	echo '<script type="text/javascript">';
+	echo 'var BASE_URL = "'.base_url().'";';
+	echo "</script>\n";
+?>
 <div id="wrapper">
 	<?php echo $this->widgetlib->widget('NavigationWidget'); ?>
 	<div id="page-wrapper">
@@ -42,8 +47,12 @@ $this->load->view(
 								<label for="geschaeftsjahr">Geschäftsjahr</label>
 								<select class="form-control" id="geschaeftsjahr">
 									<option value="null">Geschäftsjahr wählen...</option>
-									<?php foreach ($geschaeftsjahre as $geschaeftsjahr): ?>
-										<option value="<?php echo $geschaeftsjahr->geschaeftsjahr_kurzbz; ?>">
+									<?php
+									$firstelement = reset($geschaeftsjahre);
+									foreach ($geschaeftsjahre as $geschaeftsjahr):
+										$selected = $firstelement->geschaeftsjahr_kurzbz === $geschaeftsjahr->geschaeftsjahr_kurzbz ? 'selected' : '';
+										?>
+										<option value="<?php echo $geschaeftsjahr->geschaeftsjahr_kurzbz; ?>" <?php echo $selected; ?>>
 											<?php echo $geschaeftsjahr->geschaeftsjahr_kurzbz ?>
 										</option>
 									<?php endforeach; ?>
@@ -55,7 +64,9 @@ $this->load->view(
 								<label for="kostenstelle">Kostenstelle</label>
 								<select class="form-control" id="kostenstelle">
 									<option value="null">Kostenstelle wählen...</option>
-									<?php foreach ($kostenstellen as $kostenstelle): ?>
+									<?php
+									foreach ($kostenstellen as $kostenstelle):
+										?>
 										<option value="<?php echo $kostenstelle->kostenstelle_id; ?>">
 											<?php echo $kostenstelle->bezeichnung ?>
 										</option>
@@ -65,41 +76,9 @@ $this->load->view(
 						</div>
 					</div>
 				</div> <!-- ./first column -->
-				<div class="col-lg-5">
-					<table class="table table-bordered table-condensed">
-						<thead>
-							<tr>
-								<th>Gespeichert</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td id="savedSum">€ 0,00</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
 			</div> <!-- ./main row -->
 			<br>
-			<div class="row">
-				<div class="col-lg-7">
-					<div class="input-group" id="budgetbezgroup">
-						<input type="text" class="form-control" id="budgetbezeichnung" placeholder="Budgetantragsbezeichnung eingeben">
-						<span class="input-group-btn">
-						<button class="btn btn-default" id="addBudgetantrag">
-							<i class="fa fa-plus"></i>
-							Budgetantrag hinzufügen
-						</button>
-						</span>
-					</div>
-				</div>
-			</div>
-			<br><br>
-			<div class="row">
-				<div class="col-lg-12">
-					<div class="panel-group" id="budgetantraege"></div>
-				</div>
-			</div>
+			<div id="budgetantraegehtml"></div>
 			<!-- modal for deleting of a budgetantrag -->
 			<div id="delAntragModal" class="modal fade">
 				<div class="modal-dialog">

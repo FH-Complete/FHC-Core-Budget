@@ -54,7 +54,7 @@ class Budgetantrag extends VileSci_Controller
 		}
 
 		$this->KostenstelleModel->addSelect('kostenstelle_id, kostenstelle_nr, kurzbz, bezeichnung');
-		$this->KostenstelleModel->addOrder('kostenstelle_id');
+		$this->KostenstelleModel->addOrder('bezeichnung');
 		$kostenstellen = $this->KostenstelleModel->loadWhere(array('aktiv' => true));
 
 		if (isError($kostenstellen))
@@ -208,6 +208,7 @@ class Budgetantrag extends VileSci_Controller
 	public function getProjekte()
 	{
 		$this->ProjektModel->addSelect('projekt_id, projekt_kurzbz, titel');
+		$this->ProjektModel->addOrder('titel');
 		$result = $this->ProjektModel->load();
 
 		$this->output
@@ -216,12 +217,14 @@ class Budgetantrag extends VileSci_Controller
 	}
 
 	/**
-	 * Gets konto_id, kontonr and kurzbz for all konten in JSON format
+	 * Gets konto_id, kontonr and kurzbz for all Konten for a Kostenstelle in JSON format
+	 * @param $kostenstelle_id
 	 */
-	public function getKonten()
+	public function getKonten($kostenstelle_id)
 	{
-		$this->KontoModel->addSelect('konto_id, kontonr, kurzbz');
-		$result = $this->KontoModel->load();
+		$this->KontoModel->addSelect('konto_id, kontonr, kurzbz, aktiv');
+		$this->KontoModel->addOrder('kurzbz');
+		$result = $this->KontoModel->getKontenForKostenstelle($kostenstelle_id);
 
 		$this->output
 			->set_content_type('application/json')

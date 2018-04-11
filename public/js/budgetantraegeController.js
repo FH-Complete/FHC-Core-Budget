@@ -20,6 +20,8 @@
 
 //id prefixes
 const newBudgetPrefix = "newb", newPositionPrefix = "newp", budgetantragPrefix = "budget", positionPrefix = "position";
+var base_url, full_url = "";
+const url_postfix = "index.ci.php/extensions/FHC-Core-Budget/Budgetantrag/";
 
 var global_inputparams = {"geschaeftsjahr": null, "kostenstelle": null};
 //global objects for storing current state of Budgetanträge together with their positions: how many added, deleted, updated
@@ -30,57 +32,56 @@ var global_counters = {"countNewAntraege": 0, "countNewPosition": 0, "lastAddedO
 $(document).ready(
 	function ()
 	{
+		base_url = BASE_URL;
+		full_url = base_url + url_postfix;
 		global_inputparams.geschaeftsjahr = $("#geschaeftsjahr").val();
 		global_inputparams.kostenstelle = $("#kostenstelle").val();
 
+		//load projects and konten, then get all Budgetanträge
 		$.when(
-			getProjekteAjax(), getKontenAjax()
+			getProjekteAjax()
 		).done(
-			function (projekteResponse, kontenResponse)
+			function (projekteResponse)
 			{
-				if(projekteResponse[0].error === 1 || kontenResponse[0].error === 1)
+				if (projekteResponse.error === 1)
 					return;
-				global_preloads.projekte = projekteResponse[0].retval;
-				global_preloads.konten = kontenResponse[0].retval;
-				getBudgetantraege();
+				global_preloads.projekte = projekteResponse.retval;
 			}
 		);
+
+		if (global_inputparams.geschaeftsjahr !== null && global_inputparams.geschaeftsjahr !== 'null' && global_inputparams.kostenstelle !== null && global_inputparams.kostenstelle !== 'null')
+		{
+			$.when(
+				getKontenAjax(global_inputparams.kostenstelle)
+			).done(
+				function (kontenResponse)
+				{
+					if (kontenResponse.error === 1)
+						return;
+					global_preloads.konten = kontenResponse.retval;
+					getBudgetantraege();
+				}
+			);
+		}
 
 		//change view anytime a new Geschäftsjahr/Kostenstelle is entered
 		$("#geschaeftsjahr").change(
 			function ()
 			{
-				var geschaeftsjahr = $(this).val();
-				if (geschaeftsjahr === "null")
-				{
-					$("#budgetantraege").empty();
-					return;
-				}
-				global_inputparams.geschaeftsjahr = geschaeftsjahr;
 				$("#gjgroup").removeClass("has-error");
-				getBudgetantraege();
+				var geschaeftsjahr = $(this).val();
+				global_inputparams.geschaeftsjahr = geschaeftsjahr;
+				onGlobalDropdownChange();
 			}
 		);
 
 		$("#kostenstelle").change(
 			function ()
 			{
-				var kostenstelle = $(this).val();
-				if (kostenstelle === "null")
-				{
-					$("#budgetantraege").empty();
-					return;
-				}
-				global_inputparams.kostenstelle = kostenstelle;
 				$("#kstgroup").removeClass("has-error");
-				getBudgetantraege();
-			}
-		);
-
-		$("#addBudgetantrag").click(
-			function ()
-			{
-				appendNewBudgetantrag(newBudgetPrefix + global_counters.countNewAntraege);
+				var kostenstelle = $(this).val();
+				global_inputparams.kostenstelle = kostenstelle;
+				onGlobalDropdownChange();
 			}
 		);
 	}
@@ -90,18 +91,40 @@ $(document).ready(
 // Initialisers (call ajax functions, view functions)
 
 /**
+ * Executes after Geschaeftsjahr or Kostenstelle Dropdown changes. Clears Budgetantraege from arrays and html.
+ */
+function onGlobalDropdownChange()
+{
+	if (global_inputparams.geschaeftsjahr === null || global_inputparams.geschaeftsjahr === 'null' || global_inputparams.kostenstelle === null || global_inputparams.kostenstelle === 'null')
+	{
+		global_budgetantraege.existentBudgetantraege = [];
+		global_budgetantraege.newBudgetantraege = [];
+		removeBudgetantraege();
+		return;
+	}
+	$.when(
+		getKontenAjax(global_inputparams.kostenstelle)
+	).done(
+		function (kontenResponse)
+		{
+			if (kontenResponse.error === 1)
+				return;
+			global_preloads.konten = kontenResponse.retval;
+			getBudgetantraege();
+		}
+	);
+}
+
+/**
  * Gets all Budgetanträge for Geschäftsjahr and Kostenstelle globals and adds them as "existing Antraege"
  */
 function getBudgetantraege()
 {
-	if (global_inputparams.geschaeftsjahr !== null && global_inputparams.geschaeftsjahr !== 'null' && global_inputparams.kostenstelle !== null && global_inputparams.kostenstelle !== 'null')
-	{
-		getBudgetantraegeAjax(global_inputparams.geschaeftsjahr, global_inputparams.kostenstelle)
-	}
+	getBudgetantraegeAjax(global_inputparams.geschaeftsjahr, global_inputparams.kostenstelle);
 }
 
 /**
- * Adds new Budgetantrag which ids is already saved in global newBudgetantraegearray
+ * Adds new Budgetantrag which id is already saved in global newBudgetantraegearray
  * Initializes retrieving form data and Ajax call
  * @param budgetantragid
  */
@@ -125,7 +148,7 @@ function addNewBudgetantrag(budgetantragid)
 }
 
 /**
- * Updates Budgetpositionen for a given Budgetantrag. this includes adding, editing and deleting budgetpositionen!
+ * Updates Budgetpositionen for a given Budgetantrag. this includes adding, editing and deleting Budgetpositionen!
  * Accesses global arrays for getting current state for the budgetantrag, creates and passes 3 arrays,
  * each for adding, updating and deleting, to ajax update funcion
  * @param budgetantragid
@@ -157,7 +180,7 @@ function updateBudgetpositionen(budgetantragid)
 		var initialPosition = findInArray(budgetantrag.positionen, positionid);
 
 		//updated if it is in existentBudgetantraege, has changed, and is not going to be deleted anyway
-		if (initialPosition !== false && checkIfBudgetpositionFormChanged(initialPosition, positionid) && !findInArray(idsToDelete, positionid))
+		if (initialPosition !== false && checkIfBudgetpositionFormChanged(initialPosition) && !findInArray(idsToDelete, positionid))
 			positionenToUpdate.push(position);
 	}
 
@@ -170,10 +193,14 @@ function updateBudgetpositionen(budgetantragid)
 		"positionentodelete": positionenToDelete
 	};
 
-	console.log(data);
+	//console.log(data);
 	if (positionenToAdd.length > 0 || positionenToUpdate.length > 0 || positionenToDelete.length > 0)
 	{
 		updateBudgetpositionenAjax(budgetantragid, data);
+	}
+	else
+	{
+		setMessage(budgetantragid, "text-success", "Budgetantrag ist unverändert.")
 	}
 }
 
@@ -183,12 +210,15 @@ function updateBudgetpositionen(budgetantragid)
  */
 function deleteBudgetantrag(budgetantragid)
 {
-	if (findInArray(global_budgetantraege.existentBudgetantraege, budgetantragid) === false)
+	var budgetantrag = findInArray(global_budgetantraege.existentBudgetantraege, budgetantragid);
+	if (budgetantrag === false)
 		removeBudgetantrag(budgetantragid);
 	else
 	{
-		showDelBudgetantragModal('');
-		$("#delModalConfirm").click(
+		showDelBudgetantragModal(budgetantrag.bezeichnung);
+		var delmodal = $("#delModalConfirm");
+		delmodal.off("click");
+		delmodal.click(
 			function ()
 			{
 				deleteBudgetantragAjax(budgetantragid);
@@ -210,13 +240,14 @@ function afterBudgetantraegeGet(data)
 	var budgetantraege = data.retval;
 	
 	global_budgetantraege.existentBudgetantraege = [];
+	global_budgetantraege.newBudgetantraege = [];
 
 	for (var i = 0; i < budgetantraege.length; i++)
 	{
 		var budgetantrag = budgetantraege[i];
 		addAntragToExistingAntraegeArray(budgetantrag);
 	}
-	$("#budgetantraege").empty();
+	removeBudgetantraege();
 	appendBudgetantraege(budgetantraege);
 	calculateBudgetantragSums();
 }
@@ -240,6 +271,11 @@ function afterBudgetantragAdd(data, oldid)
 	getBudgetantragAjax(data.retval);
 }
 
+/**
+ * Executes after Ajax for adding Budgetantrag is finished. Updates Budgetantrag after adding by calling Ajax.
+ * @param data
+ * @param budgetantragid
+ */
 function afterBudgetantragUpdate(data, budgetantragid)
 {
 	if (data.error === 1)
@@ -247,7 +283,13 @@ function afterBudgetantragUpdate(data, budgetantragid)
 		setMessage(budgetantragid, "text-danger", "Fehler beim Speichern des Budgetantrags!");
 		return;
 	}
-	getBudgetantragAjax(budgetantragid)
+	var budgetantrag = findInArray(global_budgetantraege.existentBudgetantraege, budgetantragid);
+
+	//reset delete and add ids
+	budgetantrag.positionentodelete = [];
+	budgetantrag.positionentoadd = [];
+
+	getBudgetantragAjax(budgetantragid);
 }
 
 /**
@@ -259,7 +301,6 @@ function afterBudgetantragGet(data, oldbudgetantragid)
 {
 	if (data.error === 1)
 	{
-		console.log(global_counters.lastAddedOldId);
 		var msgid = $("#"+budgetantragPrefix+"_"+global_counters.lastAddedOldId).length ? global_counters.lastAddedOldId : oldbudgetantragid;
 		setMessage(msgid, "text-danger", "Fehler beim Speichern des Budgetantrags!");
 		return;
@@ -299,6 +340,7 @@ function afterBudgetantragDelete(data)
 function appendNewBudgetantrag(budgetantragid)
 {
 	var passed = checkBudgetantragDataBeforeAdd();
+
 	if (passed === false) return;
 
 	collapseAllBudgetantraege();
@@ -326,8 +368,9 @@ function appendNewBudgetposition(budgetantragid)
 	else if (budgetantrag !== false)
 		budgetantrag.positionentoadd.push({"id": positionid});
 
-	appendBudgetposition(budgetantragid, positionid, null, true);
 	global_counters.countNewPosition++;
+	appendBudgetposition(budgetantragid, positionid, null, true);
+	checkIfSaved(budgetantragid);
 }
 
 /**
@@ -339,6 +382,14 @@ function deleteBudgetposition(budgetantragid, positionid)
 {
 	var budgetantrag = findInArray(global_budgetantraege.existentBudgetantraege, budgetantragid);
 	if (budgetantrag === false) return;
+
+	//remove from positionentoadd
+	budgetantrag.positionentoadd = budgetantrag.positionentoadd.filter(
+		function (el)
+		{
+			return el.id !== positionid;
+		}
+	);
 
 	var budgetposition = findInArray(budgetantrag.positionen, positionid);
 	if (budgetposition === false) return;

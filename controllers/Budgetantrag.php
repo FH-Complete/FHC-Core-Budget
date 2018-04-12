@@ -26,13 +26,6 @@ class Budgetantrag extends VileSci_Controller
 		$this->load->library('WidgetLib');
 
 		$this->_setAuthUID(); // sets property uid
-
-/*		$this->_setNavigationMenuArray(); // sets property navigationMenuArray
-
-		$this->navigationHeaderArray = array(
-			'headertext' => 'Infocenter',
-			'headertextlink' => base_url('index.ci.php/system/infocenter/InfoCenter')
-		);*/
 	}
 
 	/**
@@ -41,7 +34,7 @@ class Budgetantrag extends VileSci_Controller
 	public function index()
 	{
 		$this->GeschaeftsjahrModel->addSelect('geschaeftsjahr_kurzbz');
-		$this->GeschaeftsjahrModel->addOrder('geschaeftsjahr_kurzbz', 'DESC');
+		$this->GeschaeftsjahrModel->addOrder('start', 'DESC');
 		$geschaeftsjahre = $this->GeschaeftsjahrModel->load();
 
 		if (isError($geschaeftsjahre))
@@ -49,9 +42,7 @@ class Budgetantrag extends VileSci_Controller
 			show_error($geschaeftsjahre->retval);
 		}
 
-		$this->KostenstelleModel->addSelect('kostenstelle_id, kostenstelle_nr, kurzbz, bezeichnung');
-		$this->KostenstelleModel->addOrder('bezeichnung');
-		$kostenstellen = $this->KostenstelleModel->loadWhere(array('aktiv' => true));
+		$kostenstellen = $this->KostenstelleModel->getActiveKostenstellenForGeschaeftsjahr();
 
 		if (isError($kostenstellen))
 		{
@@ -65,6 +56,19 @@ class Budgetantrag extends VileSci_Controller
 			'kostenstellen' => $kostenstellen->retval
 			)
 		);
+	}
+
+	/**
+	 * Gets all Kostenstellen for given Geschäftsjahr in JSON format
+	 * @param $geschaefsjahr
+	 */
+	public function getKostenstellen($geschaefsjahr)
+	{
+		$result = $this->KostenstelleModel->getActiveKostenstellenForGeschaeftsjahr($geschaefsjahr);
+
+		$this->output
+			->set_content_type('application/json')
+			->set_output(json_encode($result));
 	}
 
 	/**

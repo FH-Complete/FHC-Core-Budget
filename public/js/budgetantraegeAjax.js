@@ -42,6 +42,23 @@ function getKontenAjax(kostenstelle)
 	});
 }
 
+function getKostenstellenAjax(geschaeftsjahr)
+{
+	$.ajax({
+		type: "GET",
+		dataType: "json",
+		url: full_url+"getKostenstellen/"+geschaeftsjahr,
+		success: function (data, textStatus, jqXHR)
+		{
+			afterKostenstellenGet(data);
+		},
+		error: function (jqXHR, textStatus, errorThrown)
+		{
+			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
+		}
+	});
+}
+
 function getBudgetantraegeAjax(geschaeftsjahr, kostenstelle)
 {
   	$.ajax({

@@ -72,6 +72,7 @@ $(document).ready(
 				var geschaeftsjahr = $(this).val();
 				global_inputparams.geschaeftsjahr = geschaeftsjahr;
 				onGlobalDropdownChange();
+				getKostenstellen();
 			}
 		);
 
@@ -116,7 +117,15 @@ function onGlobalDropdownChange()
 }
 
 /**
- * Gets all Budgetanträge for Geschäftsjahr and Kostenstelle globals and adds them as "existing Antraege"
+ * Gets all Kostenstellen for Geschäftsjahr global
+ */
+function getKostenstellen()
+{
+	getKostenstellenAjax(global_inputparams.geschaeftsjahr)
+}
+
+/**
+ * Gets all Budgetanträge for Geschäftsjahr and Kostenstelle globals
  */
 function getBudgetantraege()
 {
@@ -229,6 +238,18 @@ function deleteBudgetantrag(budgetantragid)
 
 // -----------------------------------------------------------------------------------------------------------------
 // Ajax callbacks (called after ajax execution)
+
+/**
+ * Executes after Ajax for getting all Budgetanträge is finished.
+ * @param data
+ */
+function afterKostenstellenGet(data)
+{
+	if (data.error === 1) return;
+	var kostenstellen = data.retval;
+
+	appendKostenstellen(kostenstellen);
+}
 
 /**
  * Executes after Ajax for getting all Budgetanträge is finished.

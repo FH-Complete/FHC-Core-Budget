@@ -20,6 +20,26 @@
 // HTML-modifiers (append, remove html)
 
 /**
+ * Appends Kostenstellen to global Kostenstellen dropdown
+ */
+function appendKostenstellen(kostenstellen)
+{
+	var kostenstelleDom = $("#kostenstelle");
+
+	var prevKostenstelle = kostenstelleDom.val();
+
+	kostenstelleDom.find("option:not([value='null'])").remove();
+
+	for (var i = 0; i < kostenstellen.length; i++)
+	{
+		var kostenstelle = kostenstellen[i];
+		var selected = kostenstelle.kostenstelle_id === prevKostenstelle ? 'selected=""' : '';
+
+		kostenstelleDom.append('<option value="'+kostenstelle.kostenstelle_id+'"'+selected+'>'+kostenstelle.bezeichnung+'</option>');
+	}
+}
+
+/**
  * Appends the html before the Budgetantraege panels, i.e. input field for adding new Budgetantrag and sums
  */
 function appendPreBudgetantraegeHtml()

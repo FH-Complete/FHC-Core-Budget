@@ -12,6 +12,9 @@ class Budgetantrag_model extends DB_Model
 		parent::__construct();
 		$this->dbTable = 'extension.tbl_budgetantrag';
 		$this->pk = 'budgetantrag_id';
+
+		$this->load->model('extensions/FHC-Core-Budget/budgetposition_model', 'BudgetpositionModel');
+		$this->load->model('extensions/FHC-Core-Budget/budgetantragstatus_model', 'BudgetantragstatusModel');
 	}
 
 	/**
@@ -23,7 +26,7 @@ class Budgetantrag_model extends DB_Model
 	 */
 	public function getBudgetantraege($geschaeftsjahr, $kostenstelle)
 	{
-		$this->load->model('extensions/FHC-Core-Budget/budgetposition_model', 'BudgetpositionModel');
+		$this->addSelect('extension.tbl_budgetantrag.budgetantrag_id');
 		$this->addOrder('extension.tbl_budgetantrag.budgetantrag_id');
 		$budgetantraege = $this->loadWhere(array('geschaeftsjahr_kurzbz' => $geschaeftsjahr, 'kostenstelle_id' => $kostenstelle));
 
@@ -34,21 +37,15 @@ class Budgetantrag_model extends DB_Model
 
 		foreach ($budgetantraege->retval as $antrag)
 		{
-			$this->addOrder('extension.tbl_budgetposition.budgetposition_id');
-			$budgetpositionen = $this->BudgetpositionModel->loadWhere(array('budgetantrag_id' => $antrag->budgetantrag_id));
+			$budgetantrag = $this->getBudgetantrag($antrag->budgetantrag_id);
 
-			if($budgetpositionen->error)
-				return error($budgetpositionen->retval);
-			
-			$antrag->budgetpositionen = $budgetpositionen->retval;
+			if($budgetantrag->error)
+				return error($budgetantrag->retval);
 
-			$resultArr[] = $antrag;
+			$resultArr[] = $budgetantrag->retval[0];
 		}
 
 		$budgetantraege->retval = $resultArr;
-/*		$result = $this->loadTree('extension.tbl_budgetantrag', array('extension.tbl_budgetposition'),
-			'extension.tbl_budgetantrag.geschaeftsjahr_kurzbz = '.$this->escape($geschaeftsjahr).' AND extension.tbl_budgetantrag.kostenstelle_id = '.$this->escape($kostenstelle)
-		);*/
 
 		return $budgetantraege;
 	}
@@ -60,11 +57,7 @@ class Budgetantrag_model extends DB_Model
 	 */
 	public function getBudgetantrag($budgetantrag_id)
 	{
-		$this->load->model('extensions/FHC-Core-Budget/budgetposition_model', 'BudgetpositionModel');
 		$budgetantrag = $this->load($budgetantrag_id);
-
-		//$budgetantrag = $this->loadTree('extension.tbl_budgetantrag', array('extension.tbl_budgetposition'), 'extension.tbl_budgetantrag.budgetantrag_id = '.$budgetantrag_id);
-		//, 'extension.tbl_budgetantrag.budgetantrag_id= '.$this->escape($budgetantrag_id)
 
 		if ($budgetantrag->error)
 			return error($budgetantrag->retval);
@@ -75,6 +68,12 @@ class Budgetantrag_model extends DB_Model
 		if ($budgetpositionen->error)
 			return error($budgetpositionen->retval);
 
+		$laststatus = $this->BudgetantragstatusModel->getLastStatus($budgetantrag_id);
+
+		if ($laststatus->error)
+			return error($budgetpositionen->retval);
+
+		$budgetantrag->retval[0]->budgetstatus = $laststatus->retval[0];
 		$budgetantrag->retval[0]->budgetpositionen = $budgetpositionen->retval;
 
 		return $budgetantrag;
@@ -88,9 +87,6 @@ class Budgetantrag_model extends DB_Model
 	 */
 	public function addBudgetantrag($data, $budgetPositionen)
 	{
-		$this->load->model('extensions/FHC-Core-Budget/budgetposition_model', 'BudgetpositionModel');
-		$this->load->model('extensions/FHC-Core-Budget/budgetantragstatus_model', 'BudgetantragstatusModel');
-
 		// Start DB transaction
 		$this->db->trans_start(false);
 
@@ -151,9 +147,6 @@ class Budgetantrag_model extends DB_Model
 	 */
 	public function deleteBudgetantrag($budgetantrag_id)
 	{
-		$this->load->model('extensions/FHC-Core-Budget/budgetposition_model', 'BudgetpositionModel');
-		$this->load->model('extensions/FHC-Core-Budget/budgetantragstatus_model', 'BudgetantragstatusModel');
-
 		$this->BudgetpositionModel->addSelect('budgetposition_id');
 		$positionen = $this->BudgetpositionModel->loadWhere(array('budgetantrag_id' => $budgetantrag_id));
 		if ($positionen->error)

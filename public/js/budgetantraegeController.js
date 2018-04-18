@@ -19,25 +19,40 @@
  */
 
 //id prefixes
-const newBudgetPrefix = "newb", newPositionPrefix = "newp", budgetantragPrefix = "budget", positionPrefix = "position";
-var base_url, full_url = "";
-const url_postfix = "index.ci.php/extensions/FHC-Core-Budget/Budgetantrag/";
+const NEW_BUDGET_PREFIX = "newb", NEW_POSITION_PREFIX = "newp", BUDGETANTRAG_PREFIX = "budget", POSITION_PREFIX = "position";
+const FULL_URL = FHC_JS_DATA_STORAGE_OBJECT.app_root + FHC_JS_DATA_STORAGE_OBJECT.ci_router + "/"+FHC_JS_DATA_STORAGE_OBJECT.called_path;
 
 var global_inputparams = {"geschaeftsjahr": null, "kostenstelle": null};
 //global objects for storing current state of Budgetanträge together with their positions: how many added, deleted, updated
-var global_preloads = {"projekte": [], "konten": []};
+var global_preloads = {"kostenstellen": [], "projekte": [], "konten": []};
 var global_budgetantraege = {"newBudgetantraege": [], "existentBudgetantraege": []};
-var global_counters = {"countNewAntraege": 0, "countNewPosition": 0, "lastAddedOldId": ""};//counter for giving unique id to every new position, [positionPrefix]_[counter]
+var global_counters = {"countNewAntraege": 0, "countNewPosition": 0, "lastAddedOldId": "", "editmode": false};//counter for giving unique id to every new position, [POSITION_PREFIX]_[counter]
+var global_booleans = {"editmode": false, "genehmigbar": false};
+const GLOBAL_STATUSES = {"new" : {"bez": "new", "editable": true},
+						"sent" : {"bez": "sent", "editable": true},
+						"rejected" : {"bez": "rejected", "editable": false},
+						"approved" : {"bez": "approved", "editable": false}
+						};
 
 $(document).ready(
 	function ()
 	{
-		base_url = BASE_URL;
-		full_url = base_url + url_postfix;
 		global_inputparams.geschaeftsjahr = $("#geschaeftsjahr").val();
 		global_inputparams.kostenstelle = $("#kostenstelle").val();
 
-		//load projects and konten, then get all Budgetanträge
+		//set edit mode (normally true because next gj is default)
+		$.when(
+			checkIfCurrGeschaeftsjahrAjax(global_inputparams.geschaeftsjahr)
+		).done(
+			function (gjResponse)
+			{
+				if (gjResponse.error === 1)
+					return;
+				global_counters.editmode = gjResponse.retval;
+			}
+		);
+
+		//load projects, then get all Budgetanträge
 		$.when(
 			getProjekteAjax()
 		).done(
@@ -49,20 +64,14 @@ $(document).ready(
 			}
 		);
 
-		if (global_inputparams.geschaeftsjahr !== null && global_inputparams.geschaeftsjahr !== 'null' && global_inputparams.kostenstelle !== null && global_inputparams.kostenstelle !== 'null')
-		{
-			$.when(
-				getKontenAjax(global_inputparams.kostenstelle)
-			).done(
-				function (kontenResponse)
-				{
-					if (kontenResponse.error === 1)
-						return;
-					global_preloads.konten = kontenResponse.retval;
-					getBudgetantraege();
-				}
-			);
-		}
+		$.when(
+			getKostenstellenAjax(global_inputparams.geschaeftsjahr)
+		).done(
+			function(kstResponse)
+			{
+				afterKostenstellenGet(kstResponse)
+			}
+		);
 
 		//change view anytime a new Geschäftsjahr/Kostenstelle is entered
 		$("#geschaeftsjahr").change(
@@ -70,9 +79,32 @@ $(document).ready(
 			{
 				$("#gjgroup").removeClass("has-error");
 				var geschaeftsjahr = $(this).val();
+				var kostenstelle = $("#kostenstelle").val();
 				global_inputparams.geschaeftsjahr = geschaeftsjahr;
-				onGlobalDropdownChange();
-				getKostenstellen();
+
+				if (global_inputparams.geschaeftsjahr !== "null" && global_inputparams.geschaeftsjahr !== null)
+				{
+					$.when(
+						checkIfCurrGeschaeftsjahrAjax(global_inputparams.geschaeftsjahr), getKostenstellenAjax(global_inputparams.geschaeftsjahr)
+					).done(
+						function (gjResponse, kstResponse)
+						{
+							if (gjResponse[0].error === 1 || kstResponse[0].error === 1)
+								return;
+
+							afterKostenstellenGet(kstResponse[0]);
+
+							if (!globalGjandKstAreValid())
+							{
+								clearBudgetantraege();
+								return;
+							}
+
+							global_counters.editmode = gjResponse[0].retval;
+							getBudgetantraege();
+						}
+					);
+				}
 			}
 		);
 
@@ -82,27 +114,36 @@ $(document).ready(
 				$("#kstgroup").removeClass("has-error");
 				var kostenstelle = $(this).val();
 				global_inputparams.kostenstelle = kostenstelle;
-				onGlobalDropdownChange();
+
+				if (!globalGjandKstAreValid())
+				{
+					clearBudgetantraege();
+					return;
+				}
+
+				$.when(
+					checkIfKstGenehmigbarAjax(global_inputparams.kostenstelle)
+				).done(
+					function (kstResponse)
+					{
+						global_booleans.genehmigbar = kstResponse;
+						getBudgetantraege();
+					}
+				);
+
 			}
 		);
 	}
 );
 
 // -----------------------------------------------------------------------------------------------------------------
-// Initialisers (call ajax functions, view functions)
+// Initialisers (call ajax functions or view functions)
 
 /**
- * Executes after Geschaeftsjahr or Kostenstelle Dropdown changes. Clears Budgetantraege from arrays and html.
+ * Initializes getBudgetantraege
  */
-function onGlobalDropdownChange()
+function getBudgetantraege()
 {
-	if (global_inputparams.geschaeftsjahr === null || global_inputparams.geschaeftsjahr === 'null' || global_inputparams.kostenstelle === null || global_inputparams.kostenstelle === 'null')
-	{
-		global_budgetantraege.existentBudgetantraege = [];
-		global_budgetantraege.newBudgetantraege = [];
-		removeBudgetantraege();
-		return;
-	}
 	$.when(
 		getKontenAjax(global_inputparams.kostenstelle)
 	).done(
@@ -111,9 +152,19 @@ function onGlobalDropdownChange()
 			if (kontenResponse.error === 1)
 				return;
 			global_preloads.konten = kontenResponse.retval;
-			getBudgetantraege();
+			getBudgetantraegeAjax(global_inputparams.geschaeftsjahr, global_inputparams.kostenstelle);
 		}
 	);
+}
+
+/**
+ * Clears Budgetantraege by emptying global arrays and removing html
+ */
+function clearBudgetantraege()
+{
+	global_budgetantraege.existentBudgetantraege = [];
+	global_budgetantraege.newBudgetantraege = [];
+	removeBudgetantraege();
 }
 
 /**
@@ -122,14 +173,6 @@ function onGlobalDropdownChange()
 function getKostenstellen()
 {
 	getKostenstellenAjax(global_inputparams.geschaeftsjahr)
-}
-
-/**
- * Gets all Budgetanträge for Geschäftsjahr and Kostenstelle globals
- */
-function getBudgetantraege()
-{
-	getBudgetantraegeAjax(global_inputparams.geschaeftsjahr, global_inputparams.kostenstelle);
 }
 
 /**
@@ -202,14 +245,13 @@ function updateBudgetpositionen(budgetantragid)
 		"positionentodelete": positionenToDelete
 	};
 
-	//console.log(data);
 	if (positionenToAdd.length > 0 || positionenToUpdate.length > 0 || positionenToDelete.length > 0)
 	{
 		updateBudgetpositionenAjax(budgetantragid, data);
 	}
 	else
 	{
-		setMessage(budgetantragid, "text-success", "Budgetantrag ist unverändert.")
+		setMessage(budgetantragid, "text-success", "Budgetantrag ist unverändert")
 	}
 }
 
@@ -248,6 +290,24 @@ function afterKostenstellenGet(data)
 	if (data.error === 1) return;
 	var kostenstellen = data.retval;
 
+	//reset global kostenstelle to null if kostenstelle is not available anymore
+	var kstgone = true;
+
+	for (var i = 0; i < kostenstellen.length; i++)
+	{
+		if (global_inputparams.kostenstelle === kostenstellen[i].kostenstelle_id)
+		{
+			kstgone = false;
+			break;
+		}
+	}
+
+	if (kstgone)
+	{
+		$("#kostenstelle").val("null");
+		global_inputparams.kostenstelle = null;
+	}
+
 	appendKostenstellen(kostenstellen);
 }
 
@@ -259,16 +319,14 @@ function afterBudgetantraegeGet(data)
 {
 	if (data.error === 1) return;
 	var budgetantraege = data.retval;
-	
-	global_budgetantraege.existentBudgetantraege = [];
-	global_budgetantraege.newBudgetantraege = [];
+
+	clearBudgetantraege();
 
 	for (var i = 0; i < budgetantraege.length; i++)
 	{
 		var budgetantrag = budgetantraege[i];
 		addAntragToExistingAntraegeArray(budgetantrag);
 	}
-	removeBudgetantraege();
 	appendBudgetantraege(budgetantraege);
 	calculateBudgetantragSums();
 }
@@ -288,8 +346,8 @@ function afterBudgetantragAdd(data, oldid)
 	//save old id for showing message
 	global_counters.lastAddedOldId = oldid;
 	//update Budgetantragid in the view to the id of newly added Antrag
-	$("#"+budgetantragPrefix+"_"+oldid).attr("id", budgetantragPrefix+"_"+data.retval);
-	getBudgetantragAjax(data.retval);
+	$("#"+BUDGETANTRAG_PREFIX+"_"+oldid).attr("id", BUDGETANTRAG_PREFIX+"_"+data.retval);
+	getBudgetantragAjax(data.retval, "gespeichert");
 }
 
 /**
@@ -310,7 +368,7 @@ function afterBudgetantragUpdate(data, budgetantragid)
 	budgetantrag.positionentodelete = [];
 	budgetantrag.positionentoadd = [];
 
-	getBudgetantragAjax(budgetantragid);
+	getBudgetantragAjax(budgetantragid, "gespeichert");
 }
 
 /**
@@ -318,19 +376,19 @@ function afterBudgetantragUpdate(data, budgetantragid)
  * @param data
  * @param oldbudgetantragid id before update for messaging (in case of error)
  */
-function afterBudgetantragGet(data, oldbudgetantragid)
+function afterBudgetantragGet(data, oldbudgetantragid, updatetype)
 {
 	if (data.error === 1)
 	{
-		var msgid = $("#"+budgetantragPrefix+"_"+global_counters.lastAddedOldId).length ? global_counters.lastAddedOldId : oldbudgetantragid;
+		var msgid = $("#"+BUDGETANTRAG_PREFIX+"_"+global_counters.lastAddedOldId).length ? global_counters.lastAddedOldId : oldbudgetantragid;
 		setMessage(msgid, "text-danger", "Fehler beim Speichern des Budgetantrags!");
 		return;
 	}
 	var budgetantrag = data.retval[0];
 	addAntragToExistingAntraegeArray(budgetantrag);
-	refreshBudgetantrag(data.retval[0], budgetantrag.budgetantrag_id);
+	refreshBudgetantrag(budgetantrag);
 	calculateBudgetantragSums();
-	setMessage(oldbudgetantragid, 'text-success', 'Budgetantrag erfolgreich gespeichert!');
+	setMessage(oldbudgetantragid, 'text-success', 'Budgetantrag erfolgreich '+updatetype+'!');
 }
 
 /**
@@ -351,6 +409,24 @@ function afterBudgetantragDelete(data)
 	removeBudgetantrag(data.retval);
 }
 
+/**
+ * Executes after Ajax for changing Budgetantrag Status is executed, initialises refreshing of changed Budgetantrag
+ * @param budgetantragid
+ * @param data
+ */
+function afterBudgetantragStatusChange(budgetantragid, data)
+{
+	if (data.error === 1)
+	{
+		setMessage(budgetantragid, "text-danger", "Fehler beim Ändern des Budgetstatus!");
+		return;
+
+	}
+	var budgetantragstatus = data.retval[0];
+
+	getBudgetantragAjax(budgetantragid, budgetantragstatus.bezeichnung.toLowerCase());
+}
+
 // -----------------------------------------------------------------------------------------------------------------
 // Other Modifiers (handle global array update and/or call view functions for appending/modifying html)
 
@@ -369,9 +445,10 @@ function appendNewBudgetantrag(budgetantragid)
 	global_budgetantraege.newBudgetantraege.push({"id": budgetantragid, "bezeichnung": passed, "positionen": []});
 	global_counters.countNewAntraege++;
 
-	appendBudgetantrag(budgetantragid, passed, 0, true);
+	appendBudgetantrag(budgetantragid, {"bezeichnung": passed}, 0, true, true);
+	setBudgetantragStatus(budgetantragid, { "bezeichnung": "Neu", "datum": ""});
 	appendNewBudgetposition(budgetantragid);
-	appendBudgetantragFooter(budgetantragid, true);
+	appendBudgetantragFooter(budgetantragid, true, true);
 }
 
 /**
@@ -380,7 +457,7 @@ function appendNewBudgetantrag(budgetantragid)
  */
 function appendNewBudgetposition(budgetantragid)
 {
-	var positionid = newPositionPrefix+global_counters.countNewPosition;
+	var positionid = NEW_POSITION_PREFIX+global_counters.countNewPosition;
 	var newbudgetantrag = findInArray(global_budgetantraege.newBudgetantraege, budgetantragid);
 	var budgetantrag = findInArray(global_budgetantraege.existentBudgetantraege, budgetantragid);
 
@@ -390,7 +467,7 @@ function appendNewBudgetposition(budgetantragid)
 		budgetantrag.positionentoadd.push({"id": positionid});
 
 	global_counters.countNewPosition++;
-	appendBudgetposition(budgetantragid, positionid, null, true);
+	appendBudgetposition(budgetantragid, positionid, null, true, true);
 	checkIfSaved(budgetantragid);
 }
 
@@ -456,6 +533,16 @@ function addAntragToExistingAntraegeArray(budgetantragToAdd)
 
 // -----------------------------------------------------------------------------------------------------------------
 // Helper functions
+
+/**
+ * Checks if global Geschäftsjahr and Kostenstelle are valid
+ * @returns {boolean}
+ */
+function globalGjandKstAreValid()
+{
+	return (global_inputparams.geschaeftsjahr !== null && global_inputparams.geschaeftsjahr !== 'null' && global_inputparams.kostenstelle !== null && global_inputparams.kostenstelle !== 'null')
+}
+
 
 /**
  * Saves the initial state of a form, i.e. user input when the form was loaded.

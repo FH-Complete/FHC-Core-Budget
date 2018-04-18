@@ -21,6 +21,7 @@
 
 /**
  * Appends Kostenstellen to global Kostenstellen dropdown
+ * @param kostenstellen
  */
 function appendKostenstellen(kostenstellen)
 {
@@ -34,8 +35,16 @@ function appendKostenstellen(kostenstellen)
 	{
 		var kostenstelle = kostenstellen[i];
 		var selected = kostenstelle.kostenstelle_id === prevKostenstelle ? 'selected=""' : '';
+		var bezeichnung = kostenstelle.bezeichnung;
+		var inactivehtml = "";
 
-		kostenstelleDom.append('<option value="'+kostenstelle.kostenstelle_id+'"'+selected+'>'+kostenstelle.bezeichnung+'</option>');
+		if (kostenstelle.aktiv === false)
+		{
+			bezeichnung += " (inaktiv)";
+			inactivehtml = 'class = "inactiveoption"';
+		}
+
+		kostenstelleDom.append('<option value="'+kostenstelle.kostenstelle_id+'"'+inactivehtml+' '+selected+'>'+bezeichnung+'</option>');
 	}
 }
 
@@ -51,7 +60,7 @@ function appendPreBudgetantraegeHtml()
 	$("#addBudgetantrag").click(
 		function ()
 		{
-			appendNewBudgetantrag(newBudgetPrefix + global_counters.countNewAntraege);
+			appendNewBudgetantrag(NEW_BUDGET_PREFIX + global_counters.countNewAntraege);
 		}
 	);
 }
@@ -65,55 +74,59 @@ function appendBudgetantraege(antraege)
 	appendPreBudgetantraegeHtml();
 	for (var i = 0; i < antraege.length; i++)
 	{
-		var antrag = antraege[i];
-		var antragid = antrag.budgetantrag_id;
+		var budgetantrag = antraege[i];
+		var budgetantragid = budgetantrag.budgetantrag_id;
 
-		appendBudgetantrag(antragid, antrag.bezeichnung, 0, false);
+		var editable = global_counters.editmode && GLOBAL_STATUSES[budgetantrag.budgetstatus.budgetstatus_kurzbz].editable;
+
+		appendBudgetantrag(budgetantragid, {"bezeichnung": budgetantrag.bezeichnung}, 0, false, editable);
 
 		var sum = 0;
-		for (var j = 0; j < antrag.budgetpositionen.length; j++)
+		for (var j = 0; j < budgetantrag.budgetpositionen.length; j++)
 		{
-			var position = antrag.budgetpositionen[j];
+			var position = budgetantrag.budgetpositionen[j];
 			var positionid = position.budgetposition_id;
 
 			if (position.betrag !== null)
 				sum += parseFloat(position.betrag);
 
-			appendBudgetposition(antragid, positionid, position, false);
+			appendBudgetposition(budgetantragid, positionid, position, false, editable);
 
 			//save initial state of form for tracking changes
-			saveInitialFormState(antragid, position.budgetposition_id);
+			saveInitialFormState(budgetantragid, position.budgetposition_id);
 		}
-		setSum(antragid, sum);
-		appendBudgetantragFooter(antragid, false);
+		setBudgetantragStatus(budgetantragid, budgetantrag.budgetstatus);
+		setSum(budgetantragid, sum);
+		appendBudgetantragFooter(budgetantragid, false, editable);
 	}
 }
 
 /**
  * Appends a single Budgetantrag.
  * @param budgetantragid
- * @param bezeichnung
+ * @param data
  * @param sum - the sum of all positions of the Budgetantrag to append
  * @param opened - whether the panel for the Budgetantrag is collapsed or opened
+ * @param editable - whether the Budgetantrag is editable or readonly
  */
-function appendBudgetantrag(budgetantragid, bezeichnung, sum, opened)
+function appendBudgetantrag(budgetantragid, data, sum, opened, editable)
 {
 	var collapseInHtml = opened === true ? " in" : "";
 	var collapseHtml = opened === true ? "" : " collapsed";
 
 	var budgetantrHtml = getBudgetantragHtml({
 		"budgetantragid": budgetantragid,
-		"budgetname": bezeichnung,
+		"budgetname": data.bezeichnung,
 		"collapseInHtml": collapseInHtml,
 		"collapseHtml": collapseHtml
-	});
+	}, editable);
 
-	var budgetantragEl = $("#" + budgetantragPrefix + "_" + budgetantragid);
+	var budgetantragEl = $("#" + BUDGETANTRAG_PREFIX + "_" + budgetantragid);
 
 	if (budgetantragEl.length)
 		budgetantragEl.append(budgetantrHtml);
 	else
-		$("#budgetantraege").prepend('<div class="panel panel-primary" id="' + budgetantragPrefix + '_' + budgetantragid + '">' +
+		$("#budgetantraege").prepend('<div class="panel panel-primary" id="' + BUDGETANTRAG_PREFIX + '_' + budgetantragid + '">' +
 			budgetantrHtml +
 			'</div><br>');//panel
 
@@ -138,13 +151,15 @@ function appendBudgetantrag(budgetantragid, bezeichnung, sum, opened)
  * Appends the footer for a Budgetantrag.
  * There are different kinds of footers for a new Antrag and an Antrag to update.
  * @param budgetantragid
- * @param isNewAntrag - wether the Antrag is yet to be added or is already added and can be updated.
+ * @param isNewAntrag - wether the Antrag is yet to be added or is already added and can be updated
+ * @param editable - whether the Budgetantrag is editable or readonly
  */
-function appendBudgetantragFooter(budgetantragid, isNewAntrag)
+function appendBudgetantragFooter(budgetantragid, isNewAntrag, editable)
 {
-	var html = getBudgetantragFooterHtml({"budgetantragid": budgetantragid, "isNewAntrag": isNewAntrag});
+	var footerel = $("#budgetfooter_" + budgetantragid);
 
-	$("#" + budgetantragPrefix + "_" + budgetantragid + " .panel-footer").append(html);
+	var html = getBudgetantragFooterHtml({"budgetantragid": budgetantragid, "isNewAntrag": isNewAntrag}, editable);
+	footerel.html(html);
 
 	if (isNewAntrag === true)
 	{
@@ -163,6 +178,28 @@ function appendBudgetantragFooter(budgetantragid, isNewAntrag)
 				updateBudgetpositionen(budgetantragid);
 			}
 		);
+
+		$("#abschicken_" + budgetantragid).click(
+			function ()
+			{
+				updateBudgetantragStatusAjax(budgetantragid, GLOBAL_STATUSES.sent.bez);
+			}
+		);
+
+		$("#genehmigen_" + budgetantragid).click(
+			function ()
+			{
+				updateBudgetantragStatusAjax(budgetantragid, GLOBAL_STATUSES.approved.bez);
+			}
+		);
+
+		$("#ablehnen_" + budgetantragid).click(
+			function ()
+			{
+				updateBudgetantragStatusAjax(budgetantragid, GLOBAL_STATUSES.rejected.bez);
+			}
+		);
+
 	}
 }
 
@@ -172,8 +209,9 @@ function appendBudgetantragFooter(budgetantragid, isNewAntrag)
  * @param positionid
  * @param positionobj - contains position data if it is an existing Budgetposition, null otherwise
  * @param opened - whether the panel for the Budgetposition is collapsed or opened
+ * @param editable - whether the Budgetposition is editable or readonly
  */
-function appendBudgetposition(budgetantragid, positionid, positionobj, opened)
+function appendBudgetposition(budgetantragid, positionid, positionobj, opened, editable)
 {
 	var positionargs = {
 		"positionid": positionid,
@@ -196,14 +234,14 @@ function appendBudgetposition(budgetantragid, positionid, positionobj, opened)
 	positionargs.collapseInHtml = opened === true ? " in" : "";
 	positionargs.collapseHtml = opened === true ? "" : " collapsed";
 
-	var html = getBudgetpositionHtml(positionargs);
+	var html = getBudgetpositionHtml(positionargs, editable);
 
 	$("#budgetPosition_" + budgetantragid).append(html);
 	$("#removePosition_" + positionid).click(
 		function ()
 		{
 			deleteBudgetposition(budgetantragid, positionid);
-			$("#" + positionPrefix + "_" + positionid).remove();
+			$("#" + POSITION_PREFIX + "_" + positionid).remove();
 			checkIfSaved(budgetantragid);
 		}
 	);
@@ -226,29 +264,33 @@ function appendBudgetposition(budgetantragid, positionid, positionobj, opened)
 
 /**
  * Refreshes a Budgetantrag after it is updated, includes emptying the Budgetantrag element and appending it again.
- * @param budgetAntrag
+ * @param budgetantrag
  */
-function refreshBudgetantrag(budgetAntrag)
+function refreshBudgetantrag(budgetantrag)
 {
-	var budgetantragid = budgetAntrag.budgetantrag_id;
-	var budgetantragEl = $("#" + budgetantragPrefix + "_" + budgetantragid);
+	var budgetantragid = budgetantrag.budgetantrag_id;
+	var budgetantragEl = $("#" + BUDGETANTRAG_PREFIX + "_" + budgetantragid);
+	var statuskurzbz = budgetantrag.budgetstatus.budgetstatus_kurzbz;
+	var editable = global_counters.editmode && GLOBAL_STATUSES[statuskurzbz].editable;
+	var genehmigbar = budgetantrag.genehmigbar;
 
 	budgetantragEl.empty();
 
-	appendBudgetantrag(budgetantragid, budgetAntrag.bezeichnung, 0, true);
+	appendBudgetantrag(budgetantragid, {"bezeichnung": budgetantrag.bezeichnung}, 0, true, editable);
 
 	var sum = 0;
 
-	for (var i = 0; i < budgetAntrag.budgetpositionen.length; i++)
+	for (var i = 0; i < budgetantrag.budgetpositionen.length; i++)
 	{
-		var position = budgetAntrag.budgetpositionen[i];
+		var position = budgetantrag.budgetpositionen[i];
 		if (position.betrag !== null)
 			sum += parseFloat(position.betrag);
-		appendBudgetposition(budgetantragid, position.budgetposition_id, position, false);
+		appendBudgetposition(budgetantragid, position.budgetposition_id, position, false, editable);
 		saveInitialFormState(budgetantragid, position.budgetposition_id);
 	}
+	setBudgetantragStatus(budgetantragid, budgetantrag.budgetstatus);
 	setSum(budgetantragid, sum);
-	appendBudgetantragFooter(budgetantragid, false);
+	appendBudgetantragFooter(budgetantragid, false, editable, genehmigbar);
 }
 
 /**
@@ -258,8 +300,8 @@ function refreshBudgetantrag(budgetAntrag)
 function removeBudgetantrag(budgetantragid)
 {
 	$("#delAntragModal").modal('hide');
-	$("#" + budgetantragPrefix + "_" + budgetantragid + " + br").remove();
-	$("#" + budgetantragPrefix + "_" + budgetantragid).remove();
+	$("#" + BUDGETANTRAG_PREFIX + "_" + budgetantragid + " + br").remove();
+	$("#" + BUDGETANTRAG_PREFIX + "_" + budgetantragid).remove();
 }
 
 /**
@@ -310,7 +352,7 @@ function markUnsaved(budgetantragid)
 	var savebtn = $("#save_"+budgetantragid);
 
 	$("#unsaved_" + budgetantragid).removeClass("hidden");
-	$("#"+budgetantragPrefix+"_"+budgetantragid+" > .panel-heading > .row").addClass("text-danger");
+	$("#"+BUDGETANTRAG_PREFIX+"_"+budgetantragid+" > .panel-heading > .row").addClass("text-danger");
 	setMessage(budgetantragid, "text-danger", "Budgetantrag noch nicht gespeichert!");
 	savebtn.find(".glyphicon-floppy-disk").addClass("text-danger");
 	savebtn.css("border-color", "#a94442");
@@ -325,7 +367,7 @@ function markSaved(budgetantragid)
 	var savebtn = $("#save_"+budgetantragid);
 
 	$("#unsaved_" + budgetantragid).addClass("hidden");
-	$("#"+budgetantragPrefix+"_"+budgetantragid+" > .panel-heading > .row").removeClass("text-danger");
+	$("#"+BUDGETANTRAG_PREFIX+"_"+budgetantragid+" > .panel-heading > .row").removeClass("text-danger");
 	setMessage(budgetantragid, "", "");
 	savebtn.find(".glyphicon-floppy-disk").removeClass("text-danger");
 	savebtn.css("border-color", "#adadad");
@@ -361,6 +403,17 @@ function setTotalSums(sums)
 }
 
 /**
+ * Adds all sums (gespeichert, freigegeben) to totals table on top
+ * @param budgetantragid
+ * @param status
+ */
+function setBudgetantragStatus(budgetantragid, status)
+{
+	var statustext = status.bezeichnung + (status.datum === "" ? "" : " am "+formatDateGerman(status.datum));
+	$("#budgetstatus_"+budgetantragid).text(statustext);
+}
+
+/**
  * Adds a message to a Budgetantrag html
  * @param budgetantragid
  * @param classname
@@ -377,14 +430,14 @@ function setMessage(budgetantragid, classname, msg)
 
 /**
  * Retrieves all Budgetpositionen from the Budgetantragform with a given id,
- * initializes check if Positiondata is valid before
+ * checks if Positiondata is valid before
  * @param budgetantragid
  * @param withid specifies format of returnarray: each Position wrapped with id or not
  * @returns {*} the Budgetpositionen if retrieved successfully, null otherwise (e.g. when wrong input)
  */
 function retrieveBudgetantragPositionen(budgetantragid, withid)
 {
-	var positionenForms = $("#" + budgetantragPrefix + "_" + budgetantragid + " form");
+	var positionenForms = $("#" + BUDGETANTRAG_PREFIX + "_" + budgetantragid + " form");
 	var positionen = [], messages = [];
 
 	//clear error marks
@@ -420,7 +473,6 @@ function retrieveBudgetantragPositionen(budgetantragid, withid)
 			continue;
 
 		positiondata.projekt_id.val = positiondata.projekt_id.val === 'null' ? null : positiondata.projekt_id.val;
-		//positiondata.konto_id.val = positiondata.konto_id.val === 'null' ? null : positiondata.konto_id.val;
 
 		var position = {
 			"budgetposten": positiondata.budgetposten.val,
@@ -588,10 +640,6 @@ function checkBudgetpositionDataBeforeAdd(positionFormDom)
 		messages.push("Pflichtfelder nicht ausgefüllt!");
 	}
 
-	//check for correct numeric input
-/*	if (!positionFields.betrag.val.trim())
-		positionFields.betrag.val = null;*/
-
 	if (!checkDecimalFormat(positionFields.betrag.val))
 	{
 		valid = false;
@@ -614,12 +662,10 @@ function checkBudgetpositionDataBeforeAdd(positionFormDom)
 /**
  * Checks if user changed a Budgetposition form. Compares initial state with current Budgetposition form state
  * @param initBudgetposition Budgetposition object containing the initial state
- * @param position_id
  * @returns {boolean} wether the Budgetposition form was modified
  */
-function checkIfBudgetpositionFormChanged(initBudgetposition/*, position_id*/)
+function checkIfBudgetpositionFormChanged(initBudgetposition)
 {
-	//console.log(initBudgetposition.initialForm + " comparing with "+$("#form_"+initBudgetposition.id).serialize());
 	return initBudgetposition.initialForm !== $("#form_"+initBudgetposition.id).serialize();
 }
 

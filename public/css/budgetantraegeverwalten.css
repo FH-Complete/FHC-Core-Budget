@@ -1,0 +1,21 @@
+.inactiveoption
+{
+    color: gray;
+}
+
+#sumtable
+{
+    margin-top: 2px;
+}
+
+.budgetpostenheading
+{
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+.asterisklegend
+{
+    font-size: 1.3em;
+    top: 2px;
+}

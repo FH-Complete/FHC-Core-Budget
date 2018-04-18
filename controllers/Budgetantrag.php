@@ -42,7 +42,16 @@ class Budgetantrag extends VileSci_Controller
 			show_error($geschaeftsjahre->retval);
 		}
 
-		$kostenstellen = $this->KostenstelleModel->getActiveKostenstellenForGeschaeftsjahr();
+		$nextgeschaeftsjahr = $this->GeschaeftsjahrModel->getNextGeschaeftsjahr();
+
+		if (isError($nextgeschaeftsjahr))
+		{
+			show_error($nextgeschaeftsjahr->retval);
+		}
+
+		$nextgeschaeftsjahr = $nextgeschaeftsjahr->retval[0]->geschaeftsjahr_kurzbz;
+
+		$kostenstellen = $this->KostenstelleModel->getActiveKostenstellenForGeschaeftsjahr($nextgeschaeftsjahr);
 
 		if (isError($kostenstellen))
 		{
@@ -53,9 +62,57 @@ class Budgetantrag extends VileSci_Controller
 			'extensions/FHC-Core-Budget/budgetantraegeverwalten.php',
 			array(
 			'geschaeftsjahre' => $geschaeftsjahre->retval,
-			'kostenstellen' => $kostenstellen->retval
+			'kostenstellen' => $kostenstellen->retval,
+			'nextgeschaeftsjahr' => $nextgeschaeftsjahr
 			)
 		);
+	}
+
+	/**
+	 * Checks if given Geschäftsjahr is current or in future
+	 * @param $geschaeftsjahr
+	 */
+	public function checkIfCurrentGeschaeftsjahr($geschaeftsjahr)
+	{
+		$json = null;
+
+		$currgj = $this->GeschaeftsjahrModel->getCurrGeschaeftsjahr();
+
+		if (isError($currgj))
+			$json = json_encode($currgj);
+		else
+		{
+			$gj = $this->GeschaeftsjahrModel->load($geschaeftsjahr);
+
+			if (isError($currgj))
+				$json = json_encode($currgj);
+			else
+			{
+				$currgjstart = $currgj->retval[0]->start;
+				$gjstart = $gj->retval[0]->start;
+
+				$json = success($gjstart >= $currgjstart);
+			}
+		}
+
+		$this->output
+			->set_content_type('application/json')
+			->set_output(json_encode($json));
+	}
+
+	/**
+	 * Checks if logged used has permission for Genehmigung of a Kostenstelle
+	 * @param $kostenstelle_id
+	 */
+	public function checkIfKostenstelleGenehmigbar($kostenstelle_id)
+	{
+		$this->load->library('PermissionLib');
+
+		$genehmigenperm = $this->permissionlib->isBerechtigt('extension/budget_genehmigung', 'suid', null, $kostenstelle_id) === true;
+
+		$this->output
+			->set_content_type('application/json')
+			->set_output(json_encode($genehmigenperm));
 	}
 
 	/**
@@ -200,6 +257,40 @@ class Budgetantrag extends VileSci_Controller
 		$this->output
 			->set_content_type('application/json')
 			->set_output(json_encode($result));
+	}
+
+	/**
+	 *
+	 * @param $budgetantrag_id
+	 * @param $budgetstatus_kurzbz
+	 */
+	public function updateBudgetantragStatus($budgetantrag_id, $budgetstatus_kurzbz)
+	{
+		$this->load->model('extensions/FHC-Core-Budget/budgetantragstatus_model', 'BudgetantragstatusModel');
+
+		$json = null;
+
+		$result = $this->BudgetantragstatusModel->insert(
+			array(
+				'budgetantrag_id' => $budgetantrag_id,
+				'budgetstatus_kurzbz' => $budgetstatus_kurzbz,
+				'datum' => date('Y-m-d H:i:s'),
+				'uid' => $this->uid,
+				'insertvon' => $this->uid
+			)
+		);
+
+		if (isSuccess($result))
+		{
+			//get Budgetstatus data for updating html view
+			$result = $this->BudgetantragstatusModel->getLastStatus($budgetantrag_id);
+
+			$json = $result;
+		}
+
+		$this->output
+			->set_content_type('application/json')
+			->set_output(json_encode($json));
 	}
 
 	/**

@@ -9,7 +9,8 @@ $this->load->view(
 		'sbadmintemplate' => true,
 		'customCSSs' =>
 			array(
-				'skin/admintemplate.css'
+				'skin/admintemplate.css',
+				'public/extensions/FHC-Core-Budget/css/budgetantraegeverwalten.css'
 			),
 		'customJSs' =>
 			array(
@@ -23,11 +24,6 @@ $this->load->view(
 );
 ?>
 <body>
-<?php
-	echo '<script type="text/javascript">';
-	echo 'var BASE_URL = "'.base_url().'";';
-	echo "</script>\n";
-?>
 <div id="wrapper">
 	<?php echo $this->widgetlib->widget('NavigationWidget'); ?>
 	<div id="page-wrapper">
@@ -48,9 +44,8 @@ $this->load->view(
 								<select class="form-control" id="geschaeftsjahr">
 									<option value="null">Geschäftsjahr wählen...</option>
 									<?php
-									$firstelement = reset($geschaeftsjahre);
 									foreach ($geschaeftsjahre as $geschaeftsjahr):
-										$selected = $firstelement->geschaeftsjahr_kurzbz === $geschaeftsjahr->geschaeftsjahr_kurzbz ? 'selected' : '';
+										$selected = $nextgeschaeftsjahr === $geschaeftsjahr->geschaeftsjahr_kurzbz ? 'selected' : '';
 										?>
 										<option value="<?php echo $geschaeftsjahr->geschaeftsjahr_kurzbz; ?>" <?php echo $selected; ?>>
 											<?php echo $geschaeftsjahr->geschaeftsjahr_kurzbz ?>
@@ -64,13 +59,6 @@ $this->load->view(
 								<label for="kostenstelle">Kostenstelle</label>
 								<select class="form-control" id="kostenstelle">
 									<option value="null">Kostenstelle wählen...</option>
-									<?php
-									foreach ($kostenstellen as $kostenstelle):
-										?>
-										<option value="<?php echo $kostenstelle->kostenstelle_id; ?>">
-											<?php echo $kostenstelle->bezeichnung ?>
-										</option>
-									<?php endforeach; ?>
 								</select>
 							</div>
 						</div>

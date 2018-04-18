@@ -54,3 +54,13 @@ function formatDecimalGerman(sum)
 	if(sum === null) return parseFloat(0).toFixed(2);
 	return parseFloat(sum).toFixed(2).replace(".", ",");
 }
+
+/**
+ * Formats a date in format YYYY-mm-dd to dd.mm.YYYY
+ * @param date
+ * @returns {string}
+ */
+function formatDateGerman(date)
+{
+	return date.substring(8, 10) + "."+date.substring(5, 7) + "." + date.substring(0, 4);
+}

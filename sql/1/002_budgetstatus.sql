@@ -22,8 +22,8 @@ END;
 
 INSERT INTO extension.tbl_budgetstatus(budgetstatus_kurzbz, bezeichnung) SELECT 'new','Neu' WHERE NOT EXISTS(SELECT 1 FROM extension.tbl_budgetstatus WHERE budgetstatus_kurzbz='new');
 INSERT INTO extension.tbl_budgetstatus(budgetstatus_kurzbz, bezeichnung) SELECT 'sent','Abgeschickt' WHERE NOT EXISTS(SELECT 1 FROM extension.tbl_budgetstatus WHERE budgetstatus_kurzbz='sent');
-INSERT INTO extension.tbl_budgetstatus(budgetstatus_kurzbz, bezeichnung) SELECT 'approved','Freigegeben' WHERE NOT EXISTS(SELECT 1 FROM extension.tbl_budgetstatus WHERE budgetstatus_kurzbz='approved');
-INSERT INTO extension.tbl_budgetstatus(budgetstatus_kurzbz, bezeichnung) SELECT 'accepted','Akzeptiert' WHERE NOT EXISTS(SELECT 1 FROM extension.tbl_budgetstatus WHERE budgetstatus_kurzbz='accepted');
+INSERT INTO extension.tbl_budgetstatus(budgetstatus_kurzbz, bezeichnung) SELECT 'approved','Genehmigt' WHERE NOT EXISTS(SELECT 1 FROM extension.tbl_budgetstatus WHERE budgetstatus_kurzbz='approved');
+INSERT INTO extension.tbl_budgetstatus(budgetstatus_kurzbz, bezeichnung) SELECT 'accepted','Freigegeben' WHERE NOT EXISTS(SELECT 1 FROM extension.tbl_budgetstatus WHERE budgetstatus_kurzbz='accepted');
 INSERT INTO extension.tbl_budgetstatus(budgetstatus_kurzbz, bezeichnung) SELECT 'rejected','Abgelehnt' WHERE NOT EXISTS(SELECT 1 FROM extension.tbl_budgetstatus WHERE budgetstatus_kurzbz='rejected');
 
 -- Drop function

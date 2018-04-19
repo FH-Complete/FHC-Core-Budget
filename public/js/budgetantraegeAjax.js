@@ -182,7 +182,6 @@ function updateBudgetantragStatusAjax(budgetantragid, statuskurzbz)
 		url: FULL_URL+"/updateBudgetantragStatus/"+budgetantragid+"/"+statuskurzbz,
 		success: function (data, textStatus, jqXHR)
 		{
-			console.log(data);
 			afterBudgetantragStatusChange(budgetantragid, data);
 		},
 		error: function (jqXHR, textStatus, errorThrown)

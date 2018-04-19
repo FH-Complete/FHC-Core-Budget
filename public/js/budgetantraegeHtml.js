@@ -25,7 +25,7 @@ function getPreBudgetantragHtml()
 {
 	var html = '<div class="row">';
 
-	if (global_counters.editmode)
+	if (global_booleans.editmode)
 		html += '<div class="col-lg-7 col-xs-12">'+
 					'<div class="form-group input-group" id="budgetbezgroup">'+
 						'<input type="text" class="form-control" id="budgetbezeichnung" placeholder="Budgetantragsbezeichnung eingeben">'+
@@ -64,8 +64,6 @@ function getPreBudgetantragHtml()
  */
 function getBudgetantragHtml(args, editable)
 {
-	//var statustext = args.budgetstatus + (args.budgetstatusdatum === "" ? "" : " am "+formatDateGerman(args.budgetstatusdatum));
-
 	var html = '<div class="panel-heading">'+
 				'<div class="row">'+
 					'<div class="col-xs-5">'+
@@ -95,7 +93,7 @@ function getBudgetantragHtml(args, editable)
 						'<div class="col-xs-2 col-xs-offset-5 budgetpostenheading text-center">'+
 							'Budgetposten:<br>'+
 						'</div>'+
-						'<div class="col-xs-2 col-xs-offset-3 budgetpostenheading text-right">'+
+						'<div class="col-xs-5 text-right budgetpostenheading text-right">'+
 						'<span class="asterisklegend">*</span> Pflichtfelder<br>'+
 						'</div>'+
 					'</div>'+
@@ -303,4 +301,25 @@ function getBudgetpositionHtml(args, editable)
 		'</div>';// ./panel-collapse
 
 	return html;
+}
+
+/**
+ * Return bodytext for modal for changing Budgetantrag to sent
+ * @returns {string}
+ */
+function getModalSentHtml()
+{
+	return '<p>Der Status des Antrags wird auf <i class="genAdj"></i> gesetzt. Die Verantwortlichen erhalten eine Benachrichtigungsmail, damit der Antrag genehmigt werden kann. '+
+		'Der Antrag kann jedoch noch bearbeitet werden.</p>'+
+		'<p>Alle nicht gespeicherten Daten gehen verloren. Bist du sicher, dass du den Budgetantrag <span class="genVerb"></span> m&ouml;chtest?</p>';
+}
+
+/**
+ * Return bodytext for modal for changing Budgetantrag to approved
+ * @returns {string}
+ */
+function getModalApprovedHtml()
+{
+	return '<p>Der Status des Antrags wird auf <i class="genAdj"></i> gesetzt, der Antrag kann nicht mehr bearbeitet werden.</p>'+
+		'<p>Alle nicht gespeicherten Daten gehen verloren. Bist du sicher, dass du den Budgetantrag <span class="genVerb"></span> m&ouml;chtest?</p>';
 }

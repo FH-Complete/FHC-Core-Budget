@@ -26,12 +26,12 @@ var global_inputparams = {"geschaeftsjahr": null, "kostenstelle": null};
 //global objects for storing current state of Budgetanträge together with their positions: how many added, deleted, updated
 var global_preloads = {"kostenstellen": [], "projekte": [], "konten": []};
 var global_budgetantraege = {"newBudgetantraege": [], "existentBudgetantraege": []};
-var global_counters = {"countNewAntraege": 0, "countNewPosition": 0, "lastAddedOldId": "", "editmode": false};//counter for giving unique id to every new position, [POSITION_PREFIX]_[counter]
+var global_counters = {"countNewAntraege": 0, "countNewPosition": 0, "lastAddedOldId": ""};//counters for giving unique id to every new position or budget, [POSITION_PREFIX]_[counter]
 var global_booleans = {"editmode": false, "genehmigbar": false};
 const GLOBAL_STATUSES = {"new" : {"bez": "new", "editable": true},
-						"sent" : {"bez": "sent", "editable": true},
-						"rejected" : {"bez": "rejected", "editable": false},
-						"approved" : {"bez": "approved", "editable": false}
+						"sent" : {"bez": "sent", "verb": "abschicken", "adj": "abgeschickt", "editable": true},
+						"rejected" : {"bez": "rejected", "verb": "ablehnen", "adj": "abgelehnt", "editable": false},
+						"approved" : {"bez": "approved", "verb": "genehmigen", "adj": "genehmigt", "editable": false}
 						};
 
 $(document).ready(
@@ -40,7 +40,7 @@ $(document).ready(
 		global_inputparams.geschaeftsjahr = $("#geschaeftsjahr").val();
 		global_inputparams.kostenstelle = $("#kostenstelle").val();
 
-		//set edit mode (normally true because next gj is default)
+		//set edit mode if current Geschaeftsjahr selected
 		$.when(
 			checkIfCurrGeschaeftsjahrAjax(global_inputparams.geschaeftsjahr)
 		).done(
@@ -48,11 +48,11 @@ $(document).ready(
 			{
 				if (gjResponse.error === 1)
 					return;
-				global_counters.editmode = gjResponse.retval;
+				global_booleans.editmode = gjResponse.retval;
 			}
 		);
 
-		//load projects, then get all Budgetanträge
+		//load projects
 		$.when(
 			getProjekteAjax()
 		).done(
@@ -64,6 +64,7 @@ $(document).ready(
 			}
 		);
 
+		//load Kostenstellen
 		$.when(
 			getKostenstellenAjax(global_inputparams.geschaeftsjahr)
 		).done(
@@ -100,7 +101,7 @@ $(document).ready(
 								return;
 							}
 
-							global_counters.editmode = gjResponse[0].retval;
+							global_booleans.editmode = gjResponse[0].retval;
 							getBudgetantraege();
 						}
 					);
@@ -168,14 +169,6 @@ function clearBudgetantraege()
 }
 
 /**
- * Gets all Kostenstellen for Geschäftsjahr global
- */
-function getKostenstellen()
-{
-	getKostenstellenAjax(global_inputparams.geschaeftsjahr)
-}
-
-/**
  * Adds new Budgetantrag which id is already saved in global newBudgetantraegearray
  * Initializes retrieving form data and Ajax call
  * @param budgetantragid
@@ -200,9 +193,9 @@ function addNewBudgetantrag(budgetantragid)
 }
 
 /**
- * Updates Budgetpositionen for a given Budgetantrag. this includes adding, editing and deleting Budgetpositionen!
+ * Updates Budgetpositionen for a given Budgetantrag. This includes adding, editing and deleting Budgetpositionen!
  * Accesses global arrays for getting current state for the budgetantrag, creates and passes 3 arrays,
- * each for adding, updating and deleting, to ajax update funcion
+ * each for adding, updating and deleting, to ajax update funcion.
  * @param budgetantragid
  */
 function updateBudgetpositionen(budgetantragid)
@@ -278,11 +271,29 @@ function deleteBudgetantrag(budgetantragid)
 	}
 }
 
+/**
+ * Initializes change of a Budgetantrag status
+ * @param budgetantragid
+ * @param statuskurzbz
+ */
+function updateBudgetantragStatus(budgetantragid, statuskurzbz)
+{
+	showGenBudgetantragModal(statuskurzbz);
+	var genmodal = $("#genModalConfirm");
+	genmodal.off("click");
+	genmodal.click(
+		function ()
+		{
+			updateBudgetantragStatusAjax(budgetantragid, statuskurzbz);
+		}
+	);
+}
+
 // -----------------------------------------------------------------------------------------------------------------
 // Ajax callbacks (called after ajax execution)
 
 /**
- * Executes after Ajax for getting all Budgetanträge is finished.
+ * Executes after Ajax for getting all Budgetanträge is finished
  * @param data
  */
 function afterKostenstellenGet(data)
@@ -312,7 +323,7 @@ function afterKostenstellenGet(data)
 }
 
 /**
- * Executes after Ajax for getting all Budgetanträge is finished.
+ * Executes after Ajax for getting all Budgetanträge is finished
  * @param data
  */
 function afterBudgetantraegeGet(data)
@@ -372,9 +383,10 @@ function afterBudgetantragUpdate(data, budgetantragid)
 }
 
 /**
- * Executes after Ajax for getting a single Budgetantrag is finished, for refreshing html and array.
+ * Executes after Ajax for getting a single Budgetantrag is finished, for refreshing html and array
  * @param data
  * @param oldbudgetantragid id before update for messaging (in case of error)
+ * @param updatetype type of performed update (genehmigen, speichern...) before the get
  */
 function afterBudgetantragGet(data, oldbudgetantragid, updatetype)
 {
@@ -416,6 +428,8 @@ function afterBudgetantragDelete(data)
  */
 function afterBudgetantragStatusChange(budgetantragid, data)
 {
+	$("#genAntragModal").modal('hide');
+
 	if (data.error === 1)
 	{
 		setMessage(budgetantragid, "text-danger", "Fehler beim Ändern des Budgetstatus!");
@@ -542,7 +556,6 @@ function globalGjandKstAreValid()
 {
 	return (global_inputparams.geschaeftsjahr !== null && global_inputparams.geschaeftsjahr !== 'null' && global_inputparams.kostenstelle !== null && global_inputparams.kostenstelle !== 'null')
 }
-
 
 /**
  * Saves the initial state of a form, i.e. user input when the form was loaded.

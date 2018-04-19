@@ -77,7 +77,7 @@ function appendBudgetantraege(antraege)
 		var budgetantrag = antraege[i];
 		var budgetantragid = budgetantrag.budgetantrag_id;
 
-		var editable = global_counters.editmode && GLOBAL_STATUSES[budgetantrag.budgetstatus.budgetstatus_kurzbz].editable;
+		var editable = global_booleans.editmode && GLOBAL_STATUSES[budgetantrag.budgetstatus.budgetstatus_kurzbz].editable;
 
 		appendBudgetantrag(budgetantragid, {"bezeichnung": budgetantrag.bezeichnung}, 0, false, editable);
 
@@ -102,7 +102,7 @@ function appendBudgetantraege(antraege)
 }
 
 /**
- * Appends a single Budgetantrag.
+ * Appends a single Budgetantrag
  * @param budgetantragid
  * @param data
  * @param sum - the sum of all positions of the Budgetantrag to append
@@ -182,21 +182,21 @@ function appendBudgetantragFooter(budgetantragid, isNewAntrag, editable)
 		$("#abschicken_" + budgetantragid).click(
 			function ()
 			{
-				updateBudgetantragStatusAjax(budgetantragid, GLOBAL_STATUSES.sent.bez);
+				updateBudgetantragStatus(budgetantragid, GLOBAL_STATUSES.sent.bez);
 			}
 		);
 
 		$("#genehmigen_" + budgetantragid).click(
 			function ()
 			{
-				updateBudgetantragStatusAjax(budgetantragid, GLOBAL_STATUSES.approved.bez);
+				updateBudgetantragStatus(budgetantragid, GLOBAL_STATUSES.approved.bez);
 			}
 		);
 
 		$("#ablehnen_" + budgetantragid).click(
 			function ()
 			{
-				updateBudgetantragStatusAjax(budgetantragid, GLOBAL_STATUSES.rejected.bez);
+				updateBudgetantragStatus(budgetantragid, GLOBAL_STATUSES.rejected.bez);
 			}
 		);
 
@@ -204,7 +204,7 @@ function appendBudgetantragFooter(budgetantragid, isNewAntrag, editable)
 }
 
 /**
- * Appends a Budgetposition for a Budgetantrag.
+ * Appends a Budgetposition for a Budgetantrag
  * @param budgetantragid
  * @param positionid
  * @param positionobj - contains position data if it is an existing Budgetposition, null otherwise
@@ -263,7 +263,7 @@ function appendBudgetposition(budgetantragid, positionid, positionobj, opened, e
 }
 
 /**
- * Refreshes a Budgetantrag after it is updated, includes emptying the Budgetantrag element and appending it again.
+ * Refreshes a Budgetantrag after it is updated, includes emptying the Budgetantrag element and appending it again
  * @param budgetantrag
  */
 function refreshBudgetantrag(budgetantrag)
@@ -271,7 +271,7 @@ function refreshBudgetantrag(budgetantrag)
 	var budgetantragid = budgetantrag.budgetantrag_id;
 	var budgetantragEl = $("#" + BUDGETANTRAG_PREFIX + "_" + budgetantragid);
 	var statuskurzbz = budgetantrag.budgetstatus.budgetstatus_kurzbz;
-	var editable = global_counters.editmode && GLOBAL_STATUSES[statuskurzbz].editable;
+	var editable = global_booleans.editmode && GLOBAL_STATUSES[statuskurzbz].editable;
 	var genehmigbar = budgetantrag.genehmigbar;
 
 	budgetantragEl.empty();
@@ -291,25 +291,6 @@ function refreshBudgetantrag(budgetantrag)
 	setBudgetantragStatus(budgetantragid, budgetantrag.budgetstatus);
 	setSum(budgetantragid, sum);
 	appendBudgetantragFooter(budgetantragid, false, editable, genehmigbar);
-}
-
-/**
- * Removes Budgetantrag html for a given id, hides deletemodal
- * @param budgetantragid
- */
-function removeBudgetantrag(budgetantragid)
-{
-	$("#delAntragModal").modal('hide');
-	$("#" + BUDGETANTRAG_PREFIX + "_" + budgetantragid + " + br").remove();
-	$("#" + BUDGETANTRAG_PREFIX + "_" + budgetantragid).remove();
-}
-
-/**
- * Removes all Budgetantraege form HTML, including "pre-budgetantraege-html"
- */
-function removeBudgetantraege()
-{
-	$("#budgetantraegehtml").empty();
 }
 
 /**
@@ -384,6 +365,24 @@ function showDelBudgetantragModal(budgetantragbezeichnung)
 }
 
 /**
+ * Shows Modal for confirmation of Budgetstatus change
+ * @param statuskurzbz
+ */
+function showGenBudgetantragModal(statuskurzbz)
+{
+	var modelelement = $("#genAntragModal");
+
+	if (statuskurzbz === GLOBAL_STATUSES.sent.bez)
+		modelelement.find(".modal-body").html(getModalSentHtml());
+	else
+		modelelement.find(".modal-body").html(getModalApprovedHtml());
+
+	modelelement.find(".genVerb").html(GLOBAL_STATUSES[statuskurzbz].verb);
+	modelelement.find(".genAdj").html(GLOBAL_STATUSES[statuskurzbz].adj);
+	modelelement.modal('show');
+}
+
+/**
  * Adds the given sum to a Budgetantrag html
  * @param budgetantragid
  * @param sum
@@ -425,6 +424,25 @@ function setMessage(budgetantragid, classname, msg)
 	$("#msg_"+budgetantragid).html('<span class="'+classname+'">'+msg+'</span>');
 }
 
+/**
+ * Removes Budgetantrag html for a given id, hides deletemodal
+ * @param budgetantragid
+ */
+function removeBudgetantrag(budgetantragid)
+{
+	$("#delAntragModal").modal('hide');
+	$("#" + BUDGETANTRAG_PREFIX + "_" + budgetantragid + " + br").remove();
+	$("#" + BUDGETANTRAG_PREFIX + "_" + budgetantragid).remove();
+}
+
+/**
+ * Removes all Budgetantraege form HTML, including "pre-budgetantraege-html"
+ */
+function removeBudgetantraege()
+{
+	$("#budgetantraegehtml").empty();
+}
+
 // -----------------------------------------------------------------------------------------------------------------
 // Retrievers (get values from html)
 
@@ -450,8 +468,6 @@ function retrieveBudgetantragPositionen(budgetantragid, withid)
 	{
 		var positionForm = positionenForms[i];
 		var position_id = positionForm.id.substr(positionForm.id.indexOf("_") + 1);
-
-/*		if (withid === true)*/
 
 		var positionFormDom = $(positionForm);
 
@@ -517,7 +533,7 @@ function retrieveBudgetantragPositionen(budgetantragid, withid)
 				budgetpostenel.closest(".form-group").addClass("has-error");
 
 				$("#position_"+seen[budgetpostenbez]+" .panel-heading .accordion-toggle").addClass("text-danger");
-				$("#form_"+seen[budgetpostenbez]).find("input[name=budgetposten]").closest(".form-group").addClass("has-error");;
+				$("#form_"+seen[budgetpostenbez]).find("input[name=budgetposten]").closest(".form-group").addClass("has-error");
 
 				return null;
 			}
@@ -602,7 +618,7 @@ function checkBudgetantragDataBeforeAdd()
 }
 
 /**
- * Checks entries for a Budgetposition before it is saved.
+ * Checks entries for a Budgetposition before it is saved
  * @param positionFormDom
  * @returns {*} object inidicating if data has an error (is invalid)
  * and containing either error messages or the positiondata

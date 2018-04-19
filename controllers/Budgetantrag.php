@@ -58,6 +58,8 @@ class Budgetantrag extends VileSci_Controller
 			show_error($kostenstellen->retval);
 		}
 
+		$kostenstellen->retval = $this->filterKostenstellenByBerechtigung($kostenstellen->retval);
+
 		$this->load->view(
 			'extensions/FHC-Core-Budget/budgetantraegeverwalten.php',
 			array(
@@ -122,6 +124,9 @@ class Budgetantrag extends VileSci_Controller
 	public function getKostenstellen($geschaefsjahr)
 	{
 		$result = $this->KostenstelleModel->getActiveKostenstellenForGeschaeftsjahr($geschaefsjahr);
+
+		if (isSuccess($result))
+			$result->retval = $this->filterKostenstellenByBerechtigung($result->retval);
 
 		$this->output
 			->set_content_type('application/json')
@@ -345,5 +350,28 @@ class Budgetantrag extends VileSci_Controller
 		$this->uid = getAuthUID();
 
 		if (!$this->uid) show_error('User authentification failed');
+	}
+
+	/**
+	 * Filters Kostenstellen, returns only those for which user is verwaltungsberechtigt
+	 * @param $kostenstellen
+	 * @return array
+	 */
+	private function filterKostenstellenByBerechtigung($kostenstellen)
+	{
+		$this->load->library('PermissionLib');
+
+		$kostenstellenresult = array();
+
+		//filter kostenstellen, only kostenstellen for which berechtigt
+		foreach ($kostenstellen as $kostenstelle)
+		{
+			if ($this->permissionlib->isBerechtigt('extension/budget_verwaltung', 'suid', null, $kostenstelle->kostenstelle_id) === true)
+			{
+				$kostenstellenresult[] = $kostenstelle;
+			}
+		}
+
+		return $kostenstellenresult;
 	}
 }

@@ -21,7 +21,7 @@ function getProjekteAjax()
 	return $.ajax({
 		type: "GET",
 		dataType: "json",
-		url: FULL_URL+"/getProjekte",/*'./Budgetantrag/getProjekte',*/
+		url: FULL_URL+"/getProjekte",
 		error: function (jqXHR, textStatus, errorThrown)
 		{
 			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
@@ -34,7 +34,7 @@ function getKontenAjax(kostenstelle)
 	return $.ajax({
 		type: "GET",
 		dataType: "json",
-		url: FULL_URL+"/getKonten/"+kostenstelle,
+		url: FULL_URL+"/getKonten/"+encodeURIComponent(kostenstelle),
 		error: function (jqXHR, textStatus, errorThrown)
 		{
 			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
@@ -47,7 +47,7 @@ function checkIfCurrGeschaeftsjahrAjax(geschaeftsjahr)
 	return $.ajax({
 		type: "GET",
 		dataType: "json",
-		url: FULL_URL+"/checkIfCurrentGeschaeftsjahr/"+geschaeftsjahr,
+		url: FULL_URL+"/checkIfCurrentGeschaeftsjahr/"+encodeURIComponent(geschaeftsjahr),
 		error: function (jqXHR, textStatus, errorThrown)
 		{
 			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
@@ -60,7 +60,7 @@ function checkIfKstGenehmigbarAjax(kostenstelle)
 	return $.ajax({
 		type: "GET",
 		dataType: "json",
-		url: FULL_URL+"/checkIfKostenstelleGenehmigbar/"+kostenstelle,
+		url: FULL_URL+"/checkIfKostenstelleGenehmigbar/"+encodeURIComponent(kostenstelle),
 		error: function (jqXHR, textStatus, errorThrown)
 		{
 			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
@@ -73,7 +73,7 @@ function getKostenstellenAjax(geschaeftsjahr)
 	return $.ajax({
 		type: "GET",
 		dataType: "json",
-		url: FULL_URL+"/getKostenstellen/"+geschaeftsjahr,
+		url: FULL_URL+"/getKostenstellen/"+encodeURIComponent(geschaeftsjahr),
 		error: function (jqXHR, textStatus, errorThrown)
 		{
 			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
@@ -86,7 +86,7 @@ function getBudgetantraegeAjax(geschaeftsjahr, kostenstelle)
   	$.ajax({
 		type: "GET",
 		dataType: "json",
-		url: FULL_URL+"/getBudgetantraege/"+geschaeftsjahr+'/'+kostenstelle,
+		url: FULL_URL+"/getBudgetantraege/"+encodeURIComponent(geschaeftsjahr)+'/'+encodeURIComponent(kostenstelle),
 		success: function (data, textStatus, jqXHR)
 		{
 			afterBudgetantraegeGet(data);
@@ -109,7 +109,7 @@ function getBudgetantragAjax(budgetantragid, updatetype)
 	$.ajax({
 		type: "GET",
 		dataType: "json",
-		url: FULL_URL+"/getBudgetantrag/"+budgetantragid,
+		url: FULL_URL+"/getBudgetantrag/"+encodeURIComponent(budgetantragid),
 		success: function (data, textStatus, jqXHR)
 		 {
 		 	afterBudgetantragGet(data, budgetantragid, updatetype);
@@ -145,7 +145,7 @@ function updateBudgetpositionenAjax(budgetantragid, data)
 		type: "POST",
 		dataType: "json",
 		data: data,
-		url: FULL_URL+"/updateBudgetantragPositionen/"+budgetantragid,
+		url: FULL_URL+"/updateBudgetantragPositionen/"+encodeURIComponent(budgetantragid),
 		success: function (data, textStatus, jqXHR)
 		{
 			afterBudgetantragUpdate(data, budgetantragid);
@@ -162,7 +162,7 @@ function deleteBudgetantragAjax(budgetantragid)
 	$.ajax({
 		type: "POST",
 		dataType: "json",
-		url: FULL_URL+"/deleteBudgetantrag/"+budgetantragid,
+		url: FULL_URL+"/deleteBudgetantrag/"+encodeURIComponent(budgetantragid),
 		success: function (data, textStatus, jqXHR)
 		{
 			afterBudgetantragDelete(data);
@@ -179,7 +179,7 @@ function updateBudgetantragStatusAjax(budgetantragid, statuskurzbz)
 	$.ajax({
 		type: "POST",
 		dataType: "json",
-		url: FULL_URL+"/updateBudgetantragStatus/"+budgetantragid+"/"+statuskurzbz,
+		url: FULL_URL+"/updateBudgetantragStatus/"+encodeURIComponent(budgetantragid)+"/"+encodeURIComponent(statuskurzbz),
 		success: function (data, textStatus, jqXHR)
 		{
 			afterBudgetantragStatusChange(budgetantragid, data);

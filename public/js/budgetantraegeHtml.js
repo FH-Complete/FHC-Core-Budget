@@ -152,10 +152,10 @@ function getBudgetantragFooterHtml(args, editable)
 	{
 		html +=
 			'<div class="row">'+
-				'<div class="col-lg-5">'+
-					saveBtnHtml+
+				'<div class="col-lg-2 col-lg-offset-5 text-center antragMsg" id="msg_'+args.budgetantragid+'">'+
 				'</div>'+
-				'<div class="col-lg-2 text-center antragMsg" id="msg_'+args.budgetantragid+'">'+
+				'<div class="col-lg-5 text-right">'+
+					saveBtnHtml+
 				'</div>'+
 			'</div>';
 	}

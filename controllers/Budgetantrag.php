@@ -42,16 +42,26 @@ class Budgetantrag extends VileSci_Controller
 			show_error($geschaeftsjahre->retval);
 		}
 
-		$nextgeschaeftsjahr = $this->GeschaeftsjahrModel->getNextGeschaeftsjahr();
+		$geschaeftsjahr = $this->GeschaeftsjahrModel->getNextGeschaeftsjahr();
 
-		if (isError($nextgeschaeftsjahr))
+		if (isError($geschaeftsjahr))
 		{
-			show_error($nextgeschaeftsjahr->retval);
+			show_error($geschaeftsjahr->retval);
 		}
 
-		$nextgeschaeftsjahr = $nextgeschaeftsjahr->retval[0]->geschaeftsjahr_kurzbz;
+		if (count($geschaeftsjahr->retval) > 0)
+		{
+			$geschaeftsjahr = $geschaeftsjahr->retval[0]->geschaeftsjahr_kurzbz;
+		}
+		else
+		{
+			if (count($geschaeftsjahre->retval) > 0)
+				$geschaeftsjahr = $geschaeftsjahre->retval[0]->geschaeftsjahr_kurzbz;
+			else
+				$geschaeftsjahr = null;
+		}
 
-		$kostenstellen = $this->KostenstelleModel->getActiveKostenstellenForGeschaeftsjahr($nextgeschaeftsjahr);
+		$kostenstellen = $this->KostenstelleModel->getActiveKostenstellenForGeschaeftsjahr($geschaeftsjahr);
 
 		if (isError($kostenstellen))
 		{
@@ -65,13 +75,14 @@ class Budgetantrag extends VileSci_Controller
 			array(
 			'geschaeftsjahre' => $geschaeftsjahre->retval,
 			'kostenstellen' => $kostenstellen->retval,
-			'nextgeschaeftsjahr' => $nextgeschaeftsjahr
+			'nextgeschaeftsjahr' => $geschaeftsjahr
 			)
 		);
 	}
 
 	/**
-	 * Checks if given Geschäftsjahr is current or in future
+	 * Checks if given Geschäftsjahr is current, i.e. is either the currently running Gj or a Gj in the future
+	 * returns true JSON if current, false otherwise
 	 * @param $geschaeftsjahr
 	 */
 	public function checkIfCurrentGeschaeftsjahr($geschaeftsjahr)
@@ -82,12 +93,16 @@ class Budgetantrag extends VileSci_Controller
 
 		if (isError($currgj))
 			$json = json_encode($currgj);
+		else if(count($currgj->retval) < 1)
+			$json = success(false);
 		else
 		{
 			$gj = $this->GeschaeftsjahrModel->load($geschaeftsjahr);
 
-			if (isError($currgj))
-				$json = json_encode($currgj);
+			if (isError($gj))
+				$json = json_encode($gj);
+			else if(count($gj->retval) < 1)
+				$json = success(false);
 			else
 			{
 				$currgjstart = $currgj->retval[0]->start;
@@ -363,7 +378,6 @@ class Budgetantrag extends VileSci_Controller
 
 		$kostenstellenresult = array();
 
-		//filter kostenstellen, only kostenstellen for which berechtigt
 		foreach ($kostenstellen as $kostenstelle)
 		{
 			if ($this->permissionlib->isBerechtigt('extension/budget_verwaltung', 'suid', null, $kostenstelle->kostenstelle_id) === true)

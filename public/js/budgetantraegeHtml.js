@@ -1,22 +1,3 @@
-/*
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-/**
- * javascript file for returning html needed by the budgetantraegeView.
- * methods here return html, filled with given parameters
- */
-
 /**
  * Gets html placed before the Budgetanträge panels
  * @returns {string}
@@ -258,7 +239,7 @@ function getBudgetpositionHtml(args, editable)
 	{
 		var konto = global_preloads.konten[i];
 		var selected = args.konto_id === konto.konto_id ? ' selected=""' : '';
-		var kurzbz = konto.kontonr + ": " + konto.kurzbz;
+		var kurzbz = konto.kurzbz + " (" + konto.kontonr + ")";
 		var inactivehtml = '';
 
 		//mark if inactive

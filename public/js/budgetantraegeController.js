@@ -1,17 +1,3 @@
-/*
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 /**
  * javascript file for managing Budgetanträge
  * This controller calls functions from the js view for modifying the DOM,
@@ -64,15 +50,28 @@ $(document).ready(
 			}
 		);
 
+		if (globalGjandKstAreValid())
+		{
+			$.when(
+				checkIfKstGenehmigbarAjax(global_inputparams.kostenstelle)
+			).done(
+				function (kstResponse)
+				{
+					global_booleans.genehmigbar = kstResponse;
+					getBudgetantraege();
+				}
+			);
+		}
+
 		//load Kostenstellen
-		$.when(
+/*		$.when(
 			getKostenstellenAjax(global_inputparams.geschaeftsjahr)
 		).done(
 			function(kstResponse)
 			{
 				afterKostenstellenGet(kstResponse)
 			}
-		);
+		);*/
 
 		//change view anytime a new Geschäftsjahr/Kostenstelle is entered
 		$("#geschaeftsjahr").change(
@@ -95,13 +94,14 @@ $(document).ready(
 
 							afterKostenstellenGet(kstResponse[0]);
 
+							global_booleans.editmode = gjResponse[0].retval;
+
 							if (!globalGjandKstAreValid())
 							{
 								clearBudgetantraege();
 								return;
 							}
 
-							global_booleans.editmode = gjResponse[0].retval;
 							getBudgetantraege();
 						}
 					);

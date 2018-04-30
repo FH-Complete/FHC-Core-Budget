@@ -16,7 +16,8 @@ class Budgetantrag extends VileSci_Controller
 
 		// Loads models
 		$this->load->model('organisation/geschaeftsjahr_model', 'GeschaeftsjahrModel');
-		$this->load->model('accounting/kostenstelle_model', 'KostenstelleModel');
+		$this->load->model('accounting/kostenstelle_model');
+		$this->load->model('extensions/FHC-Core-Budget/budgetkostenstelle_model', 'BudgetkostenstelleModel');
 		$this->load->model('extensions/FHC-Core-Budget/budgetantrag_model', 'BudgetantragModel');
 		$this->load->model('extensions/FHC-Core-Budget/budgetposition_model', 'BudgetpositionModel');
 		$this->load->model('accounting/konto_model', 'KontoModel');
@@ -33,6 +34,11 @@ class Budgetantrag extends VileSci_Controller
 	 */
 	public function index()
 	{
+		$this->showVerwalten();
+	}
+
+	public function showVerwalten($geschaeftsjahr = null, $kostenstelle_id = null)
+	{
 		$this->GeschaeftsjahrModel->addSelect('geschaeftsjahr_kurzbz');
 		$this->GeschaeftsjahrModel->addOrder('start', 'DESC');
 		$geschaeftsjahre = $this->GeschaeftsjahrModel->load();
@@ -42,40 +48,37 @@ class Budgetantrag extends VileSci_Controller
 			show_error($geschaeftsjahre->retval);
 		}
 
-		$geschaeftsjahr = $this->GeschaeftsjahrModel->getNextGeschaeftsjahr();
+		if (!isset($geschaeftsjahr))
+		{
+			$geschaeftsjahr = $this->GeschaeftsjahrModel->getNextGeschaeftsjahr();
 
-		if (isError($geschaeftsjahr))
-		{
-			show_error($geschaeftsjahr->retval);
-		}
-
-		if (count($geschaeftsjahr->retval) > 0)
-		{
-			$geschaeftsjahr = $geschaeftsjahr->retval[0]->geschaeftsjahr_kurzbz;
-		}
-		else
-		{
-			if (count($geschaeftsjahre->retval) > 0)
-				$geschaeftsjahr = $geschaeftsjahre->retval[0]->geschaeftsjahr_kurzbz;
+			if (hasData($geschaeftsjahr))
+			{
+				$geschaeftsjahr = $geschaeftsjahr->retval[0]->geschaeftsjahr_kurzbz;
+			}
 			else
-				$geschaeftsjahr = null;
-		}
+			{
+				if (count($geschaeftsjahre->retval) > 0)
+					$geschaeftsjahr = $geschaeftsjahre->retval[0]->geschaeftsjahr_kurzbz;
+				else
+					$geschaeftsjahr = null;
+			}
 
-		$kostenstellen = $this->KostenstelleModel->getActiveKostenstellenForGeschaeftsjahr($geschaeftsjahr);
+		}
+		$kostenstellen = $this->BudgetkostenstelleModel->getActiveKostenstellenForGeschaeftsjahrBerechtigt($geschaeftsjahr);
 
 		if (isError($kostenstellen))
 		{
 			show_error($kostenstellen->retval);
 		}
 
-		$kostenstellen->retval = $this->filterKostenstellenByBerechtigung($kostenstellen->retval);
-
 		$this->load->view(
 			'extensions/FHC-Core-Budget/budgetantraegeverwalten.php',
 			array(
-			'geschaeftsjahre' => $geschaeftsjahre->retval,
-			'kostenstellen' => $kostenstellen->retval,
-			'nextgeschaeftsjahr' => $geschaeftsjahr
+				'geschaeftsjahre' => $geschaeftsjahre->retval,
+				'kostenstellen' => $kostenstellen->retval,
+				'selectedgeschaeftsjahr' => $geschaeftsjahr,
+				'selectedkostenstelle' => $kostenstelle_id
 			)
 		);
 	}
@@ -93,7 +96,7 @@ class Budgetantrag extends VileSci_Controller
 
 		if (isError($currgj))
 			$json = json_encode($currgj);
-		else if(count($currgj->retval) < 1)
+		elseif (count($currgj->retval) < 1)
 			$json = success(false);
 		else
 		{
@@ -101,7 +104,7 @@ class Budgetantrag extends VileSci_Controller
 
 			if (isError($gj))
 				$json = json_encode($gj);
-			else if(count($gj->retval) < 1)
+			elseif (count($gj->retval) < 1)
 				$json = success(false);
 			else
 			{
@@ -138,10 +141,10 @@ class Budgetantrag extends VileSci_Controller
 	 */
 	public function getKostenstellen($geschaefsjahr)
 	{
-		$result = $this->KostenstelleModel->getActiveKostenstellenForGeschaeftsjahr($geschaefsjahr);
+		$result = $this->BudgetkostenstelleModel->getActiveKostenstellenForGeschaeftsjahrBerechtigt($geschaefsjahr);
 
-		if (isSuccess($result))
-			$result->retval = $this->filterKostenstellenByBerechtigung($result->retval);
+/*		if (isSuccess($result))
+			$result->retval = $this->filterKostenstellenByBerechtigung($result->retval);*/
 
 		$this->output
 			->set_content_type('application/json')
@@ -280,7 +283,7 @@ class Budgetantrag extends VileSci_Controller
 	}
 
 	/**
-	 *
+	 * Update Budgetantrag status, returns new status if successfully updated, null otherwise
 	 * @param $budgetantrag_id
 	 * @param $budgetstatus_kurzbz
 	 */
@@ -367,12 +370,7 @@ class Budgetantrag extends VileSci_Controller
 		if (!$this->uid) show_error('User authentification failed');
 	}
 
-	/**
-	 * Filters Kostenstellen, returns only those for which user is verwaltungsberechtigt
-	 * @param $kostenstellen
-	 * @return array
-	 */
-	private function filterKostenstellenByBerechtigung($kostenstellen)
+/*	private function filterKostenstellenByBerechtigung($kostenstellen)
 	{
 		$this->load->library('PermissionLib');
 
@@ -387,5 +385,5 @@ class Budgetantrag extends VileSci_Controller
 		}
 
 		return $kostenstellenresult;
-	}
+	}*/
 }

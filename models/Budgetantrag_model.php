@@ -10,7 +10,7 @@ class Budgetantrag_model extends DB_Model
 	public function __construct()
 	{
 		parent::__construct();
-		$this->dbTable = 'extension.tbl_budgetantrag';
+		$this->dbTable = 'extension.tbl_budget_antrag';
 		$this->pk = 'budgetantrag_id';
 
 		$this->load->model('extensions/FHC-Core-Budget/budgetposition_model', 'BudgetpositionModel');
@@ -26,8 +26,8 @@ class Budgetantrag_model extends DB_Model
 	 */
 	public function getBudgetantraege($geschaeftsjahr, $kostenstelle)
 	{
-		$this->addSelect('extension.tbl_budgetantrag.budgetantrag_id');
-		$this->addOrder('extension.tbl_budgetantrag.budgetantrag_id');
+		$this->addSelect('budgetantrag_id');
+		$this->addOrder('budgetantrag_id');
 		$budgetantraege = $this->loadWhere(array('geschaeftsjahr_kurzbz' => $geschaeftsjahr, 'kostenstelle_id' => $kostenstelle));
 
 		if($budgetantraege->error)
@@ -62,7 +62,7 @@ class Budgetantrag_model extends DB_Model
 		if ($budgetantrag->error)
 			return error($budgetantrag->retval);
 
-		$this->BudgetpositionModel->addOrder('extension.tbl_budgetposition.budgetposition_id');
+		$this->BudgetpositionModel->addOrder('budgetposition_id');
 		$budgetpositionen = $this->BudgetpositionModel->loadWhere(array('budgetantrag_id' => $budgetantrag_id));
 
 		if ($budgetpositionen->error)

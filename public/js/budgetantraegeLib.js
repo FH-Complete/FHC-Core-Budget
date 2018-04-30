@@ -1,17 +1,3 @@
-/*
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 /**
  * javascript file for additonal, frequently used functions for Managing Budgetantraege, which do not necessarily concern Budget Management.
  */
@@ -51,8 +37,14 @@ function checkDecimalFormat(value)
  */
 function formatDecimalGerman(sum)
 {
-	if(sum === null) return parseFloat(0).toFixed(2);
-	return parseFloat(sum).toFixed(2).replace(".", ",");
+	var dec = null;
+
+	if(sum === null)
+		dec = parseFloat(0);
+	else
+		dec = parseFloat(sum);
+
+	return dec.toFixed(2).replace(".", ",");
 }
 
 /**

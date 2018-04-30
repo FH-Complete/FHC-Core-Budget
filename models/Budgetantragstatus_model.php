@@ -10,7 +10,7 @@ class Budgetantragstatus_model extends DB_Model
 	public function __construct()
 	{
 		parent::__construct();
-		$this->dbTable = 'extension.tbl_budgetantrag_status';
+		$this->dbTable = 'extension.tbl_budget_antrag_status';
 		$this->pk = 'budgetantrag_status_id';
 	}
 
@@ -22,8 +22,8 @@ class Budgetantragstatus_model extends DB_Model
 	function getLastStatus($budgetantrag_id)
 	{
 		$query = 'SELECT *
-					FROM extension.tbl_budgetantrag_status
-					JOIN extension.tbl_budgetstatus USING (budgetstatus_kurzbz)
+					FROM extension.tbl_budget_antrag_status
+					JOIN extension.tbl_budget_status USING (budgetstatus_kurzbz)
 					WHERE budgetantrag_id = ?
 					ORDER BY datum DESC
 					LIMIT 1';

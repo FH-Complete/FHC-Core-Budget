@@ -10,7 +10,7 @@ class Budgetstatus_model extends DB_Model
 	public function __construct()
 	{
 		parent::__construct();
-		$this->dbTable = 'extension.tbl_budgetstatus';
-		$this->pk = 'tbl_budgetstatus';
+		$this->dbTable = 'extension.tbl_budget_status';
+		$this->pk = 'budgetstatus_kurzbz';
 	}
 }

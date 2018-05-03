@@ -102,7 +102,8 @@ class BudgetantragUebersicht extends VileSci_Controller
 			$kostenstelle->oe_kurzbz = $kostenstelleoe->oe_kurzbz;
 			$kostenstelle->oe_bezeichnung = $kostenstelleoe->oe_bezeichnung;
 
-			$result = $this->OrganisationseinheitModel->getParents($kostenstelle->oe_kurzbz);
+			//true gets also inactive parents
+			$result = $this->OrganisationseinheitModel->getParents($kostenstelle->oe_kurzbz, true);
 
 			if (isError($result))
 				return error($result);

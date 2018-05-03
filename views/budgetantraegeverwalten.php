@@ -9,7 +9,7 @@ $this->load->view(
 		'sbadmintemplate' => true,
 		'customCSSs' =>
 			array(
-				'skin/admintemplate.css',
+				'public/css/sbadmin2/admintemplate.css',
 				'public/extensions/FHC-Core-Budget/css/budgetantraegeverwalten.css'
 			),
 		'customJSs' =>

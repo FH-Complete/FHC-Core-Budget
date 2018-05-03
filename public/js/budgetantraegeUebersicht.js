@@ -9,6 +9,14 @@ var global_sums = {"gesamt": 0.00, "genehmigt": 0.00};
 $(document).ready(
 	function ()
 	{
+		var sessionGj = sessionStorage.getItem("budgetgeschaeftsjahr");
+
+		if (sessionGj !== null && typeof(Storage) !== "undefined")
+		{
+			geschaeftsjahr = sessionGj;
+			$("#geschaeftsjahr").val(geschaeftsjahr);
+		}
+
 		var geschaeftsjahr = $("#geschaeftsjahr").val();
 
 		getKostenstellenTreeAjax(geschaeftsjahr);
@@ -18,6 +26,10 @@ $(document).ready(
 			{
 				//$("#gjgroup").removeClass("has-error");
 				var geschaeftsjahr = $(this).val();
+
+				if (typeof(Storage) !== "undefined") {
+					sessionStorage.setItem("budgetgeschaeftsjahr", geschaeftsjahr);
+				}
 
 				getKostenstellenTreeAjax(geschaeftsjahr);
 			}
@@ -104,7 +116,8 @@ function getKostenstellenTreeAjax(geschaeftsjahr)
 
 			$("#ksttree").treetable(
 				{
-					expandable: true
+					expandable: true,
+					indent: 28
 				}, true //true forces reinitialization of the tree
 			);
 
@@ -127,12 +140,15 @@ function getKostenstellenTreeAjax(geschaeftsjahr)
 						}
 					)
 				}
-			}
 
+				// expand first level nodes
+				if ($(element).attr("data-tt-parent-id") === "undefined")
+					$("#ksttree").treetable("expandNode", $(element).attr("data-tt-id"));
+			}
 		},
 		error: function (jqXHR, textStatus, errorThrown)
 		{
 			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
 		}
-});
+	});
 }

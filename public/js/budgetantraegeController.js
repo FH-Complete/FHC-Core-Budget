@@ -23,6 +23,11 @@ const GLOBAL_STATUSES = {"new" : {"bez": "new", "editable": true},
 $(document).ready(
 	function ()
 	{
+		if (sessionStorage.getItem("budgetgeschaeftsjahr") !== null && typeof(Storage) !== "undefined")
+		{
+			$("#geschaeftsjahr").val(sessionStorage.getItem("budgetgeschaeftsjahr"));
+		}
+
 		global_inputparams.geschaeftsjahr = $("#geschaeftsjahr").val();
 		global_inputparams.kostenstelle = $("#kostenstelle").val();
 
@@ -81,6 +86,10 @@ $(document).ready(
 				var geschaeftsjahr = $(this).val();
 				var kostenstelle = $("#kostenstelle").val();
 				global_inputparams.geschaeftsjahr = geschaeftsjahr;
+
+				if (typeof(Storage) !== "undefined") {
+					sessionStorage.setItem("budgetgeschaeftsjahr", geschaeftsjahr);
+				}
 
 				if (global_inputparams.geschaeftsjahr !== "null" && global_inputparams.geschaeftsjahr !== null)
 				{

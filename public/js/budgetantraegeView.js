@@ -653,7 +653,19 @@ function checkBudgetpositionDataBeforeAdd(positionFormDom)
 	}
 	else
 	{
-		positionFields.betrag.val = positionFields.betrag.val.replace(",", ".");
+		var betragstr = positionFields.betrag.val.replace(/\./g, '').replace(',', '.');
+		var betragfloat = parseFloat(betragstr);
+
+		if (betragfloat > 99999999.99)
+		{
+			valid = false;
+			betragelem.parent().addClass("has-error");
+			messages.push("Betrag muss < 10^8 sein!");
+		}
+		else
+		{
+			positionFields.betrag.val = betragfloat;
+		}
 	}
 
 	if (!valid)

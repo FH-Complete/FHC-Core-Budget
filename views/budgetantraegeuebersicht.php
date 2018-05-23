@@ -7,6 +7,8 @@ $this->load->view(
 		'bootstrap' => true,
 		'fontawesome' => true,
 		'sbadmintemplate' => true,
+		'ajaxlib' => true,
+		'navigationwidget' => true,
 		'customCSSs' =>
 			array(
 				'public/css/sbadmin2/admintemplate.css',

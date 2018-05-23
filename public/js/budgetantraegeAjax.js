@@ -7,7 +7,7 @@ function getProjekteAjax()
 	return $.ajax({
 		type: "GET",
 		dataType: "json",
-		url: FULL_URL+"/getProjekte",
+		url: CONTROLLER_URL+"/getProjekte",
 		error: function (jqXHR, textStatus, errorThrown)
 		{
 			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
@@ -20,7 +20,7 @@ function getKontenAjax(kostenstelle)
 	return $.ajax({
 		type: "GET",
 		dataType: "json",
-		url: FULL_URL+"/getKonten/"+encodeURIComponent(kostenstelle),
+		url: CONTROLLER_URL+"/getKonten/"+encodeURIComponent(kostenstelle),
 		error: function (jqXHR, textStatus, errorThrown)
 		{
 			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
@@ -33,7 +33,7 @@ function checkIfCurrGeschaeftsjahrAjax(geschaeftsjahr)
 	return $.ajax({
 		type: "GET",
 		dataType: "json",
-		url: FULL_URL+"/checkIfCurrentGeschaeftsjahr/"+encodeURIComponent(geschaeftsjahr),
+		url: CONTROLLER_URL+"/checkIfCurrentGeschaeftsjahr/"+encodeURIComponent(geschaeftsjahr),
 		error: function (jqXHR, textStatus, errorThrown)
 		{
 			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
@@ -46,7 +46,7 @@ function checkIfKstGenehmigbarAjax(kostenstelle)
 	return $.ajax({
 		type: "GET",
 		dataType: "json",
-		url: FULL_URL+"/checkIfKostenstelleGenehmigbar/"+encodeURIComponent(kostenstelle),
+		url: CONTROLLER_URL+"/checkIfKostenstelleGenehmigbar/"+encodeURIComponent(kostenstelle),
 		error: function (jqXHR, textStatus, errorThrown)
 		{
 			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
@@ -59,7 +59,7 @@ function getKostenstellenAjax(geschaeftsjahr)
 	return $.ajax({
 		type: "GET",
 		dataType: "json",
-		url: FULL_URL+"/getKostenstellen/"+encodeURIComponent(geschaeftsjahr),
+		url: CONTROLLER_URL+"/getKostenstellen/"+encodeURIComponent(geschaeftsjahr),
 		error: function (jqXHR, textStatus, errorThrown)
 		{
 			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
@@ -72,7 +72,7 @@ function getBudgetantraegeAjax(geschaeftsjahr, kostenstelle)
   	$.ajax({
 		type: "GET",
 		dataType: "json",
-		url: FULL_URL+"/getBudgetantraege/"+encodeURIComponent(geschaeftsjahr)+'/'+encodeURIComponent(kostenstelle),
+		url: CONTROLLER_URL+"/getBudgetantraege/"+encodeURIComponent(geschaeftsjahr)+'/'+encodeURIComponent(kostenstelle),
 		success: function (data, textStatus, jqXHR)
 		{
 			afterBudgetantraegeGet(data);
@@ -95,7 +95,7 @@ function getBudgetantragAjax(budgetantragid, updatetype)
 	$.ajax({
 		type: "GET",
 		dataType: "json",
-		url: FULL_URL+"/getBudgetantrag/"+encodeURIComponent(budgetantragid),
+		url: CONTROLLER_URL+"/getBudgetantrag/"+encodeURIComponent(budgetantragid),
 		success: function (data, textStatus, jqXHR)
 		 {
 		 	afterBudgetantragGet(data, budgetantragid, updatetype);
@@ -112,7 +112,7 @@ function addBudgetantragAjax(data, oldid)
 	$.ajax({
 		type: "POST",
 		dataType: "json",
-		url: FULL_URL+"/newBudgetantrag",
+		url: CONTROLLER_URL+"/newBudgetantrag",
 		data: data,
 		success: function (data, textStatus, jqXHR)
 		{
@@ -131,7 +131,7 @@ function updateBudgetpositionenAjax(budgetantragid, data)
 		type: "POST",
 		dataType: "json",
 		data: data,
-		url: FULL_URL+"/updateBudgetantragPositionen/"+encodeURIComponent(budgetantragid),
+		url: CONTROLLER_URL+"/updateBudgetantragPositionen/"+encodeURIComponent(budgetantragid),
 		success: function (data, textStatus, jqXHR)
 		{
 			afterBudgetantragUpdate(data, budgetantragid);
@@ -148,7 +148,7 @@ function deleteBudgetantragAjax(budgetantragid)
 	$.ajax({
 		type: "POST",
 		dataType: "json",
-		url: FULL_URL+"/deleteBudgetantrag/"+encodeURIComponent(budgetantragid),
+		url: CONTROLLER_URL+"/deleteBudgetantrag/"+encodeURIComponent(budgetantragid),
 		success: function (data, textStatus, jqXHR)
 		{
 			afterBudgetantragDelete(data);
@@ -165,7 +165,7 @@ function updateBudgetantragStatusAjax(budgetantragid, statuskurzbz)
 	$.ajax({
 		type: "POST",
 		dataType: "json",
-		url: FULL_URL+"/updateBudgetantragStatus/"+encodeURIComponent(budgetantragid)+"/"+encodeURIComponent(statuskurzbz),
+		url: CONTROLLER_URL+"/updateBudgetantragStatus/"+encodeURIComponent(budgetantragid)+"/"+encodeURIComponent(statuskurzbz),
 		success: function (data, textStatus, jqXHR)
 		{
 			afterBudgetantragStatusChange(budgetantragid, data);

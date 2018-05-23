@@ -6,7 +6,7 @@
 
 //id prefixes
 const NEW_BUDGET_PREFIX = "newb", NEW_POSITION_PREFIX = "newp", BUDGETANTRAG_PREFIX = "budget", POSITION_PREFIX = "position";
-const FULL_URL = FHC_JS_DATA_STORAGE_OBJECT.app_root + FHC_JS_DATA_STORAGE_OBJECT.ci_router + "/"+FHC_JS_DATA_STORAGE_OBJECT.called_path;
+const CONTROLLER_URL = FHC_JS_DATA_STORAGE_OBJECT.app_root + FHC_JS_DATA_STORAGE_OBJECT.ci_router + "/"+FHC_JS_DATA_STORAGE_OBJECT.called_path;
 
 var global_inputparams = {"geschaeftsjahr": null, "kostenstelle": null};
 //global objects for storing current state of Budgetanträge together with their positions: how many added, deleted, updated

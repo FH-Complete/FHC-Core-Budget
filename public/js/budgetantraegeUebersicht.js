@@ -2,8 +2,8 @@
  * javascript file for Budgetuebersicht, which shows Kostenstellen with their Organisationseinheiten in a treegrid view
  */
 
-const FULL_URL = FHC_JS_DATA_STORAGE_OBJECT.app_root + FHC_JS_DATA_STORAGE_OBJECT.ci_router + "/"+FHC_JS_DATA_STORAGE_OBJECT.called_path;
-const EXTENSION_URL = FULL_URL.replace("BudgetantragUebersicht", "");
+const CONTROLLER_URL = FHC_JS_DATA_STORAGE_OBJECT.app_root + FHC_JS_DATA_STORAGE_OBJECT.ci_router + "/"+FHC_JS_DATA_STORAGE_OBJECT.called_path;
+const EXTENSION_URL = CONTROLLER_URL.replace("BudgetantragUebersicht", "");
 var global_sums = {"gesamt": 0.00, "genehmigt": 0.00};
 
 $(document).ready(
@@ -93,7 +93,7 @@ function getKostenstellenTreeAjax(geschaeftsjahr)
 	$.ajax({
 		type: "GET",
 		dataType: "json",
-		url: FULL_URL+"/getKostenstellenTree/"+encodeURIComponent(geschaeftsjahr),
+		url: CONTROLLER_URL+"/getKostenstellenTree/"+encodeURIComponent(geschaeftsjahr),
 		success: function (data, textStatus, jqXHR)
 		{
 			if (data.error === 1)
@@ -117,7 +117,7 @@ function getKostenstellenTreeAjax(geschaeftsjahr)
 			$("#ksttree").treetable(
 				{
 					expandable: true,
-					indent: 28
+					indent: 32
 				}, true //true forces reinitialization of the tree
 			);
 

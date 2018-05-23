@@ -21,12 +21,13 @@ function findInArray(array, id)
 
 /**
  * Checks if a value is in valid decimal format
- * Valid format is numbers, optionally followed by dot OR coma, followed by numbers
+ * Valid format is numbers, optionally with dots (thousand separators), followed by coma, followed by two numbers
  * @param value
  */
 function checkDecimalFormat(value)
 {
-	var betragregex = /^[0-9]+([\.,][0-9]{1,2})?$/;
+	//var betragregex = /^[0-9]{1,3}([\.]?[0-9]{3})*([,][0-9]{1,2})?$/;
+	var betragregex = /^([.0-9])+([,][0-9]{1,2})?$/;
 	return value.match(betragregex);
 }
 
@@ -40,11 +41,21 @@ function formatDecimalGerman(sum)
 	var dec = null;
 
 	if(sum === null)
-		dec = parseFloat(0);
+		dec = parseFloat(0).toFixed(2).replace(".", ",");
 	else
-		dec = parseFloat(sum);
+	{
+		dec = parseFloat(sum).toFixed(2);
 
-	return dec.toFixed(2).replace(".", ",");
+		dec = dec.split('.');
+		var dec1 = dec[0];
+		var dec2 = ',' + dec[1];
+		var rgx = /(\d+)(\d{3})/;
+		while (rgx.test(dec1)) {
+			dec1 = dec1.replace(rgx, '$1' + '.' + '$2');
+		}
+		dec = dec1 + dec2;
+	}
+	return dec;
 }
 
 /**
@@ -54,5 +65,5 @@ function formatDecimalGerman(sum)
  */
 function formatDateGerman(date)
 {
-	return date.substring(8, 10) + "."+date.substring(5, 7) + "." + date.substring(0, 4);
+	return date.substring(8, 10) + "." + date.substring(5, 7) + "." + date.substring(0, 4);
 }

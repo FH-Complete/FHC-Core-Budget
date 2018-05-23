@@ -349,7 +349,7 @@ class Budgetantrag extends VileSci_Controller
 	// Private methods
 
 	/**
-	 * Modifies an array with Budgetpositionen so it can be added or updated.
+	 * Modifies an array with a Budgetpositionen so it can be added or updated.
 	 * This includes sanitizing html input and change empty strings to null
 	 * @param $position
 	 */
@@ -369,21 +369,4 @@ class Budgetantrag extends VileSci_Controller
 
 		if (!$this->uid) show_error('User authentification failed');
 	}
-
-/*	private function filterKostenstellenByBerechtigung($kostenstellen)
-	{
-		$this->load->library('PermissionLib');
-
-		$kostenstellenresult = array();
-
-		foreach ($kostenstellen as $kostenstelle)
-		{
-			if ($this->permissionlib->isBerechtigt('extension/budget_verwaltung', 'suid', null, $kostenstelle->kostenstelle_id) === true)
-			{
-				$kostenstellenresult[] = $kostenstelle;
-			}
-		}
-
-		return $kostenstellenresult;
-	}*/
 }

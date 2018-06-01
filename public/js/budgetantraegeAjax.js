@@ -2,177 +2,209 @@
  * javascript file for Ajax calls to controller of Budgetantraege
  */
 
-function getProjekteAjax()
-{
-	return $.ajax({
-		type: "GET",
-		dataType: "json",
-		url: CONTROLLER_URL+"/getProjekte",
-		error: function (jqXHR, textStatus, errorThrown)
-		{
-			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
-		}
-	});
-}
+var BudgetantraegeAjax = {
 
-function getKontenAjax(kostenstelle)
-{
-	return $.ajax({
-		type: "GET",
-		dataType: "json",
-		url: CONTROLLER_URL+"/getKonten/"+encodeURIComponent(kostenstelle),
-		error: function (jqXHR, textStatus, errorThrown)
-		{
-			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
-		}
-	});
-}
+	getProjekte: function()
+	{
+		FHC_AjaxClient.ajaxCallGet(
+			CALLED_PATH + "/getProjekte",
+			{},
+			{
+				successCallback: function(data, textStatus, jqXHR)
+				{
+					BudgetantraegeController.afterProjekteGet(data);
+				},
+				errorCallback: function (jqXHR, textStatus, errorThrown)
+				{
+					alert("error when retrieving Projekte!");
+				},
+				veilTimeout: 0
+			}
+		);
+	},
 
-function checkIfCurrGeschaeftsjahrAjax(geschaeftsjahr)
-{
-	return $.ajax({
-		type: "GET",
-		dataType: "json",
-		url: CONTROLLER_URL+"/checkIfCurrentGeschaeftsjahr/"+encodeURIComponent(geschaeftsjahr),
-		error: function (jqXHR, textStatus, errorThrown)
-		{
-			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
-		}
-	});
-}
+	getKonten: function(kostenstelle, successCallback)
+	{
+		FHC_AjaxClient.ajaxCallGet(
+			CALLED_PATH + "/getKonten/"+encodeURIComponent(kostenstelle),
+			{},
+			{
+				successCallback: successCallback,
+				errorCallback: function (jqXHR, textStatus, errorThrown)
+				{
+					alert("error when retrieving Konten!");
+				},
+				veilTimeout: 0
+			}
+		);
+	},
 
-function checkIfKstGenehmigbarAjax(kostenstelle)
-{
-	return $.ajax({
-		type: "GET",
-		dataType: "json",
-		url: CONTROLLER_URL+"/checkIfKostenstelleGenehmigbar/"+encodeURIComponent(kostenstelle),
-		error: function (jqXHR, textStatus, errorThrown)
-		{
-			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
-		}
-	});
-}
+	checkIfCurrGeschaeftsjahr: function(geschaeftsjahr, successCallback)
+	{
+		FHC_AjaxClient.ajaxCallGet(
+			CALLED_PATH + "/checkIfCurrentGeschaeftsjahr/"+encodeURIComponent(geschaeftsjahr),
+			{},
+			{
+				successCallback: successCallback,
+				errorCallback: function (jqXHR, textStatus, errorThrown)
+				{
+					alert("error when checking current Geschaeftsjahr!");
+				},
+				veilTimeout: 0
+			}
+		);
+	},
 
-function getKostenstellenAjax(geschaeftsjahr)
-{
-	return $.ajax({
-		type: "GET",
-		dataType: "json",
-		url: CONTROLLER_URL+"/getKostenstellen/"+encodeURIComponent(geschaeftsjahr),
-		error: function (jqXHR, textStatus, errorThrown)
-		{
-			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
-		}
-	});
-}
+	checkIfKstGenehmigbar: function(kostenstelle, successCallback)
+	{
+		FHC_AjaxClient.ajaxCallGet(
+			CALLED_PATH + "/checkIfKostenstelleGenehmigbar/"+encodeURIComponent(kostenstelle),
+			{},
+			{
+				successCallback: successCallback,
+				errorCallback: function (jqXHR, textStatus, errorThrown)
+				{
+					alert("error when checking Kst genehmigbar!");
+				},
+				veilTimeout: 0
+			}
+		);
+	},
 
-function getBudgetantraegeAjax(geschaeftsjahr, kostenstelle)
-{
-  	$.ajax({
-		type: "GET",
-		dataType: "json",
-		url: CONTROLLER_URL+"/getBudgetantraege/"+encodeURIComponent(geschaeftsjahr)+'/'+encodeURIComponent(kostenstelle),
-		success: function (data, textStatus, jqXHR)
-		{
-			afterBudgetantraegeGet(data);
-		},
-		error: function (jqXHR, textStatus, errorThrown)
-		{
-			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
-		}
-	});
-}
+	getKostenstellen: function(geschaeftsjahr, successCallback)
+	{
+		FHC_AjaxClient.ajaxCallGet(
+			CALLED_PATH + "/getKostenstellen/"+encodeURIComponent(geschaeftsjahr),
+			{},
+			{
+				successCallback: successCallback,
+				errorCallback: function (jqXHR, textStatus, errorThrown)
+				{
+					alert("error when retrieving Kostenstellen!");
+				},
+				veilTimeout: 0
+			}
+		);
+	},
 
-/**
- * Ajax call for retrieving a single Budgetantrag. Aftert execution, updates of view are triggered.
- * Called each time a Budgetantrag is updated
- * @param budgetantragid
- * @param updatetype type of Budgetantrag update (e.g. save, status change...)
- */
-function getBudgetantragAjax(budgetantragid, updatetype)
-{
-	$.ajax({
-		type: "GET",
-		dataType: "json",
-		url: CONTROLLER_URL+"/getBudgetantrag/"+encodeURIComponent(budgetantragid),
-		success: function (data, textStatus, jqXHR)
-		 {
-		 	afterBudgetantragGet(data, budgetantragid, updatetype);
-		 },
-		error: function (jqXHR, textStatus, errorThrown)
-		{
-			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
-		}
-	});
-}
+	getBudgetantraege: function(geschaeftsjahr, kostenstelle)
+	{
+		FHC_AjaxClient.ajaxCallGet(
+			CALLED_PATH + "/getBudgetantraege/"+encodeURIComponent(geschaeftsjahr)+'/'+encodeURIComponent(kostenstelle),
+			{},
+			{
+				successCallback: function (data, textStatus, jqXHR)
+				{
+					BudgetantraegeController.afterBudgetantraegeGet(data);
+				},
+				errorCallback: function (jqXHR, textStatus, errorThrown)
+				{
+					alert("error when retrieving Budgetantraege!");
+				},
+				veilTimeout: 0
+			}
+		);
+	},
 
-function addBudgetantragAjax(data, oldid)
-{
-	$.ajax({
-		type: "POST",
-		dataType: "json",
-		url: CONTROLLER_URL+"/newBudgetantrag",
-		data: data,
-		success: function (data, textStatus, jqXHR)
-		{
-			afterBudgetantragAdd(data, oldid);
-		},
-		error: function (jqXHR, textStatus, errorThrown)
-		{
-			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
-		}
-	});
-}
+	/**
+	 * Ajax call for retrieving a single Budgetantrag. Aftert execution, updates of view are triggered.
+	 * Called each time a Budgetantrag is updated
+	 * @param budgetantragid
+	 * @param updatetype type of Budgetantrag update (e.g. save, status change...)
+	 */
+	getBudgetantrag: function(budgetantragid, updatetype)
+	{
+		FHC_AjaxClient.ajaxCallGet(
+			CALLED_PATH + "/getBudgetantrag/"+encodeURIComponent(budgetantragid),
+			{},
+			{
+				successCallback: function (data, textStatus, jqXHR)
+				{
+					BudgetantraegeController.afterBudgetantragGet(data, budgetantragid, updatetype);
+				},
+				errorCallback: function (jqXHR, textStatus, errorThrown)
+				{
+					alert("error when retrieving Budgetantraege!");
+				},
+				veilTimeout: 0
+			}
+		);
+	},
 
-function updateBudgetpositionenAjax(budgetantragid, data)
-{
-	$.ajax({
-		type: "POST",
-		dataType: "json",
-		data: data,
-		url: CONTROLLER_URL+"/updateBudgetantragPositionen/"+encodeURIComponent(budgetantragid),
-		success: function (data, textStatus, jqXHR)
-		{
-			afterBudgetantragUpdate(data, budgetantragid);
-		},
-		error: function (jqXHR, textStatus, errorThrown)
-		{
-			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
-		}
-	});
-}
+	addBudgetantrag: function(data, oldid)
+	{
+		FHC_AjaxClient.ajaxCallPost(
+			CALLED_PATH + "/newBudgetantrag",
+			data,
+			{
+				successCallback: function (data, textStatus, jqXHR)
+				{
+					BudgetantraegeController.afterBudgetantragAdd(data, oldid);
+				},
+				errorCallback: function (jqXHR, textStatus, errorThrown)
+				{
+					alert("error when adding Budgetantrag!");
+				},
+				veilTimeout: 0
+			}
+		);
+	},
 
-function deleteBudgetantragAjax(budgetantragid)
-{
-	$.ajax({
-		type: "POST",
-		dataType: "json",
-		url: CONTROLLER_URL+"/deleteBudgetantrag/"+encodeURIComponent(budgetantragid),
-		success: function (data, textStatus, jqXHR)
-		{
-			afterBudgetantragDelete(data);
-		},
-		error: function (jqXHR, textStatus, errorThrown)
-		{
-			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
-		}
-	});
-}
+	updateBudgetpositionen: function(budgetantragid, data)
+	{
+		FHC_AjaxClient.ajaxCallPost(
+			CALLED_PATH + "/updateBudgetantragPositionen/"+encodeURIComponent(budgetantragid),
+			data,
+			{
+				successCallback: function (data, textStatus, jqXHR)
+				{
+					BudgetantraegeController.afterBudgetantragUpdate(data, budgetantragid);
+				},
+				errorCallback: function (jqXHR, textStatus, errorThrown)
+				{
+					alert("error when updating Budgetpositionen!");
+				},
+				veilTimeout: 0
+			}
+		);
+	},
 
-function updateBudgetantragStatusAjax(budgetantragid, statuskurzbz)
-{
-	$.ajax({
-		type: "POST",
-		dataType: "json",
-		url: CONTROLLER_URL+"/updateBudgetantragStatus/"+encodeURIComponent(budgetantragid)+"/"+encodeURIComponent(statuskurzbz),
-		success: function (data, textStatus, jqXHR)
-		{
-			afterBudgetantragStatusChange(budgetantragid, data);
-		},
-		error: function (jqXHR, textStatus, errorThrown)
-		{
-			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
-		}
-	});
-}
+	deleteBudgetantrag: function(budgetantragid)
+	{
+		FHC_AjaxClient.ajaxCallPost(
+			CALLED_PATH + "/deleteBudgetantrag/"+encodeURIComponent(budgetantragid),
+			{},
+			{
+				successCallback: function (data, textStatus, jqXHR)
+				{
+					BudgetantraegeController.afterBudgetantragDelete(data);
+				},
+				errorCallback: function (jqXHR, textStatus, errorThrown)
+				{
+					alert("error when deleting Budgetantrag!");
+				},
+				veilTimeout: 0
+			}
+		);
+
+	},
+
+	updateBudgetantragStatus: function(budgetantragid, statuskurzbz)
+	{
+		FHC_AjaxClient.ajaxCallPost(
+			CALLED_PATH + "/updateBudgetantragStatus/"+encodeURIComponent(budgetantragid)+"/"+encodeURIComponent(statuskurzbz),
+			{},
+			{
+				successCallback: function (data, textStatus, jqXHR)
+				{
+					BudgetantraegeController.afterBudgetantragStatusChange(budgetantragid, data);
+				},
+				errorCallback: function (jqXHR, textStatus, errorThrown)
+				{
+					alert("error when updating Budgetantragstatus!");
+				},
+				veilTimeout: 0
+			}
+		);
+	}
+};

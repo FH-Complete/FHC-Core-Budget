@@ -2,153 +2,315 @@
  * javascript file for Budgetuebersicht, which shows Kostenstellen with their Organisationseinheiten in a treegrid view
  */
 
+const CALLED_PATH = FHC_JS_DATA_STORAGE_OBJECT.called_path;
 const CONTROLLER_URL = FHC_JS_DATA_STORAGE_OBJECT.app_root + FHC_JS_DATA_STORAGE_OBJECT.ci_router + "/"+FHC_JS_DATA_STORAGE_OBJECT.called_path;
 const EXTENSION_URL = CONTROLLER_URL.replace("BudgetantragUebersicht", "");
-var global_sums = {"gesamt": 0.00, "genehmigt": 0.00};
 
-$(document).ready(
-	function ()
+$(document).ready(function () {
+	var sessionGj = sessionStorage.getItem("budgetgeschaeftsjahr");
+
+	if (sessionGj !== null && typeof(Storage) !== "undefined")
 	{
-		var sessionGj = sessionStorage.getItem("budgetgeschaeftsjahr");
+		var geschaeftsjahr = sessionGj;
+		$("#geschaeftsjahr").val(geschaeftsjahr);
+	}
 
-		if (sessionGj !== null && typeof(Storage) !== "undefined")
+	BudgetantraegeUebersicht.geschaeftsjahr = $("#geschaeftsjahr").val();
+
+	BudgetantraegeUebersicht.getKostenstellenTree(BudgetantraegeUebersicht.geschaeftsjahr);
+
+	$("#geschaeftsjahr").change(
+		function ()
 		{
-			geschaeftsjahr = sessionGj;
-			$("#geschaeftsjahr").val(geschaeftsjahr);
+			BudgetantraegeUebersicht.geschaeftsjahr = $(this).val();
+
+			if (typeof(Storage) !== "undefined") {
+				sessionStorage.setItem("budgetgeschaeftsjahr", BudgetantraegeUebersicht.geschaeftsjahr);
+			}
+
+			BudgetantraegeUebersicht.getKostenstellenTree(BudgetantraegeUebersicht.geschaeftsjahr);
 		}
+	);
 
-		var geschaeftsjahr = $("#geschaeftsjahr").val();
+	$("#searchmodekst").click(
+		function()
+		{
+			BudgetantraegeUebersicht.searchMode = "KST";
+			$("#searchmode").text("KST");
+			BudgetantraegeUebersicht._initSearch();
+		}
+	);
 
-		getKostenstellenTreeAjax(geschaeftsjahr);
+	$("#searchmodeoe").click(
+		function()
+		{
+			BudgetantraegeUebersicht.searchMode = "OE";
+			$("#searchmode").text("OE");
+			BudgetantraegeUebersicht._initSearch();
+		}
+	);
 
-		$("#geschaeftsjahr").change(
-			function ()
+
+	$("#budgetsearch").keyup(
+		BudgetantraegeUebersicht._initSearch
+	);
+});
+
+var BudgetantraegeUebersicht = {
+	/*------------------------------------------------ VARIABLES --------------------------------------------------------*/
+	searchResultArray: [],
+	searchMode: "KST",
+	sums:  {"gesamt": 0.00, "genehmigt": 0.00},
+
+	/*------------------------------------------------ AJAX CALLS -------------------------------------------------------*/
+	getKostenstellenTree: function (geschaeftsjahr)
+	{
+		FHC_AjaxClient.ajaxCallGet(
+			CALLED_PATH + "/getKostenstellenTree/"+encodeURIComponent(geschaeftsjahr),
 			{
-				//$("#gjgroup").removeClass("has-error");
-				var geschaeftsjahr = $(this).val();
-
-				if (typeof(Storage) !== "undefined") {
-					sessionStorage.setItem("budgetgeschaeftsjahr", geschaeftsjahr);
+			},
+			{
+				successCallback: function(data, textStatus, jqXHR)
+				{
+					if (!FHC_AjaxClient.hasData(data))
+						return;
+					BudgetantraegeUebersicht.kostenstellentree = data.retval;
+					BudgetantraegeUebersicht._printTree(BudgetantraegeUebersicht.kostenstellentree, geschaeftsjahr, 1)
+				},
+				errorCallback: function (jqXHR, textStatus, errorThrown)
+				{
+					alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
 				}
-
-				getKostenstellenTreeAjax(geschaeftsjahr);
 			}
 		);
-	}
-);
+	},
 
-/**
- * Recursively generates html string for the treegrid which can be passed to jquerytree plugin
- * @param oeitem
- * @param parent
- * @returns {string}
- */
-function printOeTreeItem(oeitem, parent)
-{
+	/*------------------------------------------------ ("PRIVATE") METHODS ------------------------------------------------*/
 
-	var parentclass = parent === null ? "" :  " data-tt-parent-id='"+parent+"'";
-
-	var strTree = "<tr data-tt-id='"+oeitem.oe_kurzbz+"'"+parentclass+">" +
-		"<td>"+oeitem.bezeichnung+"</td>" +
-		"<td class='text-center'>"+formatDecimalGerman(oeitem.budgetsumme)+"</td>" +
-		"<td class='text-center'>"+formatDecimalGerman(oeitem.genehmigtsumme)+"</td>";
-
-	for (var i = 0; i < oeitem.kostenstellen.length; i++)
+	/**
+	 * Prints Organisationseinheiten Tree with Kostenstellen
+	 * @param data array with oes, each having Kostenstellen and Children
+	 * @param geschaeftsjahr
+	 * @param expansionlevel to what degree to expand the tree nodes, 0 - only root nod3es,
+	 * 1 - root + first level, 2 - all nodes
+	 * @private
+	 */
+	_printTree: function (data, geschaeftsjahr, expansionlevel)
 	{
-		var kostenstelle = oeitem.kostenstellen[i];
-		var inactivetext = kostenstelle.aktiv === true ? "" : " (inaktiv)";
-		var inactiveclass = kostenstelle.aktiv === true ? "" : " inactivekostenstelle";
-		strTree += "<tr data-tt-id='kst_" + kostenstelle.kostenstelle_id + "' data-tt-parent-id='"+oeitem.oe_kurzbz+"' class='kostenstellerow"+inactiveclass+"' id='kst_"+kostenstelle.kostenstelle_id+"'>" +
-			"<td><i class='fa fa-euro' title='Kostenstelle'></i> "+kostenstelle.bezeichnung+inactivetext+"</td>"+
-			"<td class='text-center'>"+formatDecimalGerman(kostenstelle.budgetsumme)+"</td>"+
-			"<td class='text-center'>"+formatDecimalGerman(kostenstelle.genehmigtsumme)+"</td>"+
-			"</tr>";
+		BudgetantraegeUebersicht.sums.genehmigt = 0;
+		BudgetantraegeUebersicht.sums.gesamt = 0;
 
-		//add to totals
-		if (kostenstelle.budgetsumme !== null)
-			global_sums.gesamt += parseFloat(kostenstelle.budgetsumme);
-		if (kostenstelle.genehmigtsumme!== null)
-			global_sums.genehmigt += parseFloat(kostenstelle.genehmigtsumme);
-	}
+		var kostenstellentree = data;
 
-	for (var i = 0; i < oeitem.children.length; i++)
-		strTree += printOeTreeItem(oeitem.children[i], oeitem.oe_kurzbz)
+		var treehtmlstring = "";
 
-	return strTree;
-}
-
-/**
- * Refreshes total sums at bottom of treegrid
- */
-function refreshSums()
-{
-	$("#summegesamt").text(formatDecimalGerman(global_sums.gesamt));
-	$("#summegenehmigt").text(formatDecimalGerman(global_sums.genehmigt));
-}
-
-/*------------------------------------------------ AJAX CALLS --------------------------------------------------------*/
-
-function getKostenstellenTreeAjax(geschaeftsjahr)
-{
-	$.ajax({
-		type: "GET",
-		dataType: "json",
-		url: CONTROLLER_URL+"/getKostenstellenTree/"+encodeURIComponent(geschaeftsjahr),
-		success: function (data, textStatus, jqXHR)
+		for (var i = 0; i < kostenstellentree.length; i++)
 		{
-			if (data.error === 1)
-				return;
+			treehtmlstring += BudgetantraegeUebersicht._printOeTreeItem(kostenstellentree[i]);
+		}
 
-			global_sums.genehmigt = 0;
-			global_sums.gesamt = 0;
+		$("#ksttree tbody").html(treehtmlstring);
 
-			var kostenstellentree = data.retval;
-			var treehtmlstring = "";
+		BudgetantraegeUebersicht._refreshSums();
 
-			for (var i = 0; i < kostenstellentree.length; i++)
+		$("#ksttree").treetable(
 			{
-				treehtmlstring += printOeTreeItem(kostenstellentree[i]);
+				expandable: true,
+				indent: 32
+			}, true //true forces reinitialization of the tree
+		);
+
+		var allelements = $("#ksttree tbody tr");
+
+		// make kostenstelle clickable, redirect to verwalten
+		for (var i = 0; i < allelements.length; i++)
+		{
+			var element = allelements[i];
+			var id = element.id;
+			if (id.indexOf("kst_") !== -1)
+			{
+				$(element).click(
+					function ()
+					{
+						var elid = this.id;
+						var kostenstelleid = elid.substr(elid.indexOf("_") + 1);
+						window.location = EXTENSION_URL + "Budgetantrag/showVerwalten/" + encodeURIComponent(geschaeftsjahr) + "/" + encodeURIComponent(kostenstelleid);
+					}
+				)
 			}
 
-			$("#ksttree tbody").html(treehtmlstring);
-
-			refreshSums();
-
-			$("#ksttree").treetable(
-				{
-					expandable: true,
-					indent: 32
-				}, true //true forces reinitialization of the tree
-			);
-
-			var allelements = $("#ksttree tbody tr");
-
-			// make kostenstelle clickable, redirect to verwalten
-			for (var i = 0; i < allelements.length; i++)
+			if (expansionlevel === 1)
 			{
-				var element = allelements[i];
-				var id = element.id;
-				if (id.indexOf("kst_") !==  -1)
-				{
-					$(element).click(
-						function ()
-						{
-							var elid = this.id;
-							var kostenstelleid = elid.substr(elid.indexOf("_") + 1);
-							//window.open(EXTENSION_URL + "Budgetantrag/showVerwalten/" + encodeURIComponent(geschaeftsjahr) + "/" + encodeURIComponent(kostenstelleid), "_blank");
-							window.location = EXTENSION_URL + "Budgetantrag/showVerwalten/" + encodeURIComponent(geschaeftsjahr) + "/" + encodeURIComponent(kostenstelleid);
-						}
-					)
-				}
-
-				// expand first level nodes
 				if ($(element).attr("data-tt-parent-id") === "undefined")
 					$("#ksttree").treetable("expandNode", $(element).attr("data-tt-id"));
 			}
-		},
-		error: function (jqXHR, textStatus, errorThrown)
-		{
-			alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
 		}
-	});
-}
+
+		if (expansionlevel === 0)
+		{
+			$("#ksttree").treetable("collapseAll");
+		}
+		else if (expansionlevel === 2)
+		{
+			$("#ksttree").treetable("expandAll");
+		}
+	},
+
+	/**
+	 * Recursively generates html string for the treegrid which can be passed to jquerytree plugin
+	 * @param oeitem
+	 * @param parent
+	 * @returns {string}
+	 * @private
+	 */
+	_printOeTreeItem: function (oeitem, parent)
+	{
+
+		var parentclass = parent === null ? "" :  " data-tt-parent-id='"+parent+"'";
+
+		var strTree = "<tr data-tt-id='"+oeitem.oe_kurzbz+"'"+parentclass+">" +
+			"<td>"+oeitem.bezeichnung+"</td>" +
+			"<td class='text-center'>"+BudgetantraegeLib.formatDecimalGerman(oeitem.budgetsumme)+"</td>" +
+			"<td class='text-center'>"+BudgetantraegeLib.formatDecimalGerman(oeitem.genehmigtsumme)+"</td>";
+
+		for (var i = 0; i < oeitem.kostenstellen.length; i++)
+		{
+			var kostenstelle = oeitem.kostenstellen[i];
+			var inactivetext = kostenstelle.aktiv === true ? "" : " (inaktiv)";
+			var inactiveclass = kostenstelle.aktiv === true ? "" : " inactivekostenstelle";
+			strTree += "<tr data-tt-id='kst_" + kostenstelle.kostenstelle_id + "' data-tt-parent-id='"+oeitem.oe_kurzbz+"' class='kostenstellerow"+inactiveclass+"' id='kst_"+kostenstelle.kostenstelle_id+"'>" +
+				"<td><i class='fa fa-euro' title='Kostenstelle'></i> "+kostenstelle.bezeichnung+inactivetext+"</td>"+
+				"<td class='text-center'>"+BudgetantraegeLib.formatDecimalGerman(kostenstelle.budgetsumme)+"</td>"+
+				"<td class='text-center'>"+BudgetantraegeLib.formatDecimalGerman(kostenstelle.genehmigtsumme)+"</td>"+
+				"</tr>";
+
+			//add to totals
+			if (kostenstelle.budgetsumme !== null)
+				BudgetantraegeUebersicht.sums.gesamt += parseFloat(kostenstelle.budgetsumme);
+			if (kostenstelle.genehmigtsumme !== null)
+				BudgetantraegeUebersicht.sums.genehmigt += parseFloat(kostenstelle.genehmigtsumme);
+		}
+
+		for (var i = 0; i < oeitem.children.length; i++)
+			strTree += BudgetantraegeUebersicht._printOeTreeItem(oeitem.children[i], oeitem.oe_kurzbz)
+
+		return strTree;
+	},
+
+	/**
+	 * Refreshes total sums at bottom of treegrid
+	 */
+	_refreshSums: function()
+	{
+		$("#summegesamt").text(BudgetantraegeLib.formatDecimalGerman(BudgetantraegeUebersicht.sums.gesamt));
+		$("#summegenehmigt").text(BudgetantraegeLib.formatDecimalGerman(BudgetantraegeUebersicht.sums.genehmigt));
+	},
+
+	/**
+	 * Initializes search in tree
+	 * @private
+	 */
+	_initSearch: function()
+	{
+		BudgetantraegeUebersicht.searchResultArray = [];
+
+		var expansionlevel = null;
+
+		if (BudgetantraegeUebersicht.searchMode === "KST")
+		{
+			BudgetantraegeUebersicht._filterKst($("#budgetsearch").val(), BudgetantraegeUebersicht.kostenstellentree, BudgetantraegeUebersicht.searchResultArray);
+			expansionlevel = 2;
+		}
+		else if (BudgetantraegeUebersicht.searchMode === "OE")
+		{
+			BudgetantraegeUebersicht._filterOe($("#budgetsearch").val(), BudgetantraegeUebersicht.kostenstellentree);
+			expansionlevel = 1;
+
+		}
+
+		BudgetantraegeUebersicht._printTree(BudgetantraegeUebersicht.searchResultArray, BudgetantraegeUebersicht.geschaeftsjahr, expansionlevel);
+
+	},
+
+	/**
+	 * Filters Tree by Organisationseinheit (shows only Organisationsheit without hierarchy)
+	 * @param oebez
+	 * @param oearr
+	 * @private
+	 */
+	_filterOe: function(oebez, oearr)
+	{
+		for (var i = 0; i < oearr.length; i++)
+		{
+			if (oearr[i].bezeichnung.indexOf(oebez) >= 0)
+				BudgetantraegeUebersicht.searchResultArray.push(oearr[i]);
+			else
+				BudgetantraegeUebersicht._filterOe(oebez, oearr[i].children);
+		}
+	},
+
+	/**
+	 * Checks if a Organisationseinheit or its children have a Kostenstelle
+	 * @param oe
+	 * @param kstbez
+	 * @returns {*}
+	 * @private
+	 */
+	_checkIfContainsKst: function(oe, kstbez)
+	{
+		for (var i = 0; i < oe.kostenstellen.length; i++)
+		{
+			if (oe.kostenstellen[i].bezeichnung.indexOf(kstbez) >= 0)
+				return true;
+		}
+
+		for (var j = 0; j < oe.children.length; j++)
+		{
+			var child = oe.children[j];
+			var found = BudgetantraegeUebersicht._checkIfContainsKst(child, kstbez);
+			if (found)
+				return found;
+		}
+
+		return false;
+	},
+
+	/**
+	 * Filters tree by Kostenstellen (shows Kostenstellen with hierarchy
+	 * @param kstbez
+	 * @param oearr
+	 * @param targetarr
+	 * @private
+	 */
+	_filterKst: function(kstbez, oearr, targetarr)
+	{
+
+		for (var i = 0; i < oearr.length; i++)
+		{
+			var oeel = oearr[i];
+			var foundKst = [];
+
+			if (BudgetantraegeUebersicht._checkIfContainsKst(oeel, kstbez))
+			{
+				// hard copy oe if it has Kostenstellen
+				for (var j = 0; j < oeel.kostenstellen.length; j++)
+				{
+					if (oeel.kostenstellen[j].bezeichnung.indexOf(kstbez) >= 0)
+						foundKst.push(oeel.kostenstellen[j]);
+				}
+
+				var copy = {
+					bezeichnung: oeel.bezeichnung,
+					budgetsumme: oeel.budgetsumme,
+					genehmigtsumme: oeel.genehmigtsumme,
+					oe_kurzbz: oeel.oe_kurzbz,
+					kostenstellen: foundKst,
+					children: []
+				};
+				targetarr.push(copy);
+
+				BudgetantraegeUebersicht._filterKst(kstbez, oeel.children, targetarr[targetarr.length - 1].children);
+			}
+		}
+	}
+};

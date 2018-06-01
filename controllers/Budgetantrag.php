@@ -231,7 +231,7 @@ class Budgetantrag extends VileSci_Controller
 				if (isSuccess($result))
 					$inserted[] = $result->retval;
 				else
-					$errors = 1;
+					$errors++;
 			}
 		}
 
@@ -246,7 +246,7 @@ class Budgetantrag extends VileSci_Controller
 				if (isSuccess($result))
 					$updated[] = $result->retval;
 				else
-					$errors = 1;
+					$errors++;
 			}
 		}
 
@@ -259,10 +259,11 @@ class Budgetantrag extends VileSci_Controller
 				if (isSuccess($result))
 					$deleted[] = $result->retval;
 				else
-					$errors = 1;
+					$errors++;
 			}
 		}
-		$result = array('error' => $errors, 'inserted' => $inserted, 'updated' => $updated, 'deleted' => $deleted);
+
+		$result = array('errors' => $errors, 'inserted' => $inserted, 'updated' => $updated, 'deleted' => $deleted);
 
 		$this->output
 			->set_content_type('application/json')

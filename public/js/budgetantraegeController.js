@@ -4,8 +4,8 @@
  * and calls functions from the js ajax files to perform calls to the Budgetantraege controller
  */
 
-//id prefixes
 const CALLED_PATH = FHC_JS_DATA_STORAGE_OBJECT.called_path;
+//id prefixes
 const NEW_BUDGET_PREFIX = "newb", NEW_POSITION_PREFIX = "newp", BUDGETANTRAG_PREFIX = "budget", POSITION_PREFIX = "position";
 const GLOBAL_STATUSES = {"new" : {"bez": "new", "editable": true},
 						"sent" : {"bez": "sent", "verb": "abschicken", "adj": "abgeschickt", "editable": true},
@@ -155,6 +155,21 @@ var BudgetantraegeController = {
 		};
 
 		BudgetantraegeAjax.addBudgetantrag(data, budgetantragid);
+	},
+
+	/**
+	 * Update Bezeichnung of Budgetantrag
+	 * @param budgetantragid
+	 * @param bezeichnung
+	 */
+	updateBudgetantragBezeichnung: function(budgetantragid, bezeichnung)
+	{
+		console.log("in update bez, bez: "+bezeichnung);
+		var budgetantrag = BudgetantraegeLib.findInArray(BudgetantraegeController.global_budgetantraege.existentBudgetantraege, budgetantragid);
+
+		if (budgetantrag === false) return;
+
+		BudgetantraegeAjax.updateBudgetantragBezeichnung(budgetantragid, bezeichnung);
 	},
 
 	/**
@@ -357,7 +372,7 @@ var BudgetantraegeController = {
 		//save old id for showing message
 		BudgetantraegeController.global_counters.lastAddedOldId = oldid;
 		//update Budgetantragid in the view to the id of newly added Antrag
-		$("#"+BUDGETANTRAG_PREFIX+"_"+oldid).attr("id", BUDGETANTRAG_PREFIX+"_"+data.retval);
+		$("#"+BUDGETANTRAG_PREFIX+"_"+oldid).prop("id", BUDGETANTRAG_PREFIX+"_"+data.retval);
 		BudgetantraegeAjax.getBudgetantrag(data.retval, "gespeichert");
 	},
 
@@ -403,6 +418,17 @@ var BudgetantraegeController = {
 		BudgetantraegeView.setMessage(oldbudgetantragid, 'text-success', 'Budgetantrag erfolgreich '+updatetype+'!');
 	},
 
+	afterBudgetantragBezeichnungUpdate: function(data, bezeichnung)
+	{
+		if (!FHC_AjaxClient.hasData(data))
+		{
+			alert("Fehler beim Speichern der Budgetantragsbezeichnung!");
+			return;
+		}
+
+		BudgetantraegeView.setBudgetantragBezeichnungEditConfirm(data.retval, bezeichnung);
+	},
+
 	/**
 	 * Executes after Ajax for deleting a single Budgetantrag is finished, refreshes array and sums
 	 * @param data
@@ -426,7 +452,7 @@ var BudgetantraegeController = {
 	 * @param budgetantragid
 	 * @param data
 	 */
-	afterBudgetantragStatusChange: function(budgetantragid, data)
+	afterBudgetantragStatusUpdate: function(budgetantragid, data)
 	{
 		$("#genAntragModal").modal('hide');
 

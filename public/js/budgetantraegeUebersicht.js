@@ -50,9 +50,16 @@ $(document).ready(function () {
 		}
 	);
 
-
 	$("#budgetsearch").keyup(
 		BudgetantraegeUebersicht._initSearch
+	);
+
+	$("#collall").click(
+		BudgetantraegeUebersicht._collapseAll
+	);
+
+	$("#expall").click(
+		BudgetantraegeUebersicht._expandAll
 	);
 });
 
@@ -67,8 +74,7 @@ var BudgetantraegeUebersicht = {
 	{
 		FHC_AjaxClient.ajaxCallGet(
 			CALLED_PATH + "/getKostenstellenTree/"+encodeURIComponent(geschaeftsjahr),
-			{
-			},
+			null,
 			{
 				successCallback: function(data, textStatus, jqXHR)
 				{
@@ -85,7 +91,7 @@ var BudgetantraegeUebersicht = {
 		);
 	},
 
-	/*------------------------------------------------ ("PRIVATE") METHODS ------------------------------------------------*/
+	/*------------------------------------------------ "PRIVATE" METHODS ------------------------------------------------*/
 
 	/**
 	 * Prints Organisationseinheiten Tree with Kostenstellen
@@ -148,11 +154,11 @@ var BudgetantraegeUebersicht = {
 
 		if (expansionlevel === 0)
 		{
-			$("#ksttree").treetable("collapseAll");
+			BudgetantraegeUebersicht._collapseAll();
 		}
 		else if (expansionlevel === 2)
 		{
-			$("#ksttree").treetable("expandAll");
+			BudgetantraegeUebersicht._expandAll();
 		}
 	},
 
@@ -199,11 +205,22 @@ var BudgetantraegeUebersicht = {
 
 	/**
 	 * Refreshes total sums at bottom of treegrid
+	 * @private
 	 */
 	_refreshSums: function()
 	{
 		$("#summegesamt").text(BudgetantraegeLib.formatDecimalGerman(BudgetantraegeUebersicht.sums.gesamt));
 		$("#summegenehmigt").text(BudgetantraegeLib.formatDecimalGerman(BudgetantraegeUebersicht.sums.genehmigt));
+	},
+
+	_collapseAll: function()
+	{
+		$("#ksttree").treetable("collapseAll");
+	},
+
+	_expandAll: function()
+	{
+		$("#ksttree").treetable("expandAll");
 	},
 
 	/**
@@ -212,24 +229,31 @@ var BudgetantraegeUebersicht = {
 	 */
 	_initSearch: function()
 	{
+		var searchterm = $("#budgetsearch").val();
+
+		if (!searchterm)
+		{
+			BudgetantraegeUebersicht._printTree(BudgetantraegeUebersicht.kostenstellentree, BudgetantraegeUebersicht.geschaeftsjahr, 1);
+			return;
+		}
+
 		BudgetantraegeUebersicht.searchResultArray = [];
 
 		var expansionlevel = null;
 
 		if (BudgetantraegeUebersicht.searchMode === "KST")
 		{
-			BudgetantraegeUebersicht._filterKst($("#budgetsearch").val(), BudgetantraegeUebersicht.kostenstellentree, BudgetantraegeUebersicht.searchResultArray);
+			BudgetantraegeUebersicht._filterKst(searchterm, BudgetantraegeUebersicht.kostenstellentree, BudgetantraegeUebersicht.searchResultArray);
 			expansionlevel = 2;
 		}
 		else if (BudgetantraegeUebersicht.searchMode === "OE")
 		{
-			BudgetantraegeUebersicht._filterOe($("#budgetsearch").val(), BudgetantraegeUebersicht.kostenstellentree);
+			BudgetantraegeUebersicht._filterOe(searchterm, BudgetantraegeUebersicht.kostenstellentree);
 			expansionlevel = 1;
 
 		}
 
 		BudgetantraegeUebersicht._printTree(BudgetantraegeUebersicht.searchResultArray, BudgetantraegeUebersicht.geschaeftsjahr, expansionlevel);
-
 	},
 
 	/**
@@ -242,37 +266,11 @@ var BudgetantraegeUebersicht = {
 	{
 		for (var i = 0; i < oearr.length; i++)
 		{
-			if (oearr[i].bezeichnung.indexOf(oebez) >= 0)
+			if (BudgetantraegeUebersicht._compareCaseInsensitive(oearr[i].bezeichnung, oebez) >= 0)
 				BudgetantraegeUebersicht.searchResultArray.push(oearr[i]);
 			else
 				BudgetantraegeUebersicht._filterOe(oebez, oearr[i].children);
 		}
-	},
-
-	/**
-	 * Checks if a Organisationseinheit or its children have a Kostenstelle
-	 * @param oe
-	 * @param kstbez
-	 * @returns {*}
-	 * @private
-	 */
-	_checkIfContainsKst: function(oe, kstbez)
-	{
-		for (var i = 0; i < oe.kostenstellen.length; i++)
-		{
-			if (oe.kostenstellen[i].bezeichnung.indexOf(kstbez) >= 0)
-				return true;
-		}
-
-		for (var j = 0; j < oe.children.length; j++)
-		{
-			var child = oe.children[j];
-			var found = BudgetantraegeUebersicht._checkIfContainsKst(child, kstbez);
-			if (found)
-				return found;
-		}
-
-		return false;
 	},
 
 	/**
@@ -284,33 +282,105 @@ var BudgetantraegeUebersicht = {
 	 */
 	_filterKst: function(kstbez, oearr, targetarr)
 	{
-
 		for (var i = 0; i < oearr.length; i++)
 		{
 			var oeel = oearr[i];
-			var foundKst = [];
+			var foundkst = [];
+			var foundkstfirstlevel = [];
+			var budgetsumme = 0.00;
+			var genehmigtsumme = 0.00;
 
-			if (BudgetantraegeUebersicht._checkIfContainsKst(oeel, kstbez))
+			BudgetantraegeUebersicht._getAllKstChildren(oeel, kstbez, foundkstfirstlevel, foundkst, true);
+
+			// hard copy oe if it has Kostenstellen
+			if (foundkst.length > 0)
 			{
-				// hard copy oe if it has Kostenstellen
-				for (var j = 0; j < oeel.kostenstellen.length; j++)
+
+/*				for (var j = 0; j < oeel.kostenstellen.length; j++)
 				{
-					if (oeel.kostenstellen[j].bezeichnung.indexOf(kstbez) >= 0)
-						foundKst.push(oeel.kostenstellen[j]);
+					var kst = oeel.kostenstellen[j];
+
+					if (BudgetantraegeUebersicht._compareCaseInsensitive(kst.bezeichnung, kstbez) >= 0)
+					{
+						console.log(kst);
+						//budgetsumme += kst.budgetsumme;
+						//genehmigtsumme += kst.genehmigtsumme;
+						foundKst.push(kst);
+					}
+				}*/
+
+				//console.log(foundkst);
+
+				var length = foundkst.length;
+
+				for (var k = 0; k < foundkst.length; k++)
+				{
+					if (foundkst[k].budgetsumme !== null)
+						budgetsumme += parseFloat(foundkst[k].budgetsumme);
+					if (foundkst[k].genehmigtsumme !== null)
+						genehmigtsumme += parseFloat(foundkst[k].genehmigtsumme);
 				}
 
 				var copy = {
 					bezeichnung: oeel.bezeichnung,
-					budgetsumme: oeel.budgetsumme,
-					genehmigtsumme: oeel.genehmigtsumme,
+					budgetsumme: budgetsumme,
+					genehmigtsumme: genehmigtsumme,
 					oe_kurzbz: oeel.oe_kurzbz,
-					kostenstellen: foundKst,
+					kostenstellen: foundkstfirstlevel,
 					children: []
 				};
+
 				targetarr.push(copy);
 
 				BudgetantraegeUebersicht._filterKst(kstbez, oeel.children, targetarr[targetarr.length - 1].children);
 			}
 		}
+	},
+
+	/**
+	 * Gets all Kostenstellen that are under a given oe (children)
+	 * that contain kstbez
+	 * @param oe
+	 * @param kstbez
+	 * @param foundkstfirstlevel array containing all direct children of the oe
+	 * @param foundkst array containing all children (children, grandchildren...) of the oe
+	 * @param firstlevel wether the first level of children is searched (first iteration)
+	 * @returns {*} array with all found Kostenstellen
+	 * @private
+	 */
+	_getAllKstChildren: function(oe, kstbez, foundkstfirstlevel, foundkst, firstlevel)
+	{
+		for (var i = 0; i < oe.kostenstellen.length; i++)
+		{
+			if (BudgetantraegeUebersicht._compareCaseInsensitive(oe.kostenstellen[i].bezeichnung, kstbez) >= 0)
+			{
+				if (firstlevel)
+					foundkstfirstlevel.push(oe.kostenstellen[i]);
+
+				foundkst.push(oe.kostenstellen[i]);
+			}
+		}
+
+		firstlevel = false;
+
+		for (var j = 0; j < oe.children.length; j++)
+		{
+			var child = oe.children[j];
+			BudgetantraegeUebersicht._getAllKstChildren(child, kstbez, foundkstfirstlevel, foundkst, firstlevel);
+		}
+
+		return foundkst;
+	},
+
+	/**
+	 * Compares two kst caseinsensitively
+	 * @param kstbez1
+	 * @param kstbez2
+	 * @returns {Number}
+	 * @private
+	 */
+	_compareCaseInsensitive: function(kstbez1, kstbez2)
+	{
+		return kstbez1.toLowerCase().indexOf(kstbez2.toLowerCase());
 	}
 };

@@ -19,3 +19,21 @@
     font-size: 1.3em;
     top: 2px;
 }
+
+.budgetbezedit
+{
+    cursor: pointer;
+    color: #337ab7;
+}
+
+.budgetbezinput, .budgetbezconfirm
+{
+    height: 22px;
+}
+
+.budgetbezconfirm
+{
+    color: green;
+    padding-top: 0;
+    padding-bottom: 0;
+}

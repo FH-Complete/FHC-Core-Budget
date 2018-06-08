@@ -80,7 +80,11 @@ $this->load->view(
 						<table id ="ksttree" class="table table-bordered table-condensed ksttree">
 							<thead>
 								<tr>
-									<th>Organisationseinheit/Kostenstelle</th>
+									<th>
+										Organisationseinheit/Kostenstelle&nbsp;&nbsp;&nbsp;
+										<button type="button" class="btn btn-default btn-xs" id="collall"><i class="fa fa-toggle-up"></i>&nbsp;&nbsp;&nbsp;collapse all</button>
+										<button type="button" class="btn btn-default btn-xs" id="expall"><i class="fa fa-toggle-down"></i>&nbsp;&nbsp;&nbsp;expand all</button>
+									</th>
 									<th class="text-center">Budget gesamt (€ brutto)</th>
 									<th class="text-center">Budget genehmigt (€ brutto)</th>
 								</tr>

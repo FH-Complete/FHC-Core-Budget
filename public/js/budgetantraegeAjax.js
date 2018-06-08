@@ -8,7 +8,7 @@ var BudgetantraegeAjax = {
 	{
 		FHC_AjaxClient.ajaxCallGet(
 			CALLED_PATH + "/getProjekte",
-			{},
+			null,
 			{
 				successCallback: function(data, textStatus, jqXHR)
 				{
@@ -27,7 +27,7 @@ var BudgetantraegeAjax = {
 	{
 		FHC_AjaxClient.ajaxCallGet(
 			CALLED_PATH + "/getKonten/"+encodeURIComponent(kostenstelle),
-			{},
+			null,
 			{
 				successCallback: successCallback,
 				errorCallback: function (jqXHR, textStatus, errorThrown)
@@ -43,7 +43,7 @@ var BudgetantraegeAjax = {
 	{
 		FHC_AjaxClient.ajaxCallGet(
 			CALLED_PATH + "/checkIfCurrentGeschaeftsjahr/"+encodeURIComponent(geschaeftsjahr),
-			{},
+			null,
 			{
 				successCallback: successCallback,
 				errorCallback: function (jqXHR, textStatus, errorThrown)
@@ -59,7 +59,7 @@ var BudgetantraegeAjax = {
 	{
 		FHC_AjaxClient.ajaxCallGet(
 			CALLED_PATH + "/checkIfKostenstelleGenehmigbar/"+encodeURIComponent(kostenstelle),
-			{},
+			null,
 			{
 				successCallback: successCallback,
 				errorCallback: function (jqXHR, textStatus, errorThrown)
@@ -75,7 +75,7 @@ var BudgetantraegeAjax = {
 	{
 		FHC_AjaxClient.ajaxCallGet(
 			CALLED_PATH + "/getKostenstellen/"+encodeURIComponent(geschaeftsjahr),
-			{},
+			null,
 			{
 				successCallback: successCallback,
 				errorCallback: function (jqXHR, textStatus, errorThrown)
@@ -91,7 +91,7 @@ var BudgetantraegeAjax = {
 	{
 		FHC_AjaxClient.ajaxCallGet(
 			CALLED_PATH + "/getBudgetantraege/"+encodeURIComponent(geschaeftsjahr)+'/'+encodeURIComponent(kostenstelle),
-			{},
+			null,
 			{
 				successCallback: function (data, textStatus, jqXHR)
 				{
@@ -116,7 +116,7 @@ var BudgetantraegeAjax = {
 	{
 		FHC_AjaxClient.ajaxCallGet(
 			CALLED_PATH + "/getBudgetantrag/"+encodeURIComponent(budgetantragid),
-			{},
+			null,
 			{
 				successCallback: function (data, textStatus, jqXHR)
 				{
@@ -150,6 +150,28 @@ var BudgetantraegeAjax = {
 		);
 	},
 
+	updateBudgetantragBezeichnung: function(budgetantragid, bezeichnung)
+	{
+		console.log("in AJAX call ");
+		FHC_AjaxClient.ajaxCallPost(
+			CALLED_PATH + "/updateBudgetantragBezeichnung/"+encodeURIComponent(budgetantragid),
+			{
+				"budgetbezeichnung": bezeichnung
+			},
+			{
+				successCallback: function (data, textStatus, jqXHR)
+				{
+					BudgetantraegeController.afterBudgetantragBezeichnungUpdate(data, bezeichnung);
+				},
+				errorCallback: function (jqXHR, textStatus, errorThrown)
+				{
+					alert("error when updating Budgetantragsbezeichnung!");
+				},
+				veilTimeout: 0
+			}
+		);
+	},
+
 	updateBudgetpositionen: function(budgetantragid, data)
 	{
 		FHC_AjaxClient.ajaxCallPost(
@@ -173,7 +195,7 @@ var BudgetantraegeAjax = {
 	{
 		FHC_AjaxClient.ajaxCallPost(
 			CALLED_PATH + "/deleteBudgetantrag/"+encodeURIComponent(budgetantragid),
-			{},
+			null,
 			{
 				successCallback: function (data, textStatus, jqXHR)
 				{
@@ -193,11 +215,11 @@ var BudgetantraegeAjax = {
 	{
 		FHC_AjaxClient.ajaxCallPost(
 			CALLED_PATH + "/updateBudgetantragStatus/"+encodeURIComponent(budgetantragid)+"/"+encodeURIComponent(statuskurzbz),
-			{},
+			null,
 			{
 				successCallback: function (data, textStatus, jqXHR)
 				{
-					BudgetantraegeController.afterBudgetantragStatusChange(budgetantragid, data);
+					BudgetantraegeController.afterBudgetantragStatusUpdate(budgetantragid, data);
 				},
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{

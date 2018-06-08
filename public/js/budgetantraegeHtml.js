@@ -48,13 +48,20 @@ var BudgetantraegeHtml = {
 	{
 		var html = '<div class="panel-heading">'+
 					'<div class="row">'+
-						'<div class="col-xs-5">'+
+						'<div class="col-xs-5 form-inline">'+
 							'<h4 class="panel-title">'+
+							'<a class="accordion-toggle'+args.collapseHtml+' arrowcollapse" data-toggle="collapse" data-parent="#budgetantraege" href="#collapse'+args.budgetantragid+'">'+
+							'<span id="budgetbezeichnung_'+args.budgetantragid+'">'+args.budgetname+'</span>&nbsp;'+
+							'</a><i id="budgetbezedit_'+args.budgetantragid+'" class="fa fa-edit budgetbezedit"></i>'+
+							'<div class="form-group input-group" id="budgetbezinputgrp_'+args.budgetantragid+'" style="display:none">'+
+								'<input class="form-control budgetbezinput" id="budgetbezinput_'+args.budgetantragid+'">'+
+								'<span class="input-group-btn"><button class="btn btn-default budgetbezconfirm" type="button" id="budgetbezconfirm_'+args.budgetantragid+'"><i class="fa fa-check"></i></button></span>'+
+							'</div>'+
+							'&nbsp;&nbsp;|&nbsp;'+
 							'<a class="accordion-toggle'+args.collapseHtml+'" data-toggle="collapse" data-parent="#budgetantraege" href="#collapse'+args.budgetantragid+'">'+
-							args.budgetname+' | '+
-							'<span id="budgetstatus_'+args.budgetantragid+'"></span>'+
+								'<span id="budgetstatus_'+args.budgetantragid+'"></span>'+
+								'<span id="unsaved_'+args.budgetantragid+'" class="hidden">&nbsp;&nbsp;<i class="glyphicon glyphicon-floppy-remove text-danger"></i></span>'+
 							'</a>'+
-							'<span id="unsaved_'+args.budgetantragid+'" class="hidden">&nbsp;&nbsp;<i class="glyphicon glyphicon-floppy-remove text-danger"></i></span>'+
 							'</h4>'+
 						'</div>'+
 						'<div class="col-xs-2 text-center">' +

@@ -30,13 +30,18 @@ class Budgetantrag extends VileSci_Controller
 	}
 
 	/**
-	 * Loads initial view with Geschäftsjahr and Kostenstellendropdown
+	 * Default
 	 */
 	public function index()
 	{
 		$this->showVerwalten();
 	}
 
+	/**
+	 * Loads initial view with Geschäftsjahr and Kostenstellendropdown
+	 * @param null $geschaeftsjahr
+	 * @param null $kostenstelle_id
+	 */
 	public function showVerwalten($geschaeftsjahr = null, $kostenstelle_id = null)
 	{
 		$this->GeschaeftsjahrModel->addSelect('geschaeftsjahr_kurzbz');
@@ -63,7 +68,6 @@ class Budgetantrag extends VileSci_Controller
 				else
 					$geschaeftsjahr = null;
 			}
-
 		}
 		$kostenstellen = $this->BudgetkostenstelleModel->getActiveKostenstellenForGeschaeftsjahrBerechtigt($geschaeftsjahr);
 
@@ -85,7 +89,7 @@ class Budgetantrag extends VileSci_Controller
 
 	/**
 	 * Checks if given Geschäftsjahr is current, i.e. is either the currently running Gj or a Gj in the future
-	 * returns true JSON if current, false otherwise
+	 * returns Geschäftsjahr in JSON if current, false otherwise
 	 * @param $geschaeftsjahr
 	 */
 	public function checkIfCurrentGeschaeftsjahr($geschaeftsjahr)
@@ -143,9 +147,6 @@ class Budgetantrag extends VileSci_Controller
 	{
 		$result = $this->BudgetkostenstelleModel->getActiveKostenstellenForGeschaeftsjahrBerechtigt($geschaefsjahr);
 
-/*		if (isSuccess($result))
-			$result->retval = $this->filterKostenstellenByBerechtigung($result->retval);*/
-
 		$this->output
 			->set_content_type('application/json')
 			->set_output(json_encode($result));
@@ -196,6 +197,20 @@ class Budgetantrag extends VileSci_Controller
 		);
 
 		$result = $this->BudgetantragModel->addBudgetantrag($budgetantragData, $positionen);
+
+		$this->output
+			->set_content_type('application/json')
+			->set_output(json_encode($result));
+	}
+
+	/**
+	 *
+	 */
+	public function updateBudgetantragBezeichnung($budgetantrag_id)
+	{
+		$bezeichnung = $this->input->post('budgetbezeichnung');
+
+		$result = $this->BudgetantragModel->update($budgetantrag_id, array('bezeichnung' => $bezeichnung));
 
 		$this->output
 			->set_content_type('application/json')

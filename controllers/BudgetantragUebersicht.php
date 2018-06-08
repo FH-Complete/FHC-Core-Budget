@@ -5,6 +5,9 @@
 class BudgetantragUebersicht extends VileSci_Controller
 {
 
+	/**
+	 * Constructor
+	 */
 	public function __construct()
 	{
 		parent::__construct();
@@ -135,10 +138,6 @@ class BudgetantragUebersicht extends VileSci_Controller
 					'children' => array()
 				);
 		}
-/*		echo '<pre>';
-		print_r($oetree);
-		echo '</pre>';
-		die();*/
 
 		return $oetree;
 	}
@@ -154,7 +153,7 @@ class BudgetantragUebersicht extends VileSci_Controller
 	 * if not, still iterating for calculating the sums but not appending the Kostenstelle!
 	 * @return bool true the Kostenstelle was successfully appended, false otherwise
 	 */
-	private function appendKstToTree(&$oetree, $parentoe_kurzbz, $kostenstelle, $firstparent,  $appended)
+	private function appendKstToTree(&$oetree, $parentoe_kurzbz, $kostenstelle, $firstparent, $appended)
 	{
 		$treesize = count($oetree);
 
@@ -191,7 +190,6 @@ class BudgetantragUebersicht extends VileSci_Controller
 			}
 			if ($result = $this->appendKstToTree($item['children'], $parentoe_kurzbz, $kostenstelle, $firstparent, $appended) === true)
 				return $result;
-
 		}
 		return false;
 	}

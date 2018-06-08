@@ -119,6 +119,33 @@ var BudgetantraegeView = {
 
 		BudgetantraegeView.setSum(budgetantragid, sum);
 
+		$("#budgetbezconfirm_" + budgetantragid).click(
+			function ()
+			{
+				var budgetbez = $("#budgetbezinput_"+budgetantragid).val();
+				BudgetantraegeController.updateBudgetantragBezeichnung(budgetantragid, budgetbez)
+			}
+		);
+
+		$("#budgetbezedit_" + budgetantragid).click(
+			function ()
+			{
+				var budgetbez = $("#budgetbezeichnung_"+budgetantragid).text();
+				BudgetantraegeView.setBudgetantragBezeichnungEdit(budgetantragid, budgetbez);
+			}
+		);
+
+		$("#budgetbezinput_"+budgetantragid).keypress(function(event){
+			var keycode = event.which;
+			console.log(budgetbez);
+			if(keycode == '13'){
+				var budgetbez = $("#budgetbezinput_"+budgetantragid).val();
+				BudgetantraegeController.updateBudgetantragBezeichnung(budgetantragid, budgetbez)
+			}
+			//Stop the event from propogation to other handlers
+			event.stopPropagation();
+		});
+
 		$("#addPosition_" + budgetantragid).click(
 			function ()
 			{
@@ -389,6 +416,32 @@ var BudgetantraegeView = {
 	setTotalSums: function(sums)
 	{
 		$("#savedSum").text('€ '+BudgetantraegeLib.formatDecimalGerman(sums.savedsum));
+	},
+
+	/**
+	 * Sets the bezeichnung of a Budgetantrag in html
+	 * @param budgetantragid
+	 * @param bezeichnung
+	 */
+	setBudgetantragBezeichnungEdit: function(budgetantragid, bezeichnung)
+	{
+		$("#budgetbezeichnung_"+budgetantragid).hide();
+		$("#budgetbezedit_"+budgetantragid).hide();
+		$("#budgetbezinput_"+budgetantragid).val(bezeichnung);
+		$("#budgetbezinputgrp_"+budgetantragid).show();
+	},
+
+	/**
+	 * Sets the bezeichnung of a Budgetantrag in html
+	 * @param budgetantragid
+	 * @param bezeichnung
+	 */
+	setBudgetantragBezeichnungEditConfirm: function(budgetantragid, bezeichnung)
+	{
+		$("#budgetbezinputgrp_"+budgetantragid).hide();
+		$("#budgetbezeichnung_"+budgetantragid).text(bezeichnung);
+		$("#budgetbezeichnung_"+budgetantragid).show();
+		$("#budgetbezedit_"+budgetantragid).show();
 	},
 
 	/**

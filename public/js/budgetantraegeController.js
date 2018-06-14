@@ -164,7 +164,6 @@ var BudgetantraegeController = {
 	 */
 	updateBudgetantragBezeichnung: function(budgetantragid, bezeichnung)
 	{
-		console.log("in update bez, bez: "+bezeichnung);
 		var budgetantrag = BudgetantraegeLib.findInArray(BudgetantraegeController.global_budgetantraege.existentBudgetantraege, budgetantragid);
 
 		if (budgetantrag === false) return;

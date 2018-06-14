@@ -214,8 +214,10 @@ var BudgetantraegeAjax = {
 	updateBudgetantragStatus: function(budgetantragid, statuskurzbz)
 	{
 		FHC_AjaxClient.ajaxCallPost(
-			CALLED_PATH + "/updateBudgetantragStatus/"+encodeURIComponent(budgetantragid)+"/"+encodeURIComponent(statuskurzbz),
-			null,
+			CALLED_PATH + "/updateBudgetantragStatus/" + encodeURIComponent(budgetantragid),
+			{
+				"budgetstatus_kurzbz": statuskurzbz
+			},
 			{
 				successCallback: function (data, textStatus, jqXHR)
 				{

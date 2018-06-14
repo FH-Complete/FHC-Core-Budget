@@ -6,6 +6,19 @@
 class Budgetantrag extends VileSci_Controller
 {
 	private $uid;
+	const NEWSTATUS = 'new';
+	const SENT = 'sent';
+	const APPROVED = 'approved';
+	const REJECTED = 'rejected';
+	const ACCEPTED = 'accepted';
+	const VERWALTEN_PERMISSION = 'extension/budget_verwaltung';
+	private $budgetstatus_permissions = array(
+		self::NEWSTATUS => '',
+		self::SENT => '',
+		self::APPROVED => 'extension/budget_genehmigung',
+		self::REJECTED => 'extension/budget_genehmigung',
+		self::ACCEPTED => 'extension/budget_freigabe'
+	);
 
 	/**
 	 * Constructor
@@ -25,6 +38,7 @@ class Budgetantrag extends VileSci_Controller
 
 		// Loads libraries
 		$this->load->library('WidgetLib');
+		$this->load->library('PermissionLib');
 
 		$this->_setAuthUID(); // sets property uid
 	}
@@ -125,14 +139,12 @@ class Budgetantrag extends VileSci_Controller
 	}
 
 	/**
-	 * Checks if logged used has permission for Genehmigung of a Kostenstelle
+	 * Checks if logged user has permission for Genehmigung of a Kostenstelle
 	 * @param $kostenstelle_id
 	 */
 	public function checkIfKostenstelleGenehmigbar($kostenstelle_id)
 	{
-		$this->load->library('PermissionLib');
-
-		$genehmigenperm = $this->permissionlib->isBerechtigt('extension/budget_genehmigung', 'suid', null, $kostenstelle_id) === true;
+		$genehmigenperm = $this->permissionlib->isBerechtigt($this->budgetstatus_permissions[self::APPROVED], 'suid', null, $kostenstelle_id);
 
 		$this->output
 			->set_content_type('application/json')
@@ -155,11 +167,14 @@ class Budgetantrag extends VileSci_Controller
 	/**
 	 * Gets all Budgetanträge for given Geschäftsjahr and Kostenstelle in JSON format
 	 * @param $geschaefsjahr
-	 * @param $kostenstelle
+	 * @param $kostenstelle_id
 	 */
-	public function getBudgetantraege($geschaefsjahr, $kostenstelle)
+	public function getBudgetantraege($geschaefsjahr, $kostenstelle_id)
 	{
-		$result = $this->BudgetantragModel->getBudgetantraege($geschaefsjahr, $kostenstelle);
+		$result = null;
+
+		if ($this->permissionlib->isBerechtigt(self::VERWALTEN_PERMISSION, 'suid', null, $kostenstelle_id))
+			$result = $this->BudgetantragModel->getBudgetantraege($geschaefsjahr, $kostenstelle_id);
 
 		$this->output
 			->set_content_type('application/json')
@@ -172,7 +187,12 @@ class Budgetantrag extends VileSci_Controller
 	 */
 	public function getBudgetantrag($budgetantragid)
 	{
-		$result = $this->BudgetantragModel->getBudgetantrag($budgetantragid);
+		$result = null;
+
+		if ($this->_checkBudgetverwaltenPermission($budgetantragid))
+			$result = $this->BudgetantragModel->getBudgetantrag($budgetantragid);
+		else
+			echo "nope";
 
 		$this->output
 			->set_content_type('application/json')
@@ -184,19 +204,25 @@ class Budgetantrag extends VileSci_Controller
 	 */
 	public function newBudgetantrag()
 	{
+		$result = null;
+
 		$kostenstelle_id = $this->input->post('kostenstelle_id');
 		$geschaeftsjahr_kurzbz = $this->input->post('geschaeftsjahr_kurzbz');
 		$bezeichnung = $this->input->post('bezeichnung');
 		$positionen = $this->input->post('positionen');
 
-		$budgetantragData = array(
-			'kostenstelle_id' => $kostenstelle_id,
-			'geschaeftsjahr_kurzbz' => $geschaeftsjahr_kurzbz,
-			'bezeichnung' => html_escape($bezeichnung),
-			'insertvon' => $this->uid
-		);
+		if ($this->permissionlib->isBerechtigt(self::VERWALTEN_PERMISSION, 'suid', null, $kostenstelle_id))
+		{
 
-		$result = $this->BudgetantragModel->addBudgetantrag($budgetantragData, $positionen);
+			$budgetantragData = array(
+				'kostenstelle_id' => $kostenstelle_id,
+				'geschaeftsjahr_kurzbz' => $geschaeftsjahr_kurzbz,
+				'bezeichnung' => html_escape($bezeichnung),
+				'insertvon' => $this->uid
+			);
+
+			$result = $this->BudgetantragModel->addBudgetantrag($budgetantragData, $positionen);
+		}
 
 		$this->output
 			->set_content_type('application/json')
@@ -204,13 +230,18 @@ class Budgetantrag extends VileSci_Controller
 	}
 
 	/**
-	 *
+	 * Updates Bezeichnung of a Budgetantrag
+	 * @param $budgetantrag_id
 	 */
 	public function updateBudgetantragBezeichnung($budgetantrag_id)
 	{
-		$bezeichnung = $this->input->post('budgetbezeichnung');
+		$result = null;
 
-		$result = $this->BudgetantragModel->update($budgetantrag_id, array('bezeichnung' => $bezeichnung));
+		if ($this->_checkBudgetverwaltenPermission($budgetantrag_id))
+		{
+			$bezeichnung = $this->input->post('budgetbezeichnung');
+			$result = $this->BudgetantragModel->update($budgetantrag_id, array('bezeichnung' => $bezeichnung));
+		}
 
 		$this->output
 			->set_content_type('application/json')
@@ -232,49 +263,52 @@ class Budgetantrag extends VileSci_Controller
 		$inserted = $updated = $deleted = array();
 		$errors = 0;
 
-		if (is_array($positionen_toadd))
+		if ($this->_checkBudgetverwaltenPermission($budgetantrag_id))
 		{
-			foreach ($positionen_toadd as $position)
+			if (is_array($positionen_toadd))
 			{
-				$this->_preparePositionArray($position);
+				foreach ($positionen_toadd as $position)
+				{
+					$this->_preparePositionArray($position);
 
-				//add corresponding budgetantrag id so it can be added to specific Budgetantrag
-				$position['budgetantrag_id'] = $budgetantrag_id;
+					//add corresponding budgetantrag id so it can be added to specific Budgetantrag
+					$position['budgetantrag_id'] = $budgetantrag_id;
 
-				$result = $this->BudgetpositionModel->insert($position);
+					$result = $this->BudgetpositionModel->insert($position);
 
-				if (isSuccess($result))
-					$inserted[] = $result->retval;
-				else
-					$errors++;
+					if (isSuccess($result))
+						$inserted[] = $result->retval;
+					else
+						$errors++;
+				}
 			}
-		}
 
-		if (is_array($positionen_toupdate))
-		{
-			foreach ($positionen_toupdate as $position)
+			if (is_array($positionen_toupdate))
 			{
-				$this->_preparePositionArray($position['position']);
+				foreach ($positionen_toupdate as $position)
+				{
+					$this->_preparePositionArray($position['position']);
 
-				$result = $this->BudgetpositionModel->update($position['budgetposition_id'], $position['position']);
+					$result = $this->BudgetpositionModel->update($position['budgetposition_id'], $position['position']);
 
-				if (isSuccess($result))
-					$updated[] = $result->retval;
-				else
-					$errors++;
+					if (isSuccess($result))
+						$updated[] = $result->retval;
+					else
+						$errors++;
+				}
 			}
-		}
 
-		if (is_array($positionen_todelete))
-		{
-			foreach ($positionen_todelete as $position)
+			if (is_array($positionen_todelete))
 			{
-				$result = $this->BudgetpositionModel->delete($position['budgetposition_id']);
+				foreach ($positionen_todelete as $position)
+				{
+					$result = $this->BudgetpositionModel->delete($position['budgetposition_id']);
 
-				if (isSuccess($result))
-					$deleted[] = $result->retval;
-				else
-					$errors++;
+					if (isSuccess($result))
+						$deleted[] = $result->retval;
+					else
+						$errors++;
+				}
 			}
 		}
 
@@ -291,7 +325,12 @@ class Budgetantrag extends VileSci_Controller
 	 */
 	public function deleteBudgetantrag($budgetantrag_id)
 	{
-		$result = $this->BudgetantragModel->deleteBudgetantrag($budgetantrag_id);
+		$result = null;
+
+		if ($this->_checkBudgetverwaltenPermission($budgetantrag_id))
+		{
+			$result = $this->BudgetantragModel->deleteBudgetantrag($budgetantrag_id);
+		}
 
 		$this->output
 			->set_content_type('application/json')
@@ -301,30 +340,39 @@ class Budgetantrag extends VileSci_Controller
 	/**
 	 * Update Budgetantrag status, returns new status if successfully updated, null otherwise
 	 * @param $budgetantrag_id
-	 * @param $budgetstatus_kurzbz
 	 */
-	public function updateBudgetantragStatus($budgetantrag_id, $budgetstatus_kurzbz)
+	public function updateBudgetantragStatus($budgetantrag_id)
 	{
-		$this->load->model('extensions/FHC-Core-Budget/budgetantragstatus_model', 'BudgetantragstatusModel');
-
 		$json = null;
+		$budgetstatus_kurzbz = $this->input->post('budgetstatus_kurzbz');
 
-		$result = $this->BudgetantragstatusModel->insert(
-			array(
-				'budgetantrag_id' => $budgetantrag_id,
-				'budgetstatus_kurzbz' => $budgetstatus_kurzbz,
-				'datum' => date('Y-m-d H:i:s'),
-				'uid' => $this->uid,
-				'insertvon' => $this->uid
-			)
-		);
-
-		if (isSuccess($result))
+		if
+		(
+			is_numeric($budgetantrag_id)
+			&& isset($budgetstatus_kurzbz)
+			&& $this->_checkBudgetantragstatusPermission($budgetantrag_id, $budgetstatus_kurzbz)
+		)
 		{
-			//get Budgetstatus data for updating html view
-			$result = $this->BudgetantragstatusModel->getLastStatus($budgetantrag_id);
+			$this->load->model('extensions/FHC-Core-Budget/budgetantragstatus_model', 'BudgetantragstatusModel');
 
-			$json = $result;
+			$result = $this->BudgetantragstatusModel->insert(
+				array(
+					'budgetantrag_id' => $budgetantrag_id,
+					'budgetstatus_kurzbz' => $budgetstatus_kurzbz,
+					'datum' => date('Y-m-d H:i:s'),
+					'uid' => $this->uid,
+					'insertvon' => $this->uid
+				)
+			);
+
+			if (isSuccess($result))
+			{
+				//get Budgetstatus data for updating html view
+				$result = $this->BudgetantragstatusModel->getLastStatus($budgetantrag_id);
+
+				$json = $result;
+			}
+
 		}
 
 		$this->output
@@ -365,8 +413,42 @@ class Budgetantrag extends VileSci_Controller
 	// Private methods
 
 	/**
+	 * Checks if logged user has permission for Verwalten of a Budgetantrag (i.e. for its Kostenstelle)
+	 * @param $budgetantrag_id
+	 * @return bool
+	 */
+	private function _checkBudgetverwaltenPermission($budgetantrag_id)
+	{
+		$this->BudgetantragModel->addSelect('kostenstelle_id');
+		$result = $this->BudgetantragModel->load($budgetantrag_id);
+
+		if (!hasData($result))
+			return false;
+
+		return $this->permissionlib->isBerechtigt(self::VERWALTEN_PERMISSION, 'suid', null, $result->retval[0]->kostenstelle_id);
+	}
+
+	/**
+	 * Checks if logged user has permission for Genehmigung of a Kostenstelle
+	 * @param $kostenstelle_id
+	 * @return bool
+	 */
+	private function _checkBudgetantragstatusPermission($budgetantrag_id, $budgetstatus_kurzbz)
+	{
+		$this->BudgetantragModel->addSelect('kostenstelle_id');
+		$result = $this->BudgetantragModel->load($budgetantrag_id);
+
+		if (!hasData($result))
+			return false;
+
+		if ($this->budgetstatus_permissions[$budgetstatus_kurzbz] === '')
+			return true;
+
+		return $this->permissionlib->isBerechtigt($this->budgetstatus_permissions[$budgetstatus_kurzbz], 'suid', null, $result->retval[0]->kostenstelle_id);
+	}
+
+	/**
 	 * Modifies an array with a Budgetpositionen so it can be added or updated.
-	 * This includes sanitizing html input and change empty strings to null
 	 * @param $position
 	 */
 	private function _preparePositionArray(&$position)

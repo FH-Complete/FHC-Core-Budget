@@ -2,7 +2,7 @@
 
 /**
  */
-class BudgetantragUebersicht extends VileSci_Controller
+class BudgetantragUebersicht extends Auth_Controller
 {
 
 	/**
@@ -10,7 +10,12 @@ class BudgetantragUebersicht extends VileSci_Controller
 	 */
 	public function __construct()
 	{
-		parent::__construct();
+		parent::__construct(
+			array(
+				'index' => 'extension/budget_verwaltung:r',
+				'getKostenstellenTree' => 'extension/budget_verwaltung:r'
+			)
+		);
 
 		// Loads models
 		$this->load->model('organisation/geschaeftsjahr_model', 'GeschaeftsjahrModel');

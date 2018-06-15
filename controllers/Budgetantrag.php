@@ -3,7 +3,7 @@
 /**
  * Manages Budgetanträge. Enables adding, updating and deleting Budgetanträge and their Budgetposten.
  */
-class Budgetantrag extends VileSci_Controller
+class Budgetantrag extends Auth_Controller
 {
 	private $uid;
 	const NEWSTATUS = 'new';
@@ -25,7 +25,24 @@ class Budgetantrag extends VileSci_Controller
 	 */
 	public function __construct()
 	{
-		parent::__construct();
+		parent::__construct(
+			array(
+				'index' => 'extension/budget_verwaltung:r',
+				'showVerwalten' => 'extension/budget_verwaltung:r',
+				'checkIfCurrentGeschaeftsjahr' => 'extension/budget_verwaltung:r',
+				'checkIfKostenstelleGenehmigbar' => 'extension/budget_verwaltung:r',
+				'getKostenstellen' => 'extension/budget_verwaltung:r',
+				'getBudgetantraege' => 'extension/budget_verwaltung:r',
+				'getBudgetantrag' => 'extension/budget_verwaltung:r',
+				'newBudgetantrag' => 'extension/budget_verwaltung:rw',
+				'updateBudgetantragBezeichnung' => 'extension/budget_verwaltung:rw',
+				'updateBudgetantragPositionen' => 'extension/budget_verwaltung:rw',
+				'deleteBudgetantrag' => 'extension/budget_verwaltung:rw',
+				'updateBudgetantragStatus' => 'extension/budget_verwaltung:rw',
+				'getProjekte' => 'extension/budget_verwaltung:r',
+				'getKonten' => 'extension/budget_verwaltung:r'
+			)
+		);
 
 		// Loads models
 		$this->load->model('organisation/geschaeftsjahr_model', 'GeschaeftsjahrModel');

@@ -23,7 +23,9 @@ $(document).ready(function () {
 	BudgetantraegeController.global_inputparams.kostenstelle = $("#kostenstelle").val();
 
 	//set edit mode if current Geschaeftsjahr or later is selected
-	BudgetantraegeAjax.checkIfCurrGeschaeftsjahr(BudgetantraegeController.global_inputparams.geschaeftsjahr,
+	BudgetantraegeAjax.checkIfVerwaltbar(
+		BudgetantraegeController.global_inputparams.geschaeftsjahr,
+		BudgetantraegeController.global_inputparams.kostenstelle,
 		function(data, textStatus, jqXHR)
 		{
 			if (FHC_AjaxClient.isError(data))
@@ -56,7 +58,9 @@ $(document).ready(function () {
 
 			if (BudgetantraegeController.global_inputparams.geschaeftsjahr !== "null" && BudgetantraegeController.global_inputparams.geschaeftsjahr !== null)
 			{
-				BudgetantraegeAjax.checkIfCurrGeschaeftsjahr(BudgetantraegeController.global_inputparams.geschaeftsjahr,
+				BudgetantraegeAjax.checkIfVerwaltbar(
+					BudgetantraegeController.global_inputparams.geschaeftsjahr,
+					BudgetantraegeController.global_inputparams.kostenstelle,
 					function (data, textStatus, jqXHR)
 					{
 						BudgetantraegeController.global_booleans.editmode = data.retval;
@@ -96,8 +100,18 @@ $(document).ready(function () {
 				BudgetantraegeController.clearBudgetantraege();
 				return;
 			}
+			BudgetantraegeAjax.checkIfVerwaltbar(
+				BudgetantraegeController.global_inputparams.geschaeftsjahr,
+				BudgetantraegeController.global_inputparams.kostenstelle,
+				function(data, textStatus, jqXHR)
+				{
+					if (FHC_AjaxClient.isError(data))
+						return;
+					BudgetantraegeController.global_booleans.editmode = data.retval;
+					BudgetantraegeAjax.checkIfKstGenehmigbar(BudgetantraegeController.global_inputparams.kostenstelle, BudgetantraegeController.afterKstGenehmigbarGet);
+				}
+			);
 
-			BudgetantraegeAjax.checkIfKstGenehmigbar(BudgetantraegeController.global_inputparams.kostenstelle, BudgetantraegeController.afterKstGenehmigbarGet);
 		}
 	);
 });

@@ -154,7 +154,7 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 
 		foreach ($kostenstellen as $kostenstelle)
 		{
-			if ($this->permissionlib->isBerechtigt('extension/budget_verwaltung', 'suid', null, $kostenstelle->kostenstelle_id) === true)
+			if ($this->permissionlib->isBerechtigt('extension/budget_verwaltung', 's', null, $kostenstelle->kostenstelle_id) === true)
 			{
 				$kostenstellenresult[] = $kostenstelle;
 			}

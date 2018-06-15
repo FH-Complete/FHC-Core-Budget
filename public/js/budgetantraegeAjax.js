@@ -39,16 +39,19 @@ var BudgetantraegeAjax = {
 		);
 	},
 
-	checkIfCurrGeschaeftsjahr: function(geschaeftsjahr, successCallback)
+	checkIfVerwaltbar: function(geschaeftsjahr, kostenstelle, successCallback)
 	{
 		FHC_AjaxClient.ajaxCallGet(
-			CALLED_PATH + "/checkIfCurrentGeschaeftsjahr/"+encodeURIComponent(geschaeftsjahr),
-			null,
+			CALLED_PATH + "/checkIfVerwaltbar",
+			{
+				"geschaeftsjahr": geschaeftsjahr,
+				"kostenstelle": kostenstelle
+			},
 			{
 				successCallback: successCallback,
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
-					alert("error when checking current Geschaeftsjahr!");
+					alert("error when checking if verwaltbar!");
 				},
 				veilTimeout: 0
 			}
@@ -58,8 +61,10 @@ var BudgetantraegeAjax = {
 	checkIfKstGenehmigbar: function(kostenstelle, successCallback)
 	{
 		FHC_AjaxClient.ajaxCallGet(
-			CALLED_PATH + "/checkIfKostenstelleGenehmigbar/"+encodeURIComponent(kostenstelle),
-			null,
+			CALLED_PATH + "/checkIfKostenstelleGenehmigbar",
+			{
+				"kostenstelle_id": kostenstelle
+			},
 			{
 				successCallback: successCallback,
 				errorCallback: function (jqXHR, textStatus, errorThrown)
@@ -74,8 +79,10 @@ var BudgetantraegeAjax = {
 	getKostenstellen: function(geschaeftsjahr, successCallback)
 	{
 		FHC_AjaxClient.ajaxCallGet(
-			CALLED_PATH + "/getKostenstellen/"+encodeURIComponent(geschaeftsjahr),
-			null,
+			CALLED_PATH + "/getKostenstellen",
+			{
+				"geschaeftsjahr": geschaeftsjahr
+			},
 			{
 				successCallback: successCallback,
 				errorCallback: function (jqXHR, textStatus, errorThrown)
@@ -90,8 +97,11 @@ var BudgetantraegeAjax = {
 	getBudgetantraege: function(geschaeftsjahr, kostenstelle)
 	{
 		FHC_AjaxClient.ajaxCallGet(
-			CALLED_PATH + "/getBudgetantraege/"+encodeURIComponent(geschaeftsjahr)+'/'+encodeURIComponent(kostenstelle),
-			null,
+			CALLED_PATH + "/getBudgetantraege",
+			{
+				"geschaeftsjahr": geschaeftsjahr,
+				"kostenstelle_id": kostenstelle
+			},
 			{
 				successCallback: function (data, textStatus, jqXHR)
 				{
@@ -152,7 +162,6 @@ var BudgetantraegeAjax = {
 
 	updateBudgetantragBezeichnung: function(budgetantragid, bezeichnung)
 	{
-		console.log("in AJAX call ");
 		FHC_AjaxClient.ajaxCallPost(
 			CALLED_PATH + "/updateBudgetantragBezeichnung/"+encodeURIComponent(budgetantragid),
 			{

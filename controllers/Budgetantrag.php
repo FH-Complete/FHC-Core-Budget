@@ -29,7 +29,7 @@ class Budgetantrag extends Auth_Controller
 			array(
 				'index' => 'extension/budget_verwaltung:r',
 				'showVerwalten' => 'extension/budget_verwaltung:r',
-				'checkIfCurrentGeschaeftsjahr' => 'extension/budget_verwaltung:r',
+				'checkIfVerwaltbar' => 'extension/budget_verwaltung:r',
 				'checkIfKostenstelleGenehmigbar' => 'extension/budget_verwaltung:r',
 				'getKostenstellen' => 'extension/budget_verwaltung:r',
 				'getBudgetantraege' => 'extension/budget_verwaltung:r',
@@ -120,33 +120,42 @@ class Budgetantrag extends Auth_Controller
 
 	/**
 	 * Checks if given Geschäftsjahr is current, i.e. is either the currently running Gj or a Gj in the future
-	 * returns Geschäftsjahr in JSON if current, false otherwise
-	 * @param $geschaeftsjahr
+	 * and budget_verwaltung permission
 	 */
-	public function checkIfCurrentGeschaeftsjahr($geschaeftsjahr)
+	public function checkIfVerwaltbar()
 	{
+		$geschaeftsjahr = $this->input->get('geschaeftsjahr');
+		$kostenstelle_id = $this->input->get('kostenstelle');
+
 		$json = null;
 
-		$currgj = $this->GeschaeftsjahrModel->getCurrGeschaeftsjahr();
-
-		if (isError($currgj))
-			$json = json_encode($currgj);
-		elseif (count($currgj->retval) < 1)
+		if (!$this->permissionlib->isBerechtigt(self::VERWALTEN_PERMISSION, 'suid', null, $kostenstelle_id))
+		{
 			$json = success(false);
+		}
 		else
 		{
-			$gj = $this->GeschaeftsjahrModel->load($geschaeftsjahr);
+			$currgj = $this->GeschaeftsjahrModel->getCurrGeschaeftsjahr();
 
-			if (isError($gj))
-				$json = json_encode($gj);
-			elseif (count($gj->retval) < 1)
+			if (isError($currgj))
+				$json = json_encode($currgj);
+			elseif (count($currgj->retval) < 1)
 				$json = success(false);
 			else
 			{
-				$currgjstart = $currgj->retval[0]->start;
-				$gjstart = $gj->retval[0]->start;
+				$gj = $this->GeschaeftsjahrModel->load($geschaeftsjahr);
 
-				$json = success($gjstart >= $currgjstart);
+				if (isError($gj))
+					$json = json_encode($gj);
+				elseif (count($gj->retval) < 1)
+					$json = success(false);
+				else
+				{
+					$currgjstart = $currgj->retval[0]->start;
+					$gjstart = $gj->retval[0]->start;
+
+					$json = success($gjstart >= $currgjstart);
+				}
 			}
 		}
 
@@ -157,10 +166,11 @@ class Budgetantrag extends Auth_Controller
 
 	/**
 	 * Checks if logged user has permission for Genehmigung of a Kostenstelle
-	 * @param $kostenstelle_id
 	 */
-	public function checkIfKostenstelleGenehmigbar($kostenstelle_id)
+	public function checkIfKostenstelleGenehmigbar()
 	{
+		$kostenstelle_id = $this->input->get('kostenstelle_id');
+		
 		$genehmigenperm = $this->permissionlib->isBerechtigt($this->budgetstatus_permissions[self::APPROVED], 'suid', null, $kostenstelle_id);
 
 		$this->output
@@ -170,10 +180,11 @@ class Budgetantrag extends Auth_Controller
 
 	/**
 	 * Gets all Kostenstellen for given Geschäftsjahr in JSON format
-	 * @param $geschaefsjahr
 	 */
-	public function getKostenstellen($geschaefsjahr)
+	public function getKostenstellen()
 	{
+		$geschaefsjahr = $this->input->get('geschaeftsjahr');
+
 		$result = $this->BudgetkostenstelleModel->getActiveKostenstellenForGeschaeftsjahrBerechtigt($geschaefsjahr);
 
 		$this->output
@@ -183,14 +194,15 @@ class Budgetantrag extends Auth_Controller
 
 	/**
 	 * Gets all Budgetanträge for given Geschäftsjahr and Kostenstelle in JSON format
-	 * @param $geschaefsjahr
-	 * @param $kostenstelle_id
 	 */
-	public function getBudgetantraege($geschaefsjahr, $kostenstelle_id)
+	public function getBudgetantraege()
 	{
+		$geschaefsjahr = $this->input->get('geschaeftsjahr');
+		$kostenstelle_id = $this->input->get('kostenstelle_id');
+
 		$result = null;
 
-		if ($this->permissionlib->isBerechtigt(self::VERWALTEN_PERMISSION, 'suid', null, $kostenstelle_id))
+		if ($this->permissionlib->isBerechtigt(self::VERWALTEN_PERMISSION, 's', null, $kostenstelle_id))
 			$result = $this->BudgetantragModel->getBudgetantraege($geschaefsjahr, $kostenstelle_id);
 
 		$this->output
@@ -206,10 +218,8 @@ class Budgetantrag extends Auth_Controller
 	{
 		$result = null;
 
-		if ($this->_checkBudgetverwaltenPermission($budgetantragid))
+		if ($this->_checkBudgetverwaltenPermission($budgetantragid, 's'))
 			$result = $this->BudgetantragModel->getBudgetantrag($budgetantragid);
-		else
-			echo "nope";
 
 		$this->output
 			->set_content_type('application/json')
@@ -254,7 +264,7 @@ class Budgetantrag extends Auth_Controller
 	{
 		$result = null;
 
-		if ($this->_checkBudgetverwaltenPermission($budgetantrag_id))
+		if ($this->_checkBudgetverwaltenPermission($budgetantrag_id, 'suid'))
 		{
 			$bezeichnung = $this->input->post('budgetbezeichnung');
 			$result = $this->BudgetantragModel->update($budgetantrag_id, array('bezeichnung' => $bezeichnung));
@@ -280,7 +290,7 @@ class Budgetantrag extends Auth_Controller
 		$inserted = $updated = $deleted = array();
 		$errors = 0;
 
-		if ($this->_checkBudgetverwaltenPermission($budgetantrag_id))
+		if ($this->_checkBudgetverwaltenPermission($budgetantrag_id, 'suid'))
 		{
 			if (is_array($positionen_toadd))
 			{
@@ -344,7 +354,7 @@ class Budgetantrag extends Auth_Controller
 	{
 		$result = null;
 
-		if ($this->_checkBudgetverwaltenPermission($budgetantrag_id))
+		if ($this->_checkBudgetverwaltenPermission($budgetantrag_id, 'suid'))
 		{
 			$result = $this->BudgetantragModel->deleteBudgetantrag($budgetantrag_id);
 		}
@@ -432,9 +442,10 @@ class Budgetantrag extends Auth_Controller
 	/**
 	 * Checks if logged user has permission for Verwalten of a Budgetantrag (i.e. for its Kostenstelle)
 	 * @param $budgetantrag_id
+	 * @param $accesstype read/write access (suid)
 	 * @return bool
 	 */
-	private function _checkBudgetverwaltenPermission($budgetantrag_id)
+	private function _checkBudgetverwaltenPermission($budgetantrag_id, $accesstype)
 	{
 		$this->BudgetantragModel->addSelect('kostenstelle_id');
 		$result = $this->BudgetantragModel->load($budgetantrag_id);
@@ -442,7 +453,7 @@ class Budgetantrag extends Auth_Controller
 		if (!hasData($result))
 			return false;
 
-		return $this->permissionlib->isBerechtigt(self::VERWALTEN_PERMISSION, 'suid', null, $result->retval[0]->kostenstelle_id);
+		return $this->permissionlib->isBerechtigt(self::VERWALTEN_PERMISSION, $accesstype, null, $result->retval[0]->kostenstelle_id);
 	}
 
 	/**

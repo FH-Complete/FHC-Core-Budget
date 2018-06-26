@@ -215,11 +215,15 @@ var BudgetantraegeUebersicht = {
 
 	_collapseAll: function()
 	{
+		if (!BudgetantraegeUebersicht._checkTableData())
+			return;
 		$("#ksttree").treetable("collapseAll");
 	},
 
 	_expandAll: function()
 	{
+		if (!BudgetantraegeUebersicht._checkTableData())
+			return;
 		$("#ksttree").treetable("expandAll");
 	},
 
@@ -230,6 +234,9 @@ var BudgetantraegeUebersicht = {
 	_initSearch: function()
 	{
 		var searchterm = $("#budgetsearch").val();
+
+		if (!BudgetantraegeUebersicht._checkTableData())
+			return;
 
 		if (!searchterm)
 		{
@@ -250,7 +257,6 @@ var BudgetantraegeUebersicht = {
 		{
 			BudgetantraegeUebersicht._filterOe(searchterm, BudgetantraegeUebersicht.kostenstellentree);
 			expansionlevel = 1;
-
 		}
 
 		BudgetantraegeUebersicht._printTree(BudgetantraegeUebersicht.searchResultArray, BudgetantraegeUebersicht.geschaeftsjahr, expansionlevel);
@@ -308,8 +314,6 @@ var BudgetantraegeUebersicht = {
 						foundKst.push(kst);
 					}
 				}*/
-
-				//console.log(foundkst);
 
 				var length = foundkst.length;
 
@@ -370,6 +374,16 @@ var BudgetantraegeUebersicht = {
 		}
 
 		return foundkst;
+	},
+
+	/**
+	 * Checks if the treetable contains any data
+	 * @returns {boolean}
+	 * @private
+	 */
+	_checkTableData: function()
+	{
+		return (BudgetantraegeUebersicht.kostenstellentree !== null && typeof BudgetantraegeUebersicht.kostenstellentree !== "undefined");
 	},
 
 	/**

@@ -137,8 +137,7 @@ var BudgetantraegeView = {
 
 		$("#budgetbezinput_"+budgetantragid).keypress(function(event){
 			var keycode = event.which;
-			console.log(budgetbez);
-			if(keycode == '13'){
+			if(keycode == '13'){//on enter key press
 				var budgetbez = $("#budgetbezinput_"+budgetantragid).val();
 				BudgetantraegeController.updateBudgetantragBezeichnung(budgetantragid, budgetbez)
 			}
@@ -419,7 +418,7 @@ var BudgetantraegeView = {
 	},
 
 	/**
-	 * Sets the bezeichnung of a Budgetantrag in html
+	 * Sets the bezeichnung of a Budgetantrag in html on edit
 	 * @param budgetantragid
 	 * @param bezeichnung
 	 */
@@ -432,7 +431,7 @@ var BudgetantraegeView = {
 	},
 
 	/**
-	 * Sets the bezeichnung of a Budgetantrag in html
+	 * Sets the bezeichnung of a Budgetantrag in html after edit confirm
 	 * @param budgetantragid
 	 * @param bezeichnung
 	 */
@@ -571,7 +570,7 @@ var BudgetantraegeView = {
 				var budgetpostenbez = $(positionForm).find("input[name=budgetposten]").val();
 				if (seen[budgetpostenbez])
 				{
-					setMessage(budgetantragid, "text-danger", "Positionen mit gleichem Namen vorhanden!");
+					BudgetantraegeView.setMessage(budgetantragid, "text-danger", "Positionen mit gleichem Namen vorhanden!");
 					$("#position_"+position_id+" .panel-heading .accordion-toggle").addClass("text-danger");
 					budgetpostenel.closest(".form-group").addClass("has-error");
 
@@ -593,7 +592,7 @@ var BudgetantraegeView = {
 
 	/**
 	 * Checks if a Budgetantrag can be appended, and shows errors if not
-	 * @returns {*|jQuery} - the Budgetbezeichnung if passed, false otherwise
+	 * @returns {*} - the Budgetbezeichnung if passed, false otherwise
 	 */
 	checkBudgetantragDataBeforeAdd: function()
 	{

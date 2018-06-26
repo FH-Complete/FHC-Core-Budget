@@ -180,7 +180,16 @@ var BudgetantraegeController = {
 	{
 		var budgetantrag = BudgetantraegeLib.findInArray(BudgetantraegeController.global_budgetantraege.existentBudgetantraege, budgetantragid);
 
-		if (budgetantrag === false) return;
+		if (budgetantrag === false)
+		{
+			var newbudgetantrag = BudgetantraegeLib.findInArray(BudgetantraegeController.global_budgetantraege.newBudgetantraege, budgetantragid);
+			if (newbudgetantrag !== false)
+			{
+				newbudgetantrag.bezeichnung = bezeichnung;
+				BudgetantraegeView.setBudgetantragBezeichnungEditConfirm(budgetantragid, bezeichnung);
+			}
+			return;
+		}
 
 		BudgetantraegeAjax.updateBudgetantragBezeichnung(budgetantragid, bezeichnung);
 	},
@@ -248,6 +257,7 @@ var BudgetantraegeController = {
 	deleteBudgetantrag: function(budgetantragid)
 	{
 		var budgetantrag = BudgetantraegeLib.findInArray(BudgetantraegeController.global_budgetantraege.existentBudgetantraege, budgetantragid);
+		// if Budgetantrag exists, delete, otherwise it is new Antrag - remove html only
 		if (budgetantrag === false)
 			BudgetantraegeView.removeBudgetantrag(budgetantragid);
 		else

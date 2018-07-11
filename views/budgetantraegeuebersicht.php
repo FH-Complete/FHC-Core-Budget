@@ -9,15 +9,14 @@ $this->load->view(
 		'sbadmintemplate' => true,
 		'ajaxlib' => true,
 		'navigationwidget' => true,
+		'jquerytreetable' => true,
 		'customCSSs' =>
 			array(
 				'public/css/sbadmin2/admintemplate.css',
-				'vendor/ludo/jquery-treetable/css/jquery.treetable.css',
 				'public/extensions/FHC-Core-Budget/css/budgetantraegeuebersicht.css'
 			),
 		'customJSs' =>
 			array(
-				'vendor/ludo/jquery-treetable/jquery.treetable.js',
 				'public/extensions/FHC-Core-Budget/js/budgetantraegeUebersicht.js',
 				'public/extensions/FHC-Core-Budget/js/budgetantraegeLib.js'
 			)

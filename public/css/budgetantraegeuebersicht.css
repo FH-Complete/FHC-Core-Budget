@@ -42,6 +42,11 @@ table.treetable tr.accept {
     color: #fff
 }
 
+tr.oerow
+{
+    background-color: #f9f9f9;
+}
+
 tr.kostenstellerow:hover
 {
     cursor: pointer;

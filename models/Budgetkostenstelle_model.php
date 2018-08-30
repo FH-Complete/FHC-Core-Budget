@@ -56,7 +56,7 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 					kst.budgetsumme as kostenstelle_budgetsumme,
 					kst.genehmigtsumme as kostenstelle_genehmigtsumme
 			  FROM tree rec
-				JOIN (
+				LEFT JOIN (
 						SELECT kostenstelle_id, kurzbz, ksttable.bezeichnung, ksttable.aktiv, ksttable.oe_kurzbz as kstoe, 
 						(
 							SELECT sum(betrag) AS budgetsumme

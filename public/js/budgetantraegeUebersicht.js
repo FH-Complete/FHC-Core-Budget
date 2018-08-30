@@ -174,7 +174,7 @@ var BudgetantraegeUebersicht = {
 
 		var parentclass = parent === null ? "" :  " data-tt-parent-id='"+parent+"'";
 
-		var strTree = "<tr data-tt-id='"+oeitem.oe_kurzbz+"'"+parentclass+">" +
+		var strTree = "<tr data-tt-id='"+oeitem.oe_kurzbz+"'"+parentclass+" class='oerow'>" +
 			"<td>"+oeitem.bezeichnung+"</td>" +
 			"<td class='text-center'>"+BudgetantraegeLib.formatDecimalGerman(oeitem.budgetsumme)+"</td>" +
 			"<td class='text-center'>"+BudgetantraegeLib.formatDecimalGerman(oeitem.genehmigtsumme)+"</td>";

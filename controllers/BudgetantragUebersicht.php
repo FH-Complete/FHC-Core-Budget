@@ -132,6 +132,12 @@ class BudgetantragUebersicht extends Auth_Controller
 					$appended = true;
 				}
 			}
+
+			$kostenstellen = array();
+
+			if ($kostenstelle->kostenstelle_id !== null)
+				$kostenstellen[] = $kostenstelle;
+
 			//otherwise add as new root node
 			if ($appended === false)
 				$oetree[] = array(
@@ -139,7 +145,7 @@ class BudgetantragUebersicht extends Auth_Controller
 					'bezeichnung' => $kostenstelle->oe_bezeichnung,
 					'budgetsumme' => $kostenstelle->budgetsumme,
 					'genehmigtsumme' => $kostenstelle->genehmigtsumme,
-					'kostenstellen' => array($kostenstelle),
+					'kostenstellen' => $kostenstellen,
 					'children' => array()
 				);
 		}
@@ -155,7 +161,7 @@ class BudgetantragUebersicht extends Auth_Controller
 	 * @param $kostenstelle Kostenstelle to append
 	 * @param $firstparent wether the searched parent is the first one in the parentlist for the Kostenstelle
 	 * @param $appended wether the Kostenstelle was already appended to the tree -
-	 * if not, still iterating for calculating the sums but not appending the Kostenstelle!
+	 * if appended, still iterating for calculating the sums but not appending the Kostenstelle!
 	 * @return bool true the Kostenstelle was successfully appended, false otherwise
 	 */
 	private function appendKstToTree(&$oetree, $parentoe_kurzbz, $kostenstelle, $firstparent, $appended)
@@ -172,7 +178,7 @@ class BudgetantragUebersicht extends Auth_Controller
 				$item['budgetsumme'] += $kostenstelle->budgetsumme;
 				$item['genehmigtsumme'] += $kostenstelle->genehmigtsumme;
 
-				// first parent is oe of kostenstelle - append kostenstelle only to existing oe
+				// first parent is oe of kostenstelle - append only kostenstelle to existing oe
 				if ($firstparent)
 				{
 					$item['kostenstellen'][] = $kostenstelle;
@@ -181,15 +187,21 @@ class BudgetantragUebersicht extends Auth_Controller
 				{
 					// append oe and kostenstelle if not already appended
 					if ($appended === false)
+					{
+						$kostenstellen = array();
+						if ($kostenstelle->kostenstelle_id !== null)
+							$kostenstellen[] = $kostenstelle;
+
 						$item['children'][] =
-								array(
-									'oe_kurzbz' => $kostenstelle->oe_kurzbz,
-									'bezeichnung' => $kostenstelle->oe_bezeichnung,
-									'budgetsumme' => $kostenstelle->budgetsumme,
-									'genehmigtsumme' => $kostenstelle->genehmigtsumme,
-									'kostenstellen' => array($kostenstelle),
-									'children' => array()
-								);
+							array(
+								'oe_kurzbz' => $kostenstelle->oe_kurzbz,
+								'bezeichnung' => $kostenstelle->oe_bezeichnung,
+								'budgetsumme' => $kostenstelle->budgetsumme,
+								'genehmigtsumme' => $kostenstelle->genehmigtsumme,
+								'kostenstellen' => $kostenstellen,
+								'children' => array()
+							);
+					}
 				}
 				return true;
 			}

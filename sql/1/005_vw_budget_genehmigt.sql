@@ -1,4 +1,4 @@
-CREATE OR REPLACE VIEW extension.vw_budget_genemigt AS
+CREATE OR REPLACE VIEW extension.vw_budget_genehmigt AS
 SELECT 
 	tbl_budget_antrag.kostenstelle_id, tbl_budget_antrag.geschaeftsjahr_kurzbz, tbl_budget_antrag.bezeichnung,
 	tbl_budget_position.budgetposition_id, tbl_budget_position.budgetposten, tbl_budget_position.konto_id, 

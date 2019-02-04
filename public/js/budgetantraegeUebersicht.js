@@ -94,6 +94,52 @@ var BudgetantraegeUebersicht = {
 	/*------------------------------------------------ "PRIVATE" METHODS ------------------------------------------------*/
 
 	/**
+	 * Recursively generates html string for the treegrid which can be passed to jquerytree plugin
+	 * @param oeitem
+	 * @param parent
+	 * @returns {string}
+	 * @private
+	 */
+	_printOeTreeItem: function (oeitem, parent)
+	{
+		if (oeitem.children.length >= 1 || oeitem.kostenstellen.length >= 1)
+		{
+			var parentclass = parent === null ? "" : " data-tt-parent-id='" + parent + "'";
+
+			// print oe
+			var strTree = "<tr data-tt-id='" + oeitem.oe_kurzbz + "'" + parentclass + " class='oerow'>" +
+				"<td>" + oeitem.bezeichnung + "</td>" +
+				"<td class='text-center'>" + BudgetantraegeLib.formatDecimalGerman(oeitem.budgetsumme) + "</td>" +
+				"<td class='text-center'>" + BudgetantraegeLib.formatDecimalGerman(oeitem.genehmigtsumme) + "</td>";
+
+			// print children oes
+			for (var i = 0; i < oeitem.children.length; i++)
+				strTree += BudgetantraegeUebersicht._printOeTreeItem(oeitem.children[i], oeitem.oe_kurzbz)
+
+			// print kostenstellen
+			for (var i = 0; i < oeitem.kostenstellen.length; i++)
+			{
+				var kostenstelle = oeitem.kostenstellen[i];
+				var inactivetext = kostenstelle.aktiv === true ? "" : " (inaktiv)";
+				var inactiveclass = kostenstelle.aktiv === true ? "" : " inactivekostenstelle";
+				strTree += "<tr data-tt-id='kst_" + kostenstelle.kostenstelle_id + "' data-tt-parent-id='" + oeitem.oe_kurzbz + "' class='kostenstellerow" + inactiveclass + "' id='kst_" + kostenstelle.kostenstelle_id + "'>" +
+					"<td><i class='fa fa-euro' title='Kostenstelle'></i> " + kostenstelle.bezeichnung + inactivetext + "</td>" +
+					"<td class='text-center'>" + BudgetantraegeLib.formatDecimalGerman(kostenstelle.budgetsumme) + "</td>" +
+					"<td class='text-center'>" + BudgetantraegeLib.formatDecimalGerman(kostenstelle.genehmigtsumme) + "</td>" +
+					"</tr>";
+
+				//add to totals
+				if (kostenstelle.budgetsumme !== null)
+					BudgetantraegeUebersicht.sums.gesamt += parseFloat(kostenstelle.budgetsumme);
+				if (kostenstelle.genehmigtsumme !== null)
+					BudgetantraegeUebersicht.sums.genehmigt += parseFloat(kostenstelle.genehmigtsumme);
+			}
+		}
+
+		return strTree;
+	},
+
+	/**
 	 * Prints Organisationseinheiten Tree with Kostenstellen
 	 * @param data array with oes, each having Kostenstellen and Children
 	 * @param geschaeftsjahr
@@ -160,47 +206,6 @@ var BudgetantraegeUebersicht = {
 		{
 			BudgetantraegeUebersicht._expandAll();
 		}
-	},
-
-	/**
-	 * Recursively generates html string for the treegrid which can be passed to jquerytree plugin
-	 * @param oeitem
-	 * @param parent
-	 * @returns {string}
-	 * @private
-	 */
-	_printOeTreeItem: function (oeitem, parent)
-	{
-
-		var parentclass = parent === null ? "" :  " data-tt-parent-id='"+parent+"'";
-
-		var strTree = "<tr data-tt-id='"+oeitem.oe_kurzbz+"'"+parentclass+" class='oerow'>" +
-			"<td>"+oeitem.bezeichnung+"</td>" +
-			"<td class='text-center'>"+BudgetantraegeLib.formatDecimalGerman(oeitem.budgetsumme)+"</td>" +
-			"<td class='text-center'>"+BudgetantraegeLib.formatDecimalGerman(oeitem.genehmigtsumme)+"</td>";
-
-		for (var i = 0; i < oeitem.kostenstellen.length; i++)
-		{
-			var kostenstelle = oeitem.kostenstellen[i];
-			var inactivetext = kostenstelle.aktiv === true ? "" : " (inaktiv)";
-			var inactiveclass = kostenstelle.aktiv === true ? "" : " inactivekostenstelle";
-			strTree += "<tr data-tt-id='kst_" + kostenstelle.kostenstelle_id + "' data-tt-parent-id='"+oeitem.oe_kurzbz+"' class='kostenstellerow"+inactiveclass+"' id='kst_"+kostenstelle.kostenstelle_id+"'>" +
-				"<td><i class='fa fa-euro' title='Kostenstelle'></i> "+kostenstelle.bezeichnung+inactivetext+"</td>"+
-				"<td class='text-center'>"+BudgetantraegeLib.formatDecimalGerman(kostenstelle.budgetsumme)+"</td>"+
-				"<td class='text-center'>"+BudgetantraegeLib.formatDecimalGerman(kostenstelle.genehmigtsumme)+"</td>"+
-				"</tr>";
-
-			//add to totals
-			if (kostenstelle.budgetsumme !== null)
-				BudgetantraegeUebersicht.sums.gesamt += parseFloat(kostenstelle.budgetsumme);
-			if (kostenstelle.genehmigtsumme !== null)
-				BudgetantraegeUebersicht.sums.genehmigt += parseFloat(kostenstelle.genehmigtsumme);
-		}
-
-		for (var i = 0; i < oeitem.children.length; i++)
-			strTree += BudgetantraegeUebersicht._printOeTreeItem(oeitem.children[i], oeitem.oe_kurzbz)
-
-		return strTree;
 	},
 
 	/**

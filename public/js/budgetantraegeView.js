@@ -21,6 +21,10 @@ var BudgetantraegeView = {
 		for (var i = 0; i < kostenstellen.length; i++)
 		{
 			var kostenstelle = kostenstellen[i];
+
+			if (!$.isNumeric(kostenstelle.kostenstelle_id))
+				continue;
+
 			var selected = kostenstelle.kostenstelle_id === prevKostenstelle ? 'selected=""' : '';
 			var bezeichnung = kostenstelle.bezeichnung;
 			var inactivehtml = "";

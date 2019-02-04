@@ -373,12 +373,9 @@ class Budgetantrag extends Auth_Controller
 		$json = null;
 		$budgetstatus_kurzbz = $this->input->post('budgetstatus_kurzbz');
 
-		if
-		(
-			is_numeric($budgetantrag_id)
+		if (is_numeric($budgetantrag_id)
 			&& isset($budgetstatus_kurzbz)
-			&& $this->_checkBudgetantragstatusPermission($budgetantrag_id, $budgetstatus_kurzbz)
-		)
+			&& $this->_checkBudgetantragstatusPermission($budgetantrag_id, $budgetstatus_kurzbz))
 		{
 			$this->load->model('extensions/FHC-Core-Budget/budgetantragstatus_model', 'BudgetantragstatusModel');
 

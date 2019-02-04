@@ -19,7 +19,7 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 	 * @param null $geschaeftsjahr
 	 * @return array|null
 	 */
-	public function getActiveKostenstellenForGeschaeftsjahrWithOe($geschaeftsjahr = null)
+	public function getActiveKostenstellenForGeschaeftsjahrWithOe($geschaeftsjahr = null, $alloes = false)
 	{
 		$this->load->model('organisation/geschaeftsjahr_model', 'GeschaeftsjahrModel');
 
@@ -37,7 +37,6 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 							organisationseinheittyp_kurzbz
 					  FROM tbl_organisationseinheit
 					 WHERE oe_parent_kurzbz IS NULL
-					   AND aktiv = true
 				 UNION ALL
 					SELECT oe.oe_kurzbz,
 							oe.bezeichnung || ' (' || oe.organisationseinheittyp_kurzbz || ')' AS bezeichnung,
@@ -47,6 +46,7 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 			)
 			SELECT oe_kurzbz,
 					rec.bezeichnung as oe_bezeichnung,
+					rec.organisationseinheittyp_kurzbz AS typ,
 					SUBSTRING(REGEXP_REPLACE(path, '[A-z]+\|', '-', 'g') || rec.bezeichnung, 2) AS oe_description, 
 					level,
 					kst.kostenstelle_id as kostenstelle_id,
@@ -91,8 +91,27 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 						(DATE ? < kgjbis.ende OR ksttable.geschaeftsjahrbis IS NULL)
 						ORDER BY ksttable.bezeichnung DESC
 					) 
-				kst on kst.kstoe =  rec.oe_kurzbz
-				ORDER BY level";
+				kst on kst.kstoe = rec.oe_kurzbz";
+
+			if ($alloes != true)
+			{
+					$query .= " WHERE EXISTS
+                        (
+                          WITH RECURSIVE oes(oe_kurzbz, oe_parent_kurzbz) as
+                          (
+                            SELECT oe_kurzbz, oe_parent_kurzbz FROM public.tbl_organisationseinheit
+                            WHERE oe_kurzbz=rec.oe_kurzbz
+                            UNION ALL
+                            SELECT o.oe_kurzbz, o.oe_parent_kurzbz FROM public.tbl_organisationseinheit o, oes
+                            WHERE o.oe_parent_kurzbz=oes.oe_kurzbz
+                          )
+                          SELECT oe_kurzbz
+                          FROM oes
+                          WHERE EXISTS(SELECT DISTINCT oe_kurzbz FROM wawi.tbl_kostenstelle WHERE oe_kurzbz = oes.oe_kurzbz)
+                        )";
+			}
+
+			$query .= " ORDER BY level, typ, oe_bezeichnung, kostenstelle_bezeichnung;";
 
 			return $this->execQuery($query, array($gjkurzbz, $gjkurzbz, $gjstart, $gjstart));
 		}
@@ -140,7 +159,6 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 		return $kostenstellen;
 	}
 
-
 	/**
 	 * Filters Kostenstelle by using isBerechtigt function, returns only kostenstelle for which user is berechtigt.
 	 * @param $kostenstellen
@@ -152,15 +170,52 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 
 		$kostenstellenresult = array();
 
-		foreach ($kostenstellen as $kostenstelle)
+		foreach ($kostenstellen as $index => $kostenstelle)
 		{
-			if ($this->permissionlib->isBerechtigt('extension/budget_verwaltung', 's', null, $kostenstelle->kostenstelle_id) === true)
+			if (isset($kostenstelle->kostenstelle_id) && isset($kostenstelle->oe_kurzbz))
 			{
-				$kostenstellenresult[] = $kostenstelle;
+				if ($this->permissionlib->isBerechtigt('extension/budget_verwaltung', 's', null, $kostenstelle->kostenstelle_id) === true)
+				{
+					$this->load->model('organisation/organisationseinheit_model', 'OrganisationseinheitModel');
+
+					// add parents as "oe only" if e.g. only berechtigung for one kostenstelle
+					$parents = $this->OrganisationseinheitModel->getParents($kostenstelle->oe_kurzbz);
+
+					$kostenstellenabove = array_slice($kostenstellen, 0, $index);
+
+					foreach ($kostenstellenabove as $kstabove)
+					{
+						foreach ($parents->retval as $parent)
+						{
+							if ($kstabove->oe_kurzbz === $parent->oe_kurzbz)
+							{
+								$found = false;
+
+								foreach ($kostenstellenresult as $kstres)
+								{
+									if ($kstres->oe_kurzbz === $kstabove->oe_kurzbz)
+									{
+										$found = true;
+										break;
+									}
+								}
+								if (!$found)
+								{
+									$oenokst = $kstabove;
+									$oenokst->kostenstelle_id = null;
+									$oenokst->kostenstelle_kurzbz = null;
+									$oenokst->kostenstelle_bezeichnung = null;
+									$oenokst->kostenstelle_aktiv = null;
+									$kostenstellenresult[] = $oenokst;
+								}
+							}
+						}
+					}
+					$kostenstellenresult[] = $kostenstelle;
+				}
 			}
 		}
 
 		return $kostenstellenresult;
 	}
-
 }

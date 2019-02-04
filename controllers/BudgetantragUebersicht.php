@@ -205,8 +205,8 @@ class BudgetantragUebersicht extends Auth_Controller
 				}
 				return true;
 			}
-			if ($result = $this->appendKstToTree($item['children'], $parentoe_kurzbz, $kostenstelle, $firstparent, $appended) === true)
-				return $result;
+			if ($this->appendKstToTree($item['children'], $parentoe_kurzbz, $kostenstelle, $firstparent, $appended) === true)
+				return true;
 		}
 		return false;
 	}

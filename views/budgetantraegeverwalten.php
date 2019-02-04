@@ -31,52 +31,48 @@ $this->load->view(
 		<div id="page-wrapper">
 			<div class="container-fluid">
 				<div class="row">
-					<div class="col-lg-12">
+					<div class="col-lg-4">
 						<h3 class="page-header">
 							Budgetantr&auml;ge Verwaltung
 						</h3>
 					</div>
-				</div>
-				<div class="row">
-					<div class="col-lg-7">
-						<div class="row">
-							<div class="col-lg-5">
-								<div class="form-group" id="gjgroup">
-									<label for="geschaeftsjahr">Geschäftsjahr</label>
-									<select class="form-control" id="geschaeftsjahr">
-										<option value="null">Geschäftsjahr wählen...</option>
-										<?php
-										foreach ($geschaeftsjahre as $geschaeftsjahr):
-											$selected = $selectedgeschaeftsjahr === $geschaeftsjahr->geschaeftsjahr_kurzbz ? 'selected' : '';
-											?>
-											<option value="<?php echo $geschaeftsjahr->geschaeftsjahr_kurzbz; ?>" <?php echo $selected; ?>>
-												<?php echo $geschaeftsjahr->geschaeftsjahr_kurzbz ?>
-											</option>
-										<?php endforeach; ?>
-									</select>
-								</div>
+					<div class="col-lg-8">
+						<div class="headerrightform form-inline text-right">
+							<div class="form-group" id="gjgroup">
+								<label for="geschaeftsjahr">Geschäftsjahr</label>
+								<select class="form-control" id="geschaeftsjahr">
+									<option value="null">Geschäftsjahr wählen...</option>
+									<?php
+									foreach ($geschaeftsjahre as $geschaeftsjahr):
+										$selected = $selectedgeschaeftsjahr === $geschaeftsjahr->geschaeftsjahr_kurzbz ? 'selected' : '';
+										?>
+										<option value="<?php echo $geschaeftsjahr->geschaeftsjahr_kurzbz; ?>" <?php echo $selected; ?>>
+											<?php echo $geschaeftsjahr->geschaeftsjahr_kurzbz ?>
+										</option>
+									<?php endforeach; ?>
+								</select>
 							</div>
-							<div class="col-lg-7">
-								<div class="form-group" id="kstgroup">
-									<label for="kostenstelle">Kostenstelle</label>
-									<select class="form-control" id="kostenstelle">
-										<option value="null">Kostenstelle wählen...</option>
-										<?php
-										foreach ($kostenstellen as $kostenstelle):
-											$selected = $selectedkostenstelle === $kostenstelle->kostenstelle_id ? ' selected' : '';
-											$inactivetext = $kostenstelle->aktiv === false ? ' (inaktiv)' : '';
-											$inactiveclass = $kostenstelle->aktiv === false ? ' class = "inactiveoption"' : '';
-											?>
+							<div class="form-group" id="kstgroup">
+								<label for="kostenstelle">Kostenstelle</label>
+								<select class="form-control" id="kostenstelle">
+									<option value="null">Kostenstelle wählen...</option>
+									<?php
+									foreach ($kostenstellen as $kostenstelle):
+										$selected = $selectedkostenstelle === $kostenstelle->kostenstelle_id ? ' selected' : '';
+										$inactivetext = $kostenstelle->aktiv === false ? ' (inaktiv)' : '';
+										$inactiveclass = $kostenstelle->aktiv === false ? ' class = "inactiveoption"' : '';
+										if (is_numeric($kostenstelle->kostenstelle_id)):
+										?>
 											<option value="<?php echo $kostenstelle->kostenstelle_id; ?>"<?php echo $inactiveclass; ?><?php echo $selected; ?>>
 												<?php echo $kostenstelle->bezeichnung.$inactivetext; ?>
 											</option>
-										<?php endforeach; ?>
-									</select>
-								</div>
+										<?php endif; ?>
+									<?php endforeach; ?>
+								</select>
 							</div>
 						</div>
-					</div> <!-- ./first column -->
-				</div> <!-- ./main row -->
+					</div>
+				</div>
 				<br>
 				<div id="budgetantraegehtml"></div>
 				<!-- modal for deleting of a budgetantrag -->

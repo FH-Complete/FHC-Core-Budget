@@ -22,7 +22,6 @@ $(document).ready(function () {
 	BudgetantraegeController.global_inputparams.geschaeftsjahr = $("#geschaeftsjahr").val();
 	BudgetantraegeController.global_inputparams.kostenstelle = $("#kostenstelle").val();
 
-	//set edit mode if current Geschaeftsjahr or later is selected
 	BudgetantraegeAjax.checkIfVerwaltbar(
 		BudgetantraegeController.global_inputparams.geschaeftsjahr,
 		BudgetantraegeController.global_inputparams.kostenstelle,
@@ -30,6 +29,7 @@ $(document).ready(function () {
 		{
 			if (FHC_AjaxClient.isError(data))
 				return;
+			//set edit mode if current Geschaeftsjahr or later is selected
 			BudgetantraegeController.global_booleans.editmode = data.retval;
 		}
 	);
@@ -304,7 +304,6 @@ var BudgetantraegeController = {
 		if (FHC_AjaxClient.isError(data)) return;
 		var kostenstellen = data.retval;
 
-		//reset global kostenstelle to null if kostenstelle is not available anymore
 		var kstgone = true;
 
 		for (var i = 0; i < kostenstellen.length; i++)
@@ -316,6 +315,7 @@ var BudgetantraegeController = {
 			}
 		}
 
+		//reset global kostenstelle to null if kostenstelle is not available anymore
 		if (kstgone)
 		{
 			$("#kostenstelle").val("null");
@@ -458,7 +458,7 @@ var BudgetantraegeController = {
 	 */
 	afterBudgetantragDelete: function(data)
 	{
-		if(FHC_AjaxClient.isError(data)) return;
+		if (FHC_AjaxClient.isError(data)) return;
 
 		BudgetantraegeController.global_budgetantraege.existentBudgetantraege = BudgetantraegeController.global_budgetantraege.existentBudgetantraege.filter(
 			function (el)

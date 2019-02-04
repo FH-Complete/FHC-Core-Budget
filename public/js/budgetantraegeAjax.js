@@ -17,8 +17,7 @@ var BudgetantraegeAjax = {
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
 					alert("error when retrieving Projekte!");
-				},
-				veilTimeout: 0
+				}
 			}
 		);
 	},
@@ -33,8 +32,7 @@ var BudgetantraegeAjax = {
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
 					alert("error when retrieving Konten!");
-				},
-				veilTimeout: 0
+				}
 			}
 		);
 	},
@@ -52,8 +50,7 @@ var BudgetantraegeAjax = {
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
 					alert("error when checking if verwaltbar!");
-				},
-				veilTimeout: 0
+				}
 			}
 		);
 	},
@@ -70,8 +67,7 @@ var BudgetantraegeAjax = {
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
 					alert("error when checking Kst genehmigbar!");
-				},
-				veilTimeout: 0
+				}
 			}
 		);
 	},
@@ -88,8 +84,7 @@ var BudgetantraegeAjax = {
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
 					alert("error when retrieving Kostenstellen!");
-				},
-				veilTimeout: 0
+				}
 			}
 		);
 	},
@@ -110,14 +105,13 @@ var BudgetantraegeAjax = {
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
 					alert("error when retrieving Budgetantraege!");
-				},
-				veilTimeout: 0
+				}
 			}
 		);
 	},
 
 	/**
-	 * Ajax call for retrieving a single Budgetantrag. Aftert execution, updates of view are triggered.
+	 * Ajax call for retrieving a single Budgetantrag. After execution, updates of view are triggered.
 	 * Called each time a Budgetantrag is updated
 	 * @param budgetantragid
 	 * @param updatetype type of Budgetantrag update (e.g. save, status change...)
@@ -135,8 +129,7 @@ var BudgetantraegeAjax = {
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
 					alert("error when retrieving Budgetantraege!");
-				},
-				veilTimeout: 0
+				}
 			}
 		);
 	},
@@ -154,8 +147,7 @@ var BudgetantraegeAjax = {
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
 					alert("error when adding Budgetantrag!");
-				},
-				veilTimeout: 0
+				}
 			}
 		);
 	},
@@ -194,8 +186,7 @@ var BudgetantraegeAjax = {
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
 					alert("error when updating Budgetpositionen!");
-				},
-				veilTimeout: 0
+				}
 			}
 		);
 	},

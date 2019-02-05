@@ -208,6 +208,7 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 									$oenokst->kostenstelle_aktiv = null;
 									$kostenstellenresult[] = $oenokst;
 								}
+								break;
 							}
 						}
 					}

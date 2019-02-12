@@ -29,32 +29,14 @@ $this->load->view(
 		<div id="page-wrapper">
 			<div class="container-fluid">
 				<div class="row">
-					<div class="col-lg-8">
+					<div class="col-lg-12">
 						<h3 class="page-header">
 							Budgetantr&auml;ge Übersicht
 						</h3>
 					</div>
-					<div class="col-lg-4">
-						<div class="headerrightform form-inline text-right">
-							<div class="form-group" id="gjgroup">
-								<label for="geschaeftsjahr">Geschäftsjahr</label>
-								<select class="form-control" id="geschaeftsjahr">
-									<option value="null">Geschäftsjahr wählen...</option>
-									<?php
-									foreach ($geschaeftsjahre as $geschaeftsjahr):
-										$selected = $selectedgeschaeftsjahr === $geschaeftsjahr->geschaeftsjahr_kurzbz ? 'selected' : '';
-										?>
-										<option value="<?php echo $geschaeftsjahr->geschaeftsjahr_kurzbz; ?>" <?php echo $selected; ?>>
-											<?php echo $geschaeftsjahr->geschaeftsjahr_kurzbz ?>
-										</option>
-									<?php endforeach; ?>
-								</select>
-							</div>
-						</div>
-					</div> <!-- ./right column -->
 				</div>
 				<div class="row">
-					<div class="col-lg-6">
+					<div class="col-lg-7">
 						<div class="form-group" id="gjgroup">
 								<label for="budgetsearch">Suche</label>&nbsp;
 								<div class="btn-group">
@@ -73,6 +55,22 @@ $this->load->view(
 								<span class="input-group-addon"><i class="fa fa-search"></i></span>
 							<input type="text" class="form-control" id="budgetsearch" placeholder="Suchbegriff eingeben...">
 							</div>
+						</div>
+					</div> <!-- ./first column -->
+					<div class="col-lg-5">
+						<div class="form-group" id="gjgroup">
+							<label for="geschaeftsjahr">Geschäftsjahr</label>
+							<select class="form-control" id="geschaeftsjahr">
+								<option value="null">Geschäftsjahr wählen...</option>
+								<?php
+								foreach ($geschaeftsjahre as $geschaeftsjahr):
+									$selected = $selectedgeschaeftsjahr === $geschaeftsjahr->geschaeftsjahr_kurzbz ? 'selected' : '';
+									?>
+									<option value="<?php echo $geschaeftsjahr->geschaeftsjahr_kurzbz; ?>" <?php echo $selected; ?>>
+										<?php echo $geschaeftsjahr->geschaeftsjahr_kurzbz ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
 						</div>
 					</div> <!-- ./first column -->
 				</div> <!-- ./main row -->

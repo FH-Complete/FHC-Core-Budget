@@ -110,6 +110,10 @@ class BudgetantragUebersicht extends Auth_Controller
 			$kostenstelle->oe_kurzbz = $kostenstelleoe->oe_kurzbz;
 			$kostenstelle->oe_bezeichnung = $kostenstelleoe->oe_bezeichnung;
 
+			// ignore if kostenstelle is inaktiv and no Budget
+			if ($kostenstelle->kostenstelle_id !== null && !$kostenstelle->aktiv && empty($kostenstelle->budgetsumme))
+				continue;
+
 			//true gets also inactive parents
 			$result = $this->OrganisationseinheitModel->getParents($kostenstelle->oe_kurzbz, true);
 

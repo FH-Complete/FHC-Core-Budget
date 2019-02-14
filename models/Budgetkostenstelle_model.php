@@ -13,13 +13,14 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 	}
 
 	/**
-	 * Gets all active Kostenstellen for a geschaeftsjahr, as determined by the geschaeftsjahrvon and bis fields, together with their oe,
+	 * Gets all Kostenstellen which are active for a geschaeftsjahr, as determined by the geschaeftsjahr von and bis fields, together with their oe,
 	 * hierarchally sorted, gets Kostenstellen of current Geschaeftsjahr if Geschaeftsjahr not specified
 	 * Also gets sum of budget for each Kostenstelle
 	 * @param null $geschaeftsjahr
+	 * @param bool $alloes if false, only oes which have Kostenstellen or have children with Kostenstellen are retrieved
 	 * @return array|null
 	 */
-	public function getActiveKostenstellenForGeschaeftsjahrWithOe($geschaeftsjahr = null, $alloes = false)
+	public function getKostenstellenForGeschaeftsjahrWithOe($geschaeftsjahr = null, $alloes = false)
 	{
 		$this->load->model('organisation/geschaeftsjahr_model', 'GeschaeftsjahrModel');
 
@@ -126,9 +127,9 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 	 * @param null $geschaeftsjahr
 	 * @return mixed Kostenstellen for which user is berechtigt
 	 */
-	public function getActiveKostenstellenForGeschaeftsjahrBerechtigt($geschaeftsjahr = null)
+	public function getKostenstellenForGeschaeftsjahrBerechtigt($geschaeftsjahr = null)
 	{
-		$kostenstellen = $this->getActiveKostenstellenForGeschaeftsjahr($geschaeftsjahr);
+		$kostenstellen = $this->getKostenstellenForGeschaeftsjahr($geschaeftsjahr);
 
 		if (hasData($kostenstellen))
 		{
@@ -145,9 +146,9 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 	 * @param null $geschaeftsjahr
 	 * @return mixed Kostenstellen for which user is berechtigt
 	 */
-	public function getActiveKostenstellenForGeschaeftsjahrWithOeBerechtigt($geschaeftsjahr = null)
+	public function getKostenstellenForGeschaeftsjahrWithOeBerechtigt($geschaeftsjahr = null)
 	{
-		$kostenstellen = $this->getActiveKostenstellenForGeschaeftsjahrWithOe($geschaeftsjahr);
+		$kostenstellen = $this->getKostenstellenForGeschaeftsjahrWithOe($geschaeftsjahr);
 
 		if (hasData($kostenstellen))
 		{

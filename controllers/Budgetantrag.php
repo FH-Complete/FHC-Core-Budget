@@ -100,7 +100,7 @@ class Budgetantrag extends Auth_Controller
 					$geschaeftsjahr = null;
 			}
 		}
-		$kostenstellen = $this->BudgetkostenstelleModel->getActiveKostenstellenForGeschaeftsjahrBerechtigt($geschaeftsjahr);
+		$kostenstellen = $this->BudgetkostenstelleModel->getKostenstellenForGeschaeftsjahrBerechtigt($geschaeftsjahr);
 
 		if (isError($kostenstellen))
 		{
@@ -185,7 +185,7 @@ class Budgetantrag extends Auth_Controller
 	{
 		$geschaefsjahr = $this->input->get('geschaeftsjahr');
 
-		$result = $this->BudgetkostenstelleModel->getActiveKostenstellenForGeschaeftsjahrBerechtigt($geschaefsjahr);
+		$result = $this->BudgetkostenstelleModel->getKostenstellenForGeschaeftsjahrBerechtigt($geschaefsjahr);
 
 		$this->output
 			->set_content_type('application/json')
@@ -479,8 +479,8 @@ class Budgetantrag extends Auth_Controller
 	private function _preparePositionArray(&$position)
 	{
 		$position['budgetposten'] = html_escape($position['budgetposten']);
-		$position['konto_id'] = empty($position['konto_id']) ? null : $position['konto_id'];
-		$position['projekt_id'] = empty($position['projekt_id']) ? null : $position['projekt_id'];
+		$position['konto_id'] = !isset($position['konto_id']) ? null : $position['konto_id'];
+		$position['projekt_id'] = !isset($position['projekt_id']) ? null : $position['projekt_id'];
 	}
 
 	/**

@@ -75,7 +75,7 @@ class BudgetantragUebersicht extends Auth_Controller
 	 */
 	public function getKostenstellenTree($geschaeftsjahr)
 	{
-		$result = $this->BudgetkostenstelleModel->getActiveKostenstellenForGeschaeftsjahrWithOeBerechtigt($geschaeftsjahr);
+		$result = $this->BudgetkostenstelleModel->getKostenstellenForGeschaeftsjahrWithOeBerechtigt($geschaeftsjahr);
 
 		if (hasData($result))
 			$result = success($this->buildKostenstellenTree($result->retval));
@@ -111,7 +111,7 @@ class BudgetantragUebersicht extends Auth_Controller
 			$kostenstelle->oe_bezeichnung = $kostenstelleoe->oe_bezeichnung;
 
 			// ignore if kostenstelle is inaktiv and no Budget
-			if ($kostenstelle->kostenstelle_id !== null && !$kostenstelle->aktiv && empty($kostenstelle->budgetsumme))
+			if ($kostenstelle->kostenstelle_id !== null && !$kostenstelle->aktiv && !isset($kostenstelle->budgetsumme))
 				continue;
 
 			//true gets also inactive parents

@@ -1,10 +1,9 @@
 <?php
 
-// Add Menu-Entry to Main Page
-$config['navigation_menu']['Vilesci/index']['administration']['children']['Budgetantrag'] = array(
+$config['navigation_header']['*']['Organisation']['children']['Budgetantrag'] = array(
 	'link' => site_url('extensions/FHC-Core-Budget/BudgetantragUebersicht'),
-	'icon' => 'money',
-	'description' => 'Budgetanträge',
+	'sort' => 25,
+	'description' => 'Budgetverwaltung',
 	'expand' => false
 );
 

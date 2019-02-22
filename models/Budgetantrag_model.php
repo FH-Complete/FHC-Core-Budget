@@ -114,8 +114,8 @@ class Budgetantrag_model extends DB_Model
 					$position['budgetantrag_id'] = $budgetantrag_id;
 					$position['budgetposten'] = html_escape($position['budgetposten']);
 					$position['betrag'] = $position['betrag'] === '' ? null : $position['betrag'];
-					$position['projekt_id'] = !isset($position['projekt_id']) ? null : $position['projekt_id'];
-					$position['konto_id'] = !isset($position['konto_id']) ? null : $position['konto_id'];
+					$position['projekt_id'] = isset($position['projekt_id']) && is_numeric($position['projekt_id']) ? $position['projekt_id'] : null;
+					$position['konto_id'] = isset($position['konto_id']) && is_numeric($position['konto_id'])? $position['konto_id'] : null;
 					$position['insertvon'] = $data['insertvon'];
 					$result = $this->BudgetpositionModel->insert($position);
 				}

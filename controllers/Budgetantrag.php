@@ -240,7 +240,6 @@ class Budgetantrag extends Auth_Controller
 
 		if ($this->permissionlib->isBerechtigt(self::VERWALTEN_PERMISSION, 'suid', null, $kostenstelle_id))
 		{
-
 			$budgetantragData = array(
 				'kostenstelle_id' => $kostenstelle_id,
 				'geschaeftsjahr_kurzbz' => $geschaeftsjahr_kurzbz,
@@ -479,8 +478,8 @@ class Budgetantrag extends Auth_Controller
 	private function _preparePositionArray(&$position)
 	{
 		$position['budgetposten'] = html_escape($position['budgetposten']);
-		$position['konto_id'] = !isset($position['konto_id']) ? null : $position['konto_id'];
-		$position['projekt_id'] = !isset($position['projekt_id']) ? null : $position['projekt_id'];
+		$position['konto_id'] = isset($position['konto_id']) && is_numeric($position['konto_id']) ? $position['konto_id'] : null;
+		$position['projekt_id'] = isset($position['projekt_id']) && is_numeric($position['projekt_id'])? $position['projekt_id'] : null;
 	}
 
 	/**

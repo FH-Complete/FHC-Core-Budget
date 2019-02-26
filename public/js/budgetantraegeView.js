@@ -238,7 +238,7 @@ var BudgetantraegeView = {
 			"budgetposten": "",
 			"projekt_id": "null",
 			"konto_id": "null",
-			"betrag": 0,
+			"betrag": "",
 			"kommentar": ""
 		};
 

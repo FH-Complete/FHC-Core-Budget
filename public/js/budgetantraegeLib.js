@@ -43,6 +43,10 @@ var BudgetantraegeLib = {
 
 		if(sum === null)
 			dec = parseFloat(0).toFixed(2).replace(".", ",");
+		else if(sum === '')
+		{
+			dec = ''
+		}
 		else
 		{
 			dec = parseFloat(sum).toFixed(2);

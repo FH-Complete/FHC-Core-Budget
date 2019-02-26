@@ -20,7 +20,7 @@ var BudgetantraegeHtml = {
 					'</div>';
 
 			html += '<div class="col-lg-5 col-xs-12">'+
-						'<table class="table table-bordered table-condensed" id="sumtable">'+
+						'<table class="table table-bordered table-condensed text-center" id="sumtable">'+
 							'<tbody>'+
 								'<tr>'+
 									'<td><strong>Budgetsumme: </strong><span id="savedSum">€ 0,00</span></td>'+
@@ -277,7 +277,7 @@ var BudgetantraegeHtml = {
 								'<span class = "input-group-addon">'+
 									'<i class="fa fa-eur"></i>'+
 								'</span>'+
-								'<input type="text" class="form-control" name="betrag" value="'+BudgetantraegeLib.formatDecimalGerman(args.betrag)+'" '+disabled+'>'+
+								'<input type="text" class="form-control" name="betrag" value="'+BudgetantraegeLib.formatDecimalGerman(args.betrag)+'" placeholder="0,00"'+disabled+'>'+
 							'</div>'+//input-group
 						'</div>'+//column
 					'</div>'+//form-group row

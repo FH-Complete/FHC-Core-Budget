@@ -285,7 +285,7 @@ var BudgetantraegeUebersicht = {
 	},
 
 	/**
-	 * Filters tree by Kostenstellen (shows Kostenstellen with hierarchy
+	 * Filters tree by Kostenstellen (shows Kostenstellen with hierarchy)
 	 * @param kstbez
 	 * @param oearr
 	 * @param targetarr
@@ -319,8 +319,6 @@ var BudgetantraegeUebersicht = {
 						foundKst.push(kst);
 					}
 				}*/
-
-				var length = foundkst.length;
 
 				for (var k = 0; k < foundkst.length; k++)
 				{

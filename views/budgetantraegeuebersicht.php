@@ -85,7 +85,7 @@ $this->load->view(
 										<button type="button" class="btn btn-default btn-xs" id="collall"><i class="fa fa-toggle-up"></i>&nbsp;&nbsp;&nbsp;alle einklappen</button>
 									</th>
 									<th class="text-center">Budget gesamt (€ brutto)</th>
-									<th class="text-center">Budget genehmigt (€ brutto)</th>
+									<th class="text-center">Budget freigegeben (€ brutto)</th>
 								</tr>
 							</thead>
 							<tbody>

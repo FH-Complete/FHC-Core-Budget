@@ -15,8 +15,8 @@ class Budgetantrag extends Auth_Controller
 	private $budgetstatus_permissions = array(
 		self::NEWSTATUS => '',
 		self::SENT => '',
-		self::APPROVED => 'extension/budget_genehmigung',
-		self::REJECTED => 'extension/budget_genehmigung',
+		self::APPROVED => 'extension/budget_freigabe',
+		self::REJECTED => 'extension/budget_freigabe',
 		self::ACCEPTED => 'extension/budget_freigabe'
 	);
 

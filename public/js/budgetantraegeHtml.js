@@ -131,7 +131,7 @@ var BudgetantraegeHtml = {
 
 		var genehmigenBtnHtml = '<button class="btn btn-default" id="genehmigen_'+args.budgetantragid+'">' +
 			'<i class="glyphicon glyphicon-ok"></i>&nbsp;'+
-			'Genehmigen' +
+			'Freigeben' +
 			'</button>&nbsp;&nbsp;';
 
 		var ablehnenBtnHtml = '<button class="btn btn-default" id="ablehnen_'+args.budgetantragid+'">' +

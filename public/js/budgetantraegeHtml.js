@@ -129,7 +129,7 @@ var BudgetantraegeHtml = {
 			'<span>Speichern</span>'+
 			'</button>';
 
-		var genehmigenBtnHtml = '<button class="btn btn-default" id="genehmigen_'+args.budgetantragid+'">' +
+		var freigebenBtnHtml = '<button class="btn btn-default" id="freigeben_'+args.budgetantragid+'">' +
 			'<i class="glyphicon glyphicon-ok"></i>&nbsp;'+
 			'Freigeben' +
 			'</button>&nbsp;&nbsp;';
@@ -158,8 +158,8 @@ var BudgetantraegeHtml = {
 				'<div class="row">'+
 					'<div class="col-lg-5">';
 
-			if (BudgetantraegeController.global_booleans.genehmigbar === true)
-				html += genehmigenBtnHtml + ablehnenBtnHtml;
+			if (BudgetantraegeController.global_booleans.freigebbar === true)
+				html += freigebenBtnHtml + ablehnenBtnHtml;
 
 				html +=
 					'</div>'+
@@ -302,9 +302,9 @@ var BudgetantraegeHtml = {
 	 */
 	getModalSentHtml: function ()
 	{
-		return '<p>Der Status des Antrags wird auf <i class="genAdj"></i> gesetzt. Die Verantwortlichen erhalten eine Benachrichtigungsmail, damit der Antrag genehmigt werden kann. '+
+		return '<p>Der Status des Antrags wird auf <i class="frgAdj"></i> gesetzt. Die Verantwortlichen erhalten eine Benachrichtigungsmail, damit der Antrag freigegeben werden kann. '+
 			'Der Antrag kann jedoch noch bearbeitet werden.</p>'+
-			'<p>Alle nicht gespeicherten Daten gehen verloren. Bist du sicher, dass du den Budgetantrag <span class="genVerb"></span> m&ouml;chtest?</p>';
+			'<p>Alle nicht gespeicherten Daten gehen verloren. Bist du sicher, dass du den Budgetantrag <span class="frgVerb"></span> m&ouml;chtest?</p>';
 	},
 
 	/**
@@ -313,7 +313,7 @@ var BudgetantraegeHtml = {
 	 */
 	getModalApprovedHtml: function()
 	{
-		return '<p>Der Status des Antrags wird auf <i class="genAdj"></i> gesetzt, der Antrag kann nicht mehr bearbeitet werden.</p>'+
-			'<p>Alle nicht gespeicherten Daten gehen verloren. Bist du sicher, dass du den Budgetantrag <span class="genVerb"></span> m&ouml;chtest?</p>';
+		return '<p>Der Status des Antrags wird auf <i class="frgAdj"></i> gesetzt, der Antrag kann nicht mehr bearbeitet werden.</p>'+
+			'<p>Alle nicht gespeicherten Daten gehen verloren. Bist du sicher, dass du den Budgetantrag <span class="frgVerb"></span> m&ouml;chtest?</p>';
 	}
 };

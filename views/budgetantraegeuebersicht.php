@@ -82,7 +82,7 @@ $this->load->view(
 								<tr>
 									<th>Gesamtsumme</th>
 									<th class="text-center" id="summegesamt"></th>
-									<th class="text-center" id="summegenehmigt"></th>
+									<th class="text-center" id="summefreigegeben"></th>
 								</tr>
 							</tfoot>
 						</table>

@@ -10,7 +10,7 @@ const NEW_BUDGET_PREFIX = "newb", NEW_POSITION_PREFIX = "newp", BUDGETANTRAG_PRE
 const GLOBAL_STATUSES = {"new" : {"bez": "new", "editable": true},
 						"sent" : {"bez": "sent", "verb": "abschicken", "adj": "abgeschickt", "editable": true},
 						"rejected" : {"bez": "rejected", "verb": "ablehnen", "adj": "abgelehnt", "editable": false},
-						"approved" : {"bez": "approved", "verb": "genehmigen", "adj": "genehmigt", "editable": false}
+						"approved" : {"bez": "approved", "verb": "freigeben", "adj": "freigegeben", "editable": false}
 						};
 
 $(document).ready(function () {
@@ -39,7 +39,7 @@ $(document).ready(function () {
 
 	if (BudgetantraegeController.globalGjandKstAreValid())
 	{
-		BudgetantraegeAjax.checkIfKstGenehmigbar(BudgetantraegeController.global_inputparams.kostenstelle, BudgetantraegeController.afterKstGenehmigbarGet);
+		BudgetantraegeAjax.checkIfKstFreigebbar(BudgetantraegeController.global_inputparams.kostenstelle, BudgetantraegeController.afterKstFreigebbarGet);
 	}
 
 	//change view anytime a new Geschäftsjahr/Kostenstelle is entered
@@ -108,7 +108,7 @@ $(document).ready(function () {
 					if (FHC_AjaxClient.isError(data))
 						return;
 					BudgetantraegeController.global_booleans.editmode = data.retval;
-					BudgetantraegeAjax.checkIfKstGenehmigbar(BudgetantraegeController.global_inputparams.kostenstelle, BudgetantraegeController.afterKstGenehmigbarGet);
+					BudgetantraegeAjax.checkIfKstFreigebbar(BudgetantraegeController.global_inputparams.kostenstelle, BudgetantraegeController.afterKstFreigebbarGet);
 				}
 			);
 
@@ -124,7 +124,7 @@ var BudgetantraegeController = {
 	//global objects for storing current state of Budgetanträge together with their positions: how many added, deleted, updated
 	global_budgetantraege: {"newBudgetantraege": [], "existentBudgetantraege": []},
 	global_counters: {"countNewAntraege": 0, "countNewPosition": 0, "lastAddedOldId": ""},//counters for giving unique id to every new position or budget, [POSITION_PREFIX]_[counter]
-	global_booleans: {"editmode": false, "genehmigbar": false},
+	global_booleans: {"editmode": false, "freigebbar": false},
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// Initialisers (call ajax functions or view functions)
@@ -281,10 +281,10 @@ var BudgetantraegeController = {
 	 */
 	updateBudgetantragStatus: function(budgetantragid, statuskurzbz)
 	{
-		BudgetantraegeView.showGenBudgetantragModal(statuskurzbz);
-		var genmodal = $("#genModalConfirm");
-		genmodal.off("click");
-		genmodal.click(
+		BudgetantraegeView.showFrgBudgetantragModal(statuskurzbz);
+		var frgmodal = $("#frgModalConfirm");
+		frgmodal.off("click");
+		frgmodal.click(
 			function ()
 			{
 				BudgetantraegeAjax.updateBudgetantragStatus(budgetantragid, statuskurzbz);
@@ -349,14 +349,14 @@ var BudgetantraegeController = {
 	},
 
 	/**
-	 * Executes after Ajax for checking if Kostenstelle is genehmigbar is finished
+	 * Executes after Ajax for checking if Kostenstelle is freigebbar is finished
 	 * @param data
 	 * @param textStatus
 	 * @param jqXHR
 	 */
-	afterKstGenehmigbarGet: function (data, textStatus, jqXHR)
+	afterKstFreigebbarGet: function (data, textStatus, jqXHR)
 	{
-		BudgetantraegeController.global_booleans.genehmigbar = data;
+		BudgetantraegeController.global_booleans.freigebbar = data;
 		BudgetantraegeController.getBudgetantraege();
 	},
 
@@ -424,7 +424,7 @@ var BudgetantraegeController = {
 	 * Executes after Ajax for getting a single Budgetantrag is finished, for refreshing html and array
 	 * @param data
 	 * @param oldbudgetantragid id before update for messaging (in case of error)
-	 * @param updatetype type of performed update (genehmigen, speichern...) before the get
+	 * @param updatetype type of performed update (freigeben, speichern...) before the get
 	 */
 	afterBudgetantragGet: function(data, oldbudgetantragid, updatetype)
 	{
@@ -477,7 +477,7 @@ var BudgetantraegeController = {
 	 */
 	afterBudgetantragStatusUpdate: function(budgetantragid, data)
 	{
-		$("#genAntragModal").modal('hide');
+		$("#frgAntragModal").modal('hide');
 
 		if (FHC_AjaxClient.isError(data))
 		{

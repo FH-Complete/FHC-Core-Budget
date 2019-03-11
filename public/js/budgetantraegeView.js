@@ -206,7 +206,7 @@ var BudgetantraegeView = {
 				}
 			);
 
-			$("#genehmigen_" + budgetantragid).click(
+			$("#freigeben_" + budgetantragid).click(
 				function ()
 				{
 					BudgetantraegeController.updateBudgetantragStatus(budgetantragid, GLOBAL_STATUSES.approved.bez);
@@ -292,7 +292,7 @@ var BudgetantraegeView = {
 		var budgetantragEl = $("#" + BUDGETANTRAG_PREFIX + "_" + budgetantragid);
 		var statuskurzbz = budgetantrag.budgetstatus.budgetstatus_kurzbz;
 		var editable = BudgetantraegeController.global_booleans.editmode && GLOBAL_STATUSES[statuskurzbz].editable;
-		var genehmigbar = budgetantrag.genehmigbar;
+		var freigebbar = budgetantrag.freigebbar;
 
 		budgetantragEl.empty();
 
@@ -310,7 +310,7 @@ var BudgetantraegeView = {
 		}
 		BudgetantraegeView.setBudgetantragStatus(budgetantragid, budgetantrag.budgetstatus);
 		BudgetantraegeView.setSum(budgetantragid, sum);
-		BudgetantraegeView.appendBudgetantragFooter(budgetantragid, false, editable, genehmigbar);
+		BudgetantraegeView.appendBudgetantragFooter(budgetantragid, false, editable, freigebbar);
 	},
 
 	/**
@@ -388,17 +388,17 @@ var BudgetantraegeView = {
 	 * Shows Modal for confirmation of Budgetstatus change
 	 * @param statuskurzbz
 	 */
-	showGenBudgetantragModal: function (statuskurzbz)
+	showFrgBudgetantragModal: function (statuskurzbz)
 	{
-		var modelelement = $("#genAntragModal");
+		var modelelement = $("#frgAntragModal");
 
 		if (statuskurzbz === GLOBAL_STATUSES.sent.bez)
 			modelelement.find(".modal-body").html(BudgetantraegeHtml.getModalSentHtml());
 		else
 			modelelement.find(".modal-body").html(BudgetantraegeHtml.getModalApprovedHtml());
 
-		modelelement.find(".genVerb").html(GLOBAL_STATUSES[statuskurzbz].verb);
-		modelelement.find(".genAdj").html(GLOBAL_STATUSES[statuskurzbz].adj);
+		modelelement.find(".frgVerb").html(GLOBAL_STATUSES[statuskurzbz].verb);
+		modelelement.find(".frgAdj").html(GLOBAL_STATUSES[statuskurzbz].adj);
 		modelelement.modal('show');
 	},
 

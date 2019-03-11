@@ -30,7 +30,7 @@ class Budgetantrag extends Auth_Controller
 				'index' => 'extension/budget_verwaltung:r',
 				'showVerwalten' => 'extension/budget_verwaltung:r',
 				'checkIfVerwaltbar' => 'extension/budget_verwaltung:r',
-				'checkIfKostenstelleGenehmigbar' => 'extension/budget_verwaltung:r',
+				'checkIfKostenstelleFreigebbar' => 'extension/budget_verwaltung:r',
 				'getKostenstellen' => 'extension/budget_verwaltung:r',
 				'getBudgetantraege' => 'extension/budget_verwaltung:r',
 				'getBudgetantrag' => 'extension/budget_verwaltung:r',
@@ -165,17 +165,17 @@ class Budgetantrag extends Auth_Controller
 	}
 
 	/**
-	 * Checks if logged user has permission for Genehmigung of a Kostenstelle
+	 * Checks if logged user has permission for Freigabe of a Kostenstelle
 	 */
-	public function checkIfKostenstelleGenehmigbar()
+	public function checkIfKostenstelleFreigebbar()
 	{
 		$kostenstelle_id = $this->input->get('kostenstelle_id');
 		
-		$genehmigenperm = $this->permissionlib->isBerechtigt($this->budgetstatus_permissions[self::APPROVED], 'suid', null, $kostenstelle_id);
+		$freigebenperm = $this->permissionlib->isBerechtigt($this->budgetstatus_permissions[self::APPROVED], 'suid', null, $kostenstelle_id);
 
 		$this->output
 			->set_content_type('application/json')
-			->set_output(json_encode($genehmigenperm));
+			->set_output(json_encode($freigebenperm));
 	}
 
 	/**
@@ -453,7 +453,7 @@ class Budgetantrag extends Auth_Controller
 	}
 
 	/**
-	 * Checks if logged user has permission for Genehmigung of a Kostenstelle
+	 * Checks if logged user has permission for Freigabe of a Kostenstelle
 	 * @param $kostenstelle_id
 	 * @return bool
 	 */

@@ -49,7 +49,7 @@ var BudgetantraegeUebersicht = {
 	/*------------------------------------------------ VARIABLES --------------------------------------------------------*/
 	searchResultArray: [],
 	searchMode: "KST",
-	sums:  {"gesamt": 0.00, "genehmigt": 0.00},
+	sums:  {"gesamt": 0.00, "freigegeben": 0.00},
 
 	/*------------------------------------------------ AJAX CALLS -------------------------------------------------------*/
 	getKostenstellenTree: function (geschaeftsjahr)
@@ -92,7 +92,7 @@ var BudgetantraegeUebersicht = {
 			var strTree = "<tr data-tt-id='" + oeitem.oe_kurzbz + "'" + parentclass + " class='oerow'>" +
 				"<td>" + oeitem.bezeichnung + "</td>" +
 				"<td class='text-center'>" + BudgetantraegeLib.formatDecimalGerman(oeitem.budgetsumme) + "</td>" +
-				"<td class='text-center'>" + BudgetantraegeLib.formatDecimalGerman(oeitem.genehmigtsumme) + "</td>";
+				"<td class='text-center'>" + BudgetantraegeLib.formatDecimalGerman(oeitem.freigegebensumme) + "</td>";
 
 			// print children oes
 			for (var i = 0; i < oeitem.children.length; i++)
@@ -107,14 +107,14 @@ var BudgetantraegeUebersicht = {
 				strTree += "<tr data-tt-id='kst_" + kostenstelle.kostenstelle_id + "' data-tt-parent-id='" + oeitem.oe_kurzbz + "' class='kostenstellerow" + inactiveclass + "' id='kst_" + kostenstelle.kostenstelle_id + "'>" +
 					"<td><i class='fa fa-euro' title='Kostenstelle'></i> " + kostenstelle.bezeichnung + inactivetext + "</td>" +
 					"<td class='text-center'>" + BudgetantraegeLib.formatDecimalGerman(kostenstelle.budgetsumme) + "</td>" +
-					"<td class='text-center'>" + BudgetantraegeLib.formatDecimalGerman(kostenstelle.genehmigtsumme) + "</td>" +
+					"<td class='text-center'>" + BudgetantraegeLib.formatDecimalGerman(kostenstelle.freigegebensumme) + "</td>" +
 					"</tr>";
 
 				//add to totals
 				if (kostenstelle.budgetsumme !== null)
 					BudgetantraegeUebersicht.sums.gesamt += parseFloat(kostenstelle.budgetsumme);
-				if (kostenstelle.genehmigtsumme !== null)
-					BudgetantraegeUebersicht.sums.genehmigt += parseFloat(kostenstelle.genehmigtsumme);
+				if (kostenstelle.freigegebensumme !== null)
+					BudgetantraegeUebersicht.sums.freigegeben += parseFloat(kostenstelle.freigegebensumme);
 			}
 		}
 
@@ -131,7 +131,7 @@ var BudgetantraegeUebersicht = {
 	 */
 	_printTree: function (data, geschaeftsjahr, expansionlevel)
 	{
-		BudgetantraegeUebersicht.sums.genehmigt = 0;
+		BudgetantraegeUebersicht.sums.freigegeben = 0;
 		BudgetantraegeUebersicht.sums.gesamt = 0;
 
 		var kostenstellentree = data;
@@ -197,7 +197,7 @@ var BudgetantraegeUebersicht = {
 	_refreshSums: function()
 	{
 		$("#summegesamt").text(BudgetantraegeLib.formatDecimalGerman(BudgetantraegeUebersicht.sums.gesamt));
-		$("#summegenehmigt").text(BudgetantraegeLib.formatDecimalGerman(BudgetantraegeUebersicht.sums.genehmigt));
+		$("#summefreigegeben").text(BudgetantraegeLib.formatDecimalGerman(BudgetantraegeUebersicht.sums.freigegeben));
 	},
 
 	_collapseAll: function()

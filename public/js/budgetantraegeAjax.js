@@ -55,10 +55,10 @@ var BudgetantraegeAjax = {
 		);
 	},
 
-	checkIfKstGenehmigbar: function(kostenstelle, successCallback)
+	checkIfKstFreigebbar: function(kostenstelle, successCallback)
 	{
 		FHC_AjaxClient.ajaxCallGet(
-			CALLED_PATH + "/checkIfKostenstelleGenehmigbar",
+			CALLED_PATH + "/checkIfKostenstelleFreigebbar",
 			{
 				"kostenstelle_id": kostenstelle
 			},
@@ -66,7 +66,7 @@ var BudgetantraegeAjax = {
 				successCallback: successCallback,
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
-					alert("error when checking Kst genehmigbar!");
+					alert("error when checking Kst freigebbar!");
 				}
 			}
 		);

@@ -106,7 +106,7 @@ class BudgetantragUebersicht extends Auth_Controller
 			$kostenstelle->bezeichnung = $kostenstelleoe->kostenstelle_bezeichnung;
 			$kostenstelle->aktiv = $kostenstelleoe->kostenstelle_aktiv;
 			$kostenstelle->budgetsumme = $kostenstelleoe->kostenstelle_budgetsumme;
-			$kostenstelle->genehmigtsumme = $kostenstelleoe->kostenstelle_genehmigtsumme;
+			$kostenstelle->freigegebensumme = $kostenstelleoe->kostenstelle_freigegebensumme;
 			$kostenstelle->oe_kurzbz = $kostenstelleoe->oe_kurzbz;
 			$kostenstelle->oe_bezeichnung = $kostenstelleoe->oe_bezeichnung;
 
@@ -148,7 +148,7 @@ class BudgetantragUebersicht extends Auth_Controller
 					'oe_kurzbz' => $kostenstelle->oe_kurzbz,
 					'bezeichnung' => $kostenstelle->oe_bezeichnung,
 					'budgetsumme' => $kostenstelle->budgetsumme,
-					'genehmigtsumme' => $kostenstelle->genehmigtsumme,
+					'freigegebensumme' => $kostenstelle->freigegebensumme,
 					'kostenstellen' => $kostenstellen,
 					'children' => array()
 				);
@@ -180,7 +180,7 @@ class BudgetantragUebersicht extends Auth_Controller
 			{
 				// increase budgetsumme of the parent
 				$item['budgetsumme'] += $kostenstelle->budgetsumme;
-				$item['genehmigtsumme'] += $kostenstelle->genehmigtsumme;
+				$item['freigegebensumme'] += $kostenstelle->freigegebensumme;
 
 				// first parent is oe of kostenstelle - append only kostenstelle to existing oe
 				if ($firstparent)
@@ -201,7 +201,7 @@ class BudgetantragUebersicht extends Auth_Controller
 								'oe_kurzbz' => $kostenstelle->oe_kurzbz,
 								'bezeichnung' => $kostenstelle->oe_bezeichnung,
 								'budgetsumme' => $kostenstelle->budgetsumme,
-								'genehmigtsumme' => $kostenstelle->genehmigtsumme,
+								'freigegebensumme' => $kostenstelle->freigegebensumme,
 								'kostenstellen' => $kostenstellen,
 								'children' => array()
 							);

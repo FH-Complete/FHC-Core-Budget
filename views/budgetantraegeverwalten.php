@@ -99,21 +99,21 @@ $this->load->view(
 						</div>
 					</div>
 				</div>
-				<!-- modal for genehmigen/ablehnen of a budgetantrag -->
-				<div id="genAntragModal" class="modal fade">
+				<!-- modal for freigeben/ablehnen of a budgetantrag -->
+				<div id="frgAntragModal" class="modal fade">
 					<div class="modal-dialog">
 						<div class="modal-content">
 							<div class="modal-header">
 								<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-								<h4 class="modal-title">Budgetantrag <span class="genVerb"></span></h4>
+								<h4 class="modal-title">Budgetantrag <span class="frgVerb"></span></h4>
 							</div>
 							<div class="modal-body">
-								<p>Der Status des Antrags wird auf <i class="genAdj"></i> gesetzt, der Antrag kann nicht mehr bearbeitet werden.</p>
-								<p>Alle nicht gespeicherten Daten gehen verloren. Bist du sicher, dass du den Budgetantrag <span class="genVerb"></span> m&ouml;chtest?</p>
+								<p>Der Status des Antrags wird auf <i class="frgAdj"></i> gesetzt, der Antrag kann nicht mehr bearbeitet werden.</p>
+								<p>Alle nicht gespeicherten Daten gehen verloren. Bist du sicher, dass du den Budgetantrag <span class="frgVerb"></span> m&ouml;chtest?</p>
 							</div>
 							<div class="modal-footer">
 								<button type="button" class="btn btn-default" data-dismiss="modal">Abbrechen</button>
-								<button type="button" class="btn btn-primary" id="genModalConfirm">Budgetantrag <span class="genVerb"></span></button>
+								<button type="button" class="btn btn-primary" id="frgModalConfirm">Budgetantrag <span class="frgVerb"></span></button>
 							</div>
 						</div>
 					</div>

@@ -55,7 +55,7 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 					kst.bezeichnung as kostenstelle_bezeichnung,
 					kst.aktiv as kostenstelle_aktiv,
 					kst.budgetsumme as kostenstelle_budgetsumme,
-					kst.genehmigtsumme as kostenstelle_genehmigtsumme
+					kst.freigegebensumme as kostenstelle_freigegebensumme
 			  FROM tree rec
 				LEFT JOIN (
 						SELECT kostenstelle_id, kurzbz, ksttable.bezeichnung, ksttable.aktiv, ksttable.oe_kurzbz as kstoe, 
@@ -69,7 +69,7 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 							GROUP BY wawi.tbl_kostenstelle.kostenstelle_id
 						),
 						(
-							SELECT sum(betrag) AS genehmigtsumme
+							SELECT sum(betrag) AS freigegebensumme
 							FROM wawi.tbl_kostenstelle
 							JOIN extension.tbl_budget_antrag USING (kostenstelle_id)
 							JOIN (

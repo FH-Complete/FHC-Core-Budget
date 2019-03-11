@@ -38,19 +38,7 @@ $this->load->view(
 				<div class="row">
 					<div class="col-lg-7">
 						<div class="form-group" id="gjgroup">
-								<label for="budgetsearch">Suche</label>&nbsp;
-								<div class="btn-group">
-										<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
-											<span id="searchmode">KST</span>
-											<span class="caret"></span>
-										</button>
-									<ul class="dropdown-menu" role="menu">
-										<li><a id="searchmodekst" href="javascript:void(0)">Kostenstelle</a>
-										</li>
-										<li><a id="searchmodeoe" href="javascript:void(0)">Organisationseinheit</a>
-										</li>
-									</ul>
-								</div>
+							<label>Suche</label>
 							<div class="input-group">
 								<span class="input-group-addon"><i class="fa fa-search"></i></span>
 							<input type="text" class="form-control" id="budgetsearch" placeholder="Suchbegriff eingeben...">

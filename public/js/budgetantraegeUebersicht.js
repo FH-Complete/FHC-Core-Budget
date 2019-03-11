@@ -32,25 +32,7 @@ $(document).ready(function () {
 		}
 	);
 
-	$("#searchmodekst").click(
-		function()
-		{
-			BudgetantraegeUebersicht.searchMode = "KST";
-			$("#searchmode").text("KST");
-			BudgetantraegeUebersicht._initSearch();
-		}
-	);
-
-	$("#searchmodeoe").click(
-		function()
-		{
-			BudgetantraegeUebersicht.searchMode = "OE";
-			$("#searchmode").text("OE");
-			BudgetantraegeUebersicht._initSearch();
-		}
-	);
-
-	$("#budgetsearch").keyup(
+	$("#budgetsearch").on('input',
 		BudgetantraegeUebersicht._initSearch
 	);
 
@@ -249,134 +231,71 @@ var BudgetantraegeUebersicht = {
 			return;
 		}
 
-		BudgetantraegeUebersicht.searchResultArray = [];
+		$("#ksttree tr").css("font-weight", "normal");
 
-		var expansionlevel = null;
+		BudgetantraegeUebersicht._collapseAll();
 
-		if (BudgetantraegeUebersicht.searchMode === "KST")
-		{
-			BudgetantraegeUebersicht._filterKst(searchterm, BudgetantraegeUebersicht.kostenstellentree, BudgetantraegeUebersicht.searchResultArray);
-			expansionlevel = 2;
-		}
-		else if (BudgetantraegeUebersicht.searchMode === "OE")
-		{
-			BudgetantraegeUebersicht._filterOe(searchterm, BudgetantraegeUebersicht.kostenstellentree);
-			expansionlevel = 1;
-		}
-
-		BudgetantraegeUebersicht._printTree(BudgetantraegeUebersicht.searchResultArray, BudgetantraegeUebersicht.geschaeftsjahr, expansionlevel);
+		BudgetantraegeUebersicht._searchKstAndOe(BudgetantraegeUebersicht.kostenstellentree, searchterm);
 	},
-
 	/**
-	 * Filters Tree by Organisationseinheit (shows only Organisationsheit without hierarchy)
-	 * @param oebez
-	 * @param oearr
+	 * Searches for searchterm in OEs and Kostenstellen. Marks those found as bold.
+	 * @param oearr with OEs and their Kostenstellen
+	 * @param searchterm
 	 * @private
 	 */
-	_filterOe: function(oebez, oearr)
+	_searchKstAndOe: function(oearr, searchterm)
 	{
-		for (var i = 0; i < oearr.length; i++)
-		{
-			if (BudgetantraegeUebersicht._compareCaseInsensitive(oearr[i].bezeichnung, oebez) >= 0)
-				BudgetantraegeUebersicht.searchResultArray.push(oearr[i]);
-			else
-				BudgetantraegeUebersicht._filterOe(oebez, oearr[i].children);
-		}
-	},
 
-	/**
-	 * Filters tree by Kostenstellen (shows Kostenstellen with hierarchy)
-	 * @param kstbez
-	 * @param oearr
-	 * @param targetarr
-	 * @private
-	 */
-	_filterKst: function(kstbez, oearr, targetarr)
-	{
 		for (var i = 0; i < oearr.length; i++)
 		{
 			var oeel = oearr[i];
-			var foundkst = [];
-			var foundkstfirstlevel = [];
-			var budgetsumme = 0.00;
-			var genehmigtsumme = 0.00;
 
-			BudgetantraegeUebersicht._getAllKstChildren(oeel, kstbez, foundkstfirstlevel, foundkst, true);
-
-			// hard copy oe if it has Kostenstellen
-			if (foundkst.length > 0)
+			if (BudgetantraegeUebersicht._checkIfHasChild(oeel, searchterm))
 			{
-
-/*				for (var j = 0; j < oeel.kostenstellen.length; j++)
-				{
-					var kst = oeel.kostenstellen[j];
-
-					if (BudgetantraegeUebersicht._compareCaseInsensitive(kst.bezeichnung, kstbez) >= 0)
-					{
-						console.log(kst);
-						//budgetsumme += kst.budgetsumme;
-						//genehmigtsumme += kst.genehmigtsumme;
-						foundKst.push(kst);
-					}
-				}*/
-
-				for (var k = 0; k < foundkst.length; k++)
-				{
-					if (foundkst[k].budgetsumme !== null)
-						budgetsumme += parseFloat(foundkst[k].budgetsumme);
-					if (foundkst[k].genehmigtsumme !== null)
-						genehmigtsumme += parseFloat(foundkst[k].genehmigtsumme);
-				}
-
-				var copy = {
-					bezeichnung: oeel.bezeichnung,
-					budgetsumme: budgetsumme,
-					genehmigtsumme: genehmigtsumme,
-					oe_kurzbz: oeel.oe_kurzbz,
-					kostenstellen: foundkstfirstlevel,
-					children: []
-				};
-
-				targetarr.push(copy);
-
-				BudgetantraegeUebersicht._filterKst(kstbez, oeel.children, targetarr[targetarr.length - 1].children);
+				$("tr[data-tt-id="+oeel.oe_kurzbz+"]").css("font-weight", "bold");
+				$("#ksttree").treetable("expandNode", oeel.oe_kurzbz);
 			}
+
+			BudgetantraegeUebersicht._searchKstAndOe(oeel.children, searchterm);
 		}
 	},
 
 	/**
-	 * Gets all Kostenstellen that are under a given oe (children)
-	 * that contain kstbez
-	 * @param oe
-	 * @param kstbez
-	 * @param foundkstfirstlevel array containing all direct children of the oe
-	 * @param foundkst array containing all children (children, grandchildren...) of the oe
-	 * @param firstlevel wether the first level of children is searched (first iteration)
-	 * @returns {*} array with all found Kostenstellen
+	 * Checks if an OE has children (OEs or Kostenstellen)
+	 * @param parent the parent OE
+	 * @param searchterm
+	 * @returns boolean indicating if searchterm is found in children
 	 * @private
 	 */
-	_getAllKstChildren: function(oe, kstbez, foundkstfirstlevel, foundkst, firstlevel)
+	_checkIfHasChild: function(parent, searchterm)
 	{
-		for (var i = 0; i < oe.kostenstellen.length; i++)
-		{
-			if (BudgetantraegeUebersicht._compareCaseInsensitive(oe.kostenstellen[i].bezeichnung, kstbez) >= 0)
-			{
-				if (firstlevel)
-					foundkstfirstlevel.push(oe.kostenstellen[i]);
+		var hasChild = false;
 
-				foundkst.push(oe.kostenstellen[i]);
+		if (BudgetantraegeUebersicht._compareCaseInsensitive(parent.bezeichnung, searchterm) >= 0)
+		{
+			hasChild = true;
+		}
+
+		for (var j = 0; j < parent.kostenstellen.length; j++)
+		{
+			if (BudgetantraegeUebersicht._compareCaseInsensitive(parent.kostenstellen[j].bezeichnung, searchterm) >= 0)
+			{
+				$("tr[data-tt-id=kst_"+parent.kostenstellen[j].kostenstelle_id+"]").css("font-weight", "bold");
+				hasChild = true;
 			}
 		}
 
-		firstlevel = false;
+		if (hasChild === true) return hasChild;
 
-		for (var j = 0; j < oe.children.length; j++)
+		for (var i = 0; i < parent.children.length; i++)
 		{
-			var child = oe.children[j];
-			BudgetantraegeUebersicht._getAllKstChildren(child, kstbez, foundkstfirstlevel, foundkst, firstlevel);
+			var oechild = parent.children[i];
+
+			var found = BudgetantraegeUebersicht._checkIfHasChild(oechild, searchterm);
+			if (found) return found;
 		}
 
-		return foundkst;
+		return false;
 	},
 
 	/**
@@ -390,7 +309,7 @@ var BudgetantraegeUebersicht = {
 	},
 
 	/**
-	 * Compares two kst caseinsensitively
+	 * Compares two Kostenstellen caseinsensitively
 	 * @param kstbez1
 	 * @param kstbez2
 	 * @returns {Number}

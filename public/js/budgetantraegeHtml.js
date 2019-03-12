@@ -188,16 +188,47 @@ var BudgetantraegeHtml = {
 	{
 		var disabled = editable === true ? '' : 'disabled=""';
 
+		var kontooptionshtml = '', selectedKontoKurzbz = '&nbsp;';
+		var betrag = BudgetantraegeLib.formatDecimalGerman(args.betrag);
+		var betragWithCrncy = betrag ? '€ '+betrag : '€ 0,00';
+
+		//get konto
+		for (var i = 0; i < BudgetantraegeController.global_preloads.konten.length; i++)
+		{
+			var konto = BudgetantraegeController.global_preloads.konten[i];
+			var selected = '';
+
+			if (args.konto_id === konto.konto_id)
+			{
+				selected = ' selected=""';
+				selectedKontoKurzbz = ' | Konto '+konto.kurzbz;
+			}
+
+			var kurzbz = konto.kurzbz + " (" + konto.kontonr + ")";
+			var inactivehtml = '';
+
+			//mark if inactive
+			if (konto.aktiv === false)
+			{
+				kurzbz += " (inaktiv)";
+				inactivehtml = 'class = "inactiveoption"';
+			}
+
+			kontooptionshtml += '<option value="' + konto.konto_id + '" '+inactivehtml+ ' ' + selected + '>' + kurzbz + '</option>';
+		}
+
 		var html =
 			'<div class="panel panel-default" id="'+POSITION_PREFIX+'_'+args.positionid+'">'+
 				'<div class="panel-heading">' +
 					'<div class="row">'+
-						'<div class="col-lg-11 col-xs-10">'+
 							'<a class="accordion-toggle'+args.collapseHtml+'" data-toggle="collapse" href="#collapsePosition'+args.positionid+'">'+
-							args.budgetposten+' | € '+BudgetantraegeLib.formatDecimalGerman(args.betrag)+
+								'<div class="col-xs-5">'+
+									args.budgetposten+selectedKontoKurzbz+
+								'</div>'+
+								'<div class="col-xs-2 text-center"> '+betragWithCrncy+'</div>'+
+								'<div class="col-xs-3">&nbsp;</div>'+
 							'</a>'+
-						'</div>'+
-						'<div class="col-lg-1 col-xs-2 text-right">';
+						'<div class="col-xs-2 text-right">';
 
 		if (editable === true)
 			html +=			'<i class="fa fa-times text-danger" id="removePosition_'+args.positionid+'" role="button"></i>';
@@ -226,9 +257,9 @@ var BudgetantraegeHtml = {
 							'<select class="form-control" name="projekt_id" '+disabled+'>'+
 								'<option value="null">Projekt wählen...</option>';
 
-		for (var i = 0; i < BudgetantraegeController.global_preloads.projekte.length; i++)
+		for (var j = 0; j < BudgetantraegeController.global_preloads.projekte.length; j++)
 		{
-			var projekt = BudgetantraegeController.global_preloads.projekte[i];
+			var projekt = BudgetantraegeController.global_preloads.projekte[j];
 			var selected = args.projekt_id === projekt.projekt_id ? ' selected=""' : '';
 			html += '<option value="' + projekt.projekt_id + '"' + selected + '>' + projekt.titel + '</option>';
 		}
@@ -247,22 +278,7 @@ var BudgetantraegeHtml = {
 							'<select class="form-control" name="konto_id" '+disabled+'>'+
 								'<option value="null">Konto wählen...</option>';
 
-		for (var i = 0; i < BudgetantraegeController.global_preloads.konten.length; i++)
-		{
-			var konto = BudgetantraegeController.global_preloads.konten[i];
-			var selected = args.konto_id === konto.konto_id ? ' selected=""' : '';
-			var kurzbz = konto.kurzbz + " (" + konto.kontonr + ")";
-			var inactivehtml = '';
-
-			//mark if inactive
-			if (konto.aktiv === false)
-			{
-				kurzbz += " (inaktiv)";
-				inactivehtml = 'class = "inactiveoption"';
-			}
-
-			html += '<option value="' + konto.konto_id + '" '+inactivehtml+ ' ' + selected + '>' + kurzbz + '</option>';
-		}
+		html += kontooptionshtml;
 
 		html +=
 							'</select>'+
@@ -277,7 +293,7 @@ var BudgetantraegeHtml = {
 								'<span class = "input-group-addon">'+
 									'<i class="fa fa-eur"></i>'+
 								'</span>'+
-								'<input type="text" class="form-control" name="betrag" value="'+BudgetantraegeLib.formatDecimalGerman(args.betrag)+'" placeholder="0,00"'+disabled+'>'+
+								'<input type="text" class="form-control" name="betrag" value="'+betrag+'" placeholder="0,00"'+disabled+'>'+
 							'</div>'+//input-group
 						'</div>'+//column
 					'</div>'+//form-group row

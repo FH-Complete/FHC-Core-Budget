@@ -10,14 +10,12 @@ class Budgetantrag extends Auth_Controller
 	const SENT = 'sent';
 	const APPROVED = 'approved';
 	const REJECTED = 'rejected';
-	const ACCEPTED = 'accepted';
 	const VERWALTEN_PERMISSION = 'extension/budget_verwaltung';
 	private $budgetstatus_permissions = array(
 		self::NEWSTATUS => '',
 		self::SENT => '',
 		self::APPROVED => 'extension/budget_freigabe',
-		self::REJECTED => 'extension/budget_freigabe',
-		self::ACCEPTED => 'extension/budget_freigabe'
+		self::REJECTED => 'extension/budget_freigabe'
 	);
 
 	/**

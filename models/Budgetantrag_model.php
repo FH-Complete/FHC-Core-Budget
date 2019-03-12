@@ -39,10 +39,11 @@ class Budgetantrag_model extends DB_Model
 		{
 			$budgetantrag = $this->getBudgetantrag($antrag->budgetantrag_id);
 
-			if($budgetantrag->error)
+			if (isError($budgetantrag))
 				return error($budgetantrag->retval);
 
-			$resultArr[] = $budgetantrag->retval[0];
+			if (hasData($budgetantrag))
+				$resultArr[] = $budgetantrag->retval[0];
 		}
 
 		$budgetantraege->retval = $resultArr;
@@ -59,23 +60,25 @@ class Budgetantrag_model extends DB_Model
 	{
 		$budgetantrag = $this->load($budgetantrag_id);
 
-		if ($budgetantrag->error)
+		if (isError($budgetantrag))
 			return error($budgetantrag->retval);
 
 		$this->BudgetpositionModel->addOrder('budgetposition_id');
 		$budgetpositionen = $this->BudgetpositionModel->loadWhere(array('budgetantrag_id' => $budgetantrag_id));
 
-		if ($budgetpositionen->error)
+		if (isError($budgetpositionen))
 			return error($budgetpositionen->retval);
 
 		$laststatus = $this->BudgetantragstatusModel->getLastStatus($budgetantrag_id);
 
-		if ($laststatus->error)
-			return error($budgetpositionen->retval);
+		if (isError($laststatus))
+			return error($laststatus->retval);
 
-		$budgetantrag->retval[0]->budgetstatus = $laststatus->retval[0];
-		$budgetantrag->retval[0]->budgetpositionen = $budgetpositionen->retval;
-
+		if (hasData($budgetantrag))
+		{
+			$budgetantrag->retval[0]->budgetstatus = $laststatus->retval[0];
+			$budgetantrag->retval[0]->budgetpositionen = $budgetpositionen->retval;
+		}
 		return $budgetantrag;
 	}
 

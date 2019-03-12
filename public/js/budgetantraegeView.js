@@ -68,7 +68,8 @@ var BudgetantraegeView = {
 			var budgetantrag = antraege[i];
 			var budgetantragid = budgetantrag.budgetantrag_id;
 
-			var editable = BudgetantraegeController.global_booleans.editmode && GLOBAL_STATUSES[budgetantrag.budgetstatus.budgetstatus_kurzbz].editable;
+			var editable = BudgetantraegeController.global_booleans.editmode === true
+				&& GLOBAL_STATUSES[budgetantrag.budgetstatus.budgetstatus_kurzbz].editable === true;
 
 			BudgetantraegeView.appendBudgetantrag(budgetantragid, {"bezeichnung": budgetantrag.bezeichnung}, 0, false, editable);
 
@@ -291,7 +292,8 @@ var BudgetantraegeView = {
 		var budgetantragid = budgetantrag.budgetantrag_id;
 		var budgetantragEl = $("#" + BUDGETANTRAG_PREFIX + "_" + budgetantragid);
 		var statuskurzbz = budgetantrag.budgetstatus.budgetstatus_kurzbz;
-		var editable = BudgetantraegeController.global_booleans.editmode && GLOBAL_STATUSES[statuskurzbz].editable;
+		var editable = BudgetantraegeController.global_booleans.editmode === true
+			&& GLOBAL_STATUSES[statuskurzbz].editable === true;
 		var freigebbar = budgetantrag.freigebbar;
 
 		budgetantragEl.empty();

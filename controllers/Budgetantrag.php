@@ -94,7 +94,7 @@ class Budgetantrag extends Auth_Controller
 			}
 			else
 			{
-				if (count($geschaeftsjahre->retval) > 0)
+				if (hasData($geschaeftsjahre))
 					$geschaeftsjahr = $geschaeftsjahre->retval[0]->geschaeftsjahr_kurzbz;
 				else
 					$geschaeftsjahr = null;
@@ -131,7 +131,7 @@ class Budgetantrag extends Auth_Controller
 
 		if (!$this->permissionlib->isBerechtigt(self::VERWALTEN_PERMISSION, 'suid', null, $kostenstelle_id))
 		{
-			$json = success(false);
+			$json = false;
 		}
 		else
 		{
@@ -140,7 +140,7 @@ class Budgetantrag extends Auth_Controller
 			if (isError($currgj))
 				$json = json_encode($currgj);
 			elseif (count($currgj->retval) < 1)
-				$json = success(false);
+				$json = false;
 			else
 			{
 				$gj = $this->GeschaeftsjahrModel->load($geschaeftsjahr);
@@ -148,20 +148,21 @@ class Budgetantrag extends Auth_Controller
 				if (isError($gj))
 					$json = json_encode($gj);
 				elseif (count($gj->retval) < 1)
-					$json = success(false);
+					$json = false;
 				else
 				{
 					$currgjstart = $currgj->retval[0]->start;
 					$gjstart = $gj->retval[0]->start;
 
-					$json = success($gjstart >= $currgjstart);
+					$json = ($gjstart >= $currgjstart);
 				}
 			}
 		}
 
-		$this->output
-			->set_content_type('application/json')
-			->set_output(json_encode($json));
+		if (is_bool($json))
+			$this->outputJsonSuccess(array($json));
+		else
+			$this->outputJsonError('Error when checking verwaltbar');
 	}
 
 	/**
@@ -173,9 +174,10 @@ class Budgetantrag extends Auth_Controller
 		
 		$freigebenperm = $this->permissionlib->isBerechtigt($this->budgetstatus_permissions[self::APPROVED], 'suid', null, $kostenstelle_id);
 
-		$this->output
-			->set_content_type('application/json')
-			->set_output(json_encode($freigebenperm));
+		if (is_bool($freigebenperm))
+			$this->outputJsonSuccess(array($freigebenperm));
+		else
+			$this->outputJsonError('error when checking Freigabepermission');
 	}
 
 	/**
@@ -187,9 +189,10 @@ class Budgetantrag extends Auth_Controller
 
 		$result = $this->BudgetkostenstelleModel->getKostenstellenForGeschaeftsjahrBerechtigt($geschaefsjahr);
 
-		$this->output
-			->set_content_type('application/json')
-			->set_output(json_encode($result));
+		if (isSuccess($result))
+			$this->outputJsonSuccess($result->retval);
+		else
+			$this->outputJsonError('error when getting Kostenstellen');
 	}
 
 	/**
@@ -205,9 +208,10 @@ class Budgetantrag extends Auth_Controller
 		if ($this->permissionlib->isBerechtigt(self::VERWALTEN_PERMISSION, 's', null, $kostenstelle_id))
 			$result = $this->BudgetantragModel->getBudgetantraege($geschaefsjahr, $kostenstelle_id);
 
-		$this->output
-			->set_content_type('application/json')
-			->set_output(json_encode($result));
+		if (isSuccess($result))
+			$this->outputJsonSuccess($result->retval);
+		else
+			$this->outputJsonError('Error when getting Budgetanträge');
 	}
 
 	/**
@@ -221,9 +225,10 @@ class Budgetantrag extends Auth_Controller
 		if ($this->_checkBudgetverwaltenPermission($budgetantragid, 's'))
 			$result = $this->BudgetantragModel->getBudgetantrag($budgetantragid);
 
-		$this->output
-			->set_content_type('application/json')
-			->set_output(json_encode($result));
+		if (isSuccess($result))
+			$this->outputJsonSuccess($result->retval);
+		else
+			$this->outputJsonError('Error when getting Budgetantrag');
 	}
 
 	/**
@@ -250,9 +255,10 @@ class Budgetantrag extends Auth_Controller
 			$result = $this->BudgetantragModel->addBudgetantrag($budgetantragData, $positionen);
 		}
 
-		$this->output
-			->set_content_type('application/json')
-			->set_output(json_encode($result));
+		if (isSuccess($result))
+			$this->outputJsonSuccess($result->retval);
+		else
+			$this->outputJsonError('Error when adding new Budgetantrag');
 	}
 
 	/**
@@ -269,9 +275,10 @@ class Budgetantrag extends Auth_Controller
 			$result = $this->BudgetantragModel->update($budgetantrag_id, array('bezeichnung' => $bezeichnung));
 		}
 
-		$this->output
-			->set_content_type('application/json')
-			->set_output(json_encode($result));
+		if (isSuccess($result))
+			$this->outputJsonSuccess($result->retval);
+		else
+			$this->outputJsonError('Error when updating Budgetantrag Bezeichnung');
 	}
 
 	/**
@@ -340,9 +347,7 @@ class Budgetantrag extends Auth_Controller
 
 		$result = array('errors' => $errors, 'inserted' => $inserted, 'updated' => $updated, 'deleted' => $deleted);
 
-		$this->output
-			->set_content_type('application/json')
-			->set_output(json_encode($result));
+		$this->outputJsonSuccess($result);
 	}
 
 	/**
@@ -358,9 +363,10 @@ class Budgetantrag extends Auth_Controller
 			$result = $this->BudgetantragModel->deleteBudgetantrag($budgetantrag_id);
 		}
 
-		$this->output
-			->set_content_type('application/json')
-			->set_output(json_encode($result));
+		if (isSuccess($result))
+			$this->outputJsonSuccess($result->retval);
+		else
+			$this->outputJsonError('Error when deleting Budgetantrag');
 	}
 
 	/**
@@ -391,16 +397,14 @@ class Budgetantrag extends Auth_Controller
 			if (isSuccess($result))
 			{
 				//get Budgetstatus data for updating html view
-				$result = $this->BudgetantragstatusModel->getLastStatus($budgetantrag_id);
-
-				$json = $result;
+				$json = $this->BudgetantragstatusModel->getLastStatus($budgetantrag_id);
 			}
-
 		}
 
-		$this->output
-			->set_content_type('application/json')
-			->set_output(json_encode($json));
+		if (isSuccess($json))
+			$this->outputJsonSuccess($json->retval);
+		else
+			$this->outputJsonError('Error when updating Budgetantrag Status');
 	}
 
 	/**
@@ -412,9 +416,10 @@ class Budgetantrag extends Auth_Controller
 		$this->ProjektModel->addOrder('titel');
 		$result = $this->ProjektModel->load();
 
-		$this->output
-			->set_content_type('application/json')
-			->set_output(json_encode($result));
+		if (isSuccess($result))
+			$this->outputJsonSuccess($result->retval);
+		else
+			$this->outputJsonError('Error when getting Projekte');
 	}
 
 	/**
@@ -427,9 +432,10 @@ class Budgetantrag extends Auth_Controller
 		$this->KontoModel->addOrder('kurzbz');
 		$result = $this->KontoModel->getKontenForKostenstelle($kostenstelle_id);
 
-		$this->output
-			->set_content_type('application/json')
-			->set_output(json_encode($result));
+		if (isSuccess($result))
+			$this->outputJsonSuccess($result->retval);
+		else
+			$this->outputJsonError('Error when getting Konten');
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------

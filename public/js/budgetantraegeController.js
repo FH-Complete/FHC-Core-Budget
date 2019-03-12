@@ -27,10 +27,15 @@ $(document).ready(function () {
 		BudgetantraegeController.global_inputparams.kostenstelle,
 		function(data, textStatus, jqXHR)
 		{
-			if (FHC_AjaxClient.isError(data))
-				return;
-			//set edit mode if current Geschaeftsjahr or later is selected
-			BudgetantraegeController.global_booleans.editmode = data.retval;
+			if (FHC_AjaxClient.hasData(data))
+			{
+				//set edit mode if current Geschaeftsjahr or later is selected
+				BudgetantraegeController.global_booleans.editmode = data.retval[0];
+			}
+			else
+			{
+				BudgetantraegeController.global_booleans.editmode = false;
+			}
 		}
 	);
 
@@ -63,7 +68,14 @@ $(document).ready(function () {
 					BudgetantraegeController.global_inputparams.kostenstelle,
 					function (data, textStatus, jqXHR)
 					{
-						BudgetantraegeController.global_booleans.editmode = data.retval;
+						if (FHC_AjaxClient.hasData(data))
+						{
+							BudgetantraegeController.global_booleans.editmode = data.retval[0];
+						}
+						else
+						{
+							BudgetantraegeController.global_booleans.editmode = false;
+						}
 
 						BudgetantraegeAjax.getKostenstellen(BudgetantraegeController.global_inputparams.geschaeftsjahr,
 							function (data, textStatus, jqXHR)
@@ -92,8 +104,7 @@ $(document).ready(function () {
 		function ()
 		{
 			$("#kstgroup").removeClass("has-error");
-			var kostenstelle = $(this).val();
-			BudgetantraegeController.global_inputparams.kostenstelle = kostenstelle;
+			BudgetantraegeController.global_inputparams.kostenstelle =  $(this).val();
 
 			if (!BudgetantraegeController.globalGjandKstAreValid())
 			{
@@ -105,13 +116,18 @@ $(document).ready(function () {
 				BudgetantraegeController.global_inputparams.kostenstelle,
 				function(data, textStatus, jqXHR)
 				{
-					if (FHC_AjaxClient.isError(data))
+					if (FHC_AjaxClient.hasData(data))
+					{
+						BudgetantraegeController.global_booleans.editmode = data.retval[0];
+					}
+					else
+					{
+						BudgetantraegeController.global_booleans.editmode = false;
 						return;
-					BudgetantraegeController.global_booleans.editmode = data.retval;
+					}
 					BudgetantraegeAjax.checkIfKstFreigebbar(BudgetantraegeController.global_inputparams.kostenstelle, BudgetantraegeController.afterKstFreigebbarGet);
 				}
 			);
-
 		}
 	);
 });
@@ -156,10 +172,13 @@ var BudgetantraegeController = {
 	{
 		var budgetantrag = BudgetantraegeLib.findInArray(BudgetantraegeController.global_budgetantraege.newBudgetantraege, budgetantragid);
 
-		if (budgetantrag === false) return;
+		if (budgetantrag === false)
+			return;
 
 		var positionen = BudgetantraegeView.retrieveBudgetantragPositionen(budgetantragid, false);
-		if (positionen === null) return;
+
+		if (positionen === null)
+			return;
 
 		var data = {
 			"geschaeftsjahr_kurzbz": BudgetantraegeController.global_inputparams.geschaeftsjahr,
@@ -231,8 +250,8 @@ var BudgetantraegeController = {
 				positionenToUpdate.push(position);
 		}
 
-		for (var i = 0; i < idsToDelete.length; i++)
-			positionenToDelete.push({"budgetposition_id": idsToDelete[i].id});
+		for (var j = 0; j < idsToDelete.length; j++)
+			positionenToDelete.push({"budgetposition_id": idsToDelete[j].id});
 
 		var data = {
 			"positionentoadd": positionenToAdd,
@@ -356,7 +375,14 @@ var BudgetantraegeController = {
 	 */
 	afterKstFreigebbarGet: function (data, textStatus, jqXHR)
 	{
-		BudgetantraegeController.global_booleans.freigebbar = data;
+		if (FHC_AjaxClient.hasData(data))
+		{
+			BudgetantraegeController.global_booleans.freigebbar = data.retval[0];
+		}
+		else
+		{
+			BudgetantraegeController.global_booleans.freigebbar = false;
+		}
 		BudgetantraegeController.getBudgetantraege();
 	},
 
@@ -366,7 +392,9 @@ var BudgetantraegeController = {
 	 */
 	afterBudgetantraegeGet: function(data)
 	{
-		if (FHC_AjaxClient.isError(data)) return;
+		if (FHC_AjaxClient.isError(data))
+			return;
+
 		var budgetantraege = data.retval;
 
 		BudgetantraegeController.clearBudgetantraege();
@@ -406,10 +434,9 @@ var BudgetantraegeController = {
 	 */
 	afterBudgetantragUpdate: function(data, budgetantragid)
 	{
-		if (data.errors > 0)
+		if (!FHC_AjaxClient.hasData(data) || data.retval.errors > 0)
 		{
 			BudgetantraegeView.setMessage(budgetantragid, "text-danger", "Fehler beim Speichern des Budgetantrags!");
-			//return;
 		}
 		var budgetantrag = BudgetantraegeLib.findInArray(BudgetantraegeController.global_budgetantraege.existentBudgetantraege, budgetantragid);
 
@@ -428,7 +455,7 @@ var BudgetantraegeController = {
 	 */
 	afterBudgetantragGet: function(data, oldbudgetantragid, updatetype)
 	{
-		if (FHC_AjaxClient.isError(data))
+		if (!FHC_AjaxClient.hasData(data))
 		{
 			var msgid = $("#"+BUDGETANTRAG_PREFIX+"_"+BudgetantraegeController.global_counters.lastAddedOldId).length ? BudgetantraegeController.global_counters.lastAddedOldId : oldbudgetantragid;
 			BudgetantraegeView.setMessage(msgid, "text-danger", "Fehler beim Speichern des Budgetantrags!");
@@ -458,7 +485,11 @@ var BudgetantraegeController = {
 	 */
 	afterBudgetantragDelete: function(data)
 	{
-		if (FHC_AjaxClient.isError(data)) return;
+		if (!FHC_AjaxClient.hasData(data))
+		{
+			alert("Fehler beim Löschen des Budgetantrags!");
+			return;
+		}
 
 		BudgetantraegeController.global_budgetantraege.existentBudgetantraege = BudgetantraegeController.global_budgetantraege.existentBudgetantraege.filter(
 			function (el)
@@ -466,6 +497,7 @@ var BudgetantraegeController = {
 				return el.id !== data.retval;
 			}
 		);
+
 		BudgetantraegeController.calculateBudgetantragSums();
 		BudgetantraegeView.removeBudgetantrag(data.retval);
 	},
@@ -479,7 +511,7 @@ var BudgetantraegeController = {
 	{
 		$("#frgAntragModal").modal('hide');
 
-		if (FHC_AjaxClient.isError(data))
+		if (!FHC_AjaxClient.hasData(data))
 		{
 			BudgetantraegeView.setMessage(budgetantragid, "text-danger", "Fehler beim Ändern des Budgetstatus!");
 			return;
@@ -501,7 +533,8 @@ var BudgetantraegeController = {
 	{
 		var passed = BudgetantraegeView.checkBudgetantragDataBeforeAdd();
 
-		if (passed === false) return;
+		if (passed === false)
+			return;
 
 		BudgetantraegeView.collapseAllBudgetantraege();
 

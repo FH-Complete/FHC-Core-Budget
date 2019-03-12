@@ -7,7 +7,7 @@ var BudgetantraegeHtml = {
 	{
 		var html = '<div class="row">';
 
-		if (BudgetantraegeController.global_booleans.editmode)
+		if (BudgetantraegeController.global_booleans.editmode === true)
 			html += '<div class="col-lg-7 col-xs-12">'+
 						'<div class="form-group input-group" id="budgetbezgroup">'+
 							'<input type="text" class="form-control" id="budgetbezeichnung" placeholder="Budgetantragsbezeichnung eingeben">'+

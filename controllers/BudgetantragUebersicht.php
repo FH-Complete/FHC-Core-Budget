@@ -18,6 +18,7 @@ class BudgetantragUebersicht extends Auth_Controller
 		);
 
 		// Loads models
+		$this->load->model('organisation/organisationseinheit_model', 'OrganisationseinheitModel');
 		$this->load->model('organisation/geschaeftsjahr_model', 'GeschaeftsjahrModel');
 		$this->load->model('accounting/kostenstelle_model', 'Kostenstelle_model');
 		$this->load->model('extensions/FHC-Core-Budget/budgetkostenstelle_model', 'BudgetkostenstelleModel');
@@ -54,7 +55,7 @@ class BudgetantragUebersicht extends Auth_Controller
 		}
 		else
 		{
-			if (count($geschaeftsjahre->retval) > 0)
+			if (hasData($geschaeftsjahre))
 				$geschaeftsjahr = $geschaeftsjahre->retval[0]->geschaeftsjahr_kurzbz;
 			else
 				$geschaeftsjahr = null;
@@ -77,12 +78,10 @@ class BudgetantragUebersicht extends Auth_Controller
 	{
 		$result = $this->BudgetkostenstelleModel->getKostenstellenForGeschaeftsjahrWithOeBerechtigt($geschaeftsjahr);
 
-		if (hasData($result))
-			$result = success($this->buildKostenstellenTree($result->retval));
-
-		$this->output
-			->set_content_type('application/json')
-			->set_output(json_encode($result));
+		if (isSuccess($result))
+			$this->outputJsonSuccess($this->buildKostenstellenTree($result->retval));
+		else
+			$this->outputJsonError('error when building Kostenstellen Tree');
 	}
 
 	/**
@@ -93,8 +92,6 @@ class BudgetantragUebersicht extends Auth_Controller
 	 */
 	private function buildKostenstellenTree($kostenstellen)
 	{
-		$this->load->model('organisation/organisationseinheit_model', 'OrganisationseinheitModel');
-
 		$oetree = array();
 
 		foreach ($kostenstellen as $kostenstelle)

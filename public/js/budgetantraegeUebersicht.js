@@ -29,6 +29,7 @@ $(document).ready(function () {
 			}
 
 			BudgetantraegeUebersicht.getKostenstellenTree(BudgetantraegeUebersicht.geschaeftsjahr);
+			$("#budgetsearch").val('');
 		}
 	);
 

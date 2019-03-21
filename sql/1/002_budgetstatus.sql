@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION extension_budget_create_table () RETURNS TEXT AS $$
+CREATE OR REPLACE FUNCTION extension.extension_budget_create_table () RETURNS TEXT AS $$
 	CREATE TABLE extension.tbl_budget_status
 	(
 		budgetstatus_kurzbz varchar(32) NOT NULL,
@@ -13,11 +13,11 @@ CREATE OR REPLACE FUNCTION extension_budget_create_table () RETURNS TEXT AS $$
  $$
 LANGUAGE 'sql';
 
-SELECT 
-	CASE 
+SELECT
+	CASE
 	WHEN (SELECT true::BOOLEAN FROM pg_catalog.pg_tables WHERE schemaname = 'extension' AND tablename = 'tbl_budget_status')
 	THEN (SELECT 'success'::TEXT)
-	ELSE (SELECT extension_budget_create_table())
+	ELSE (SELECT extension.extension_budget_create_table())
 END;
 
 INSERT INTO extension.tbl_budget_status(budgetstatus_kurzbz, bezeichnung) SELECT 'new','Neu' WHERE NOT EXISTS(SELECT 1 FROM extension.tbl_budget_status WHERE budgetstatus_kurzbz='new');
@@ -26,4 +26,4 @@ INSERT INTO extension.tbl_budget_status(budgetstatus_kurzbz, bezeichnung) SELECT
 INSERT INTO extension.tbl_budget_status(budgetstatus_kurzbz, bezeichnung) SELECT 'rejected','Abgelehnt' WHERE NOT EXISTS(SELECT 1 FROM extension.tbl_budget_status WHERE budgetstatus_kurzbz='rejected');
 
 -- Drop function
-DROP FUNCTION extension_budget_create_table();
+DROP FUNCTION extension.extension_budget_create_table();

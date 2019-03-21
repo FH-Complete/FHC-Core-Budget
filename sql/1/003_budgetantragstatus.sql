@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION extension_budget_create_table () RETURNS TEXT AS $$
+CREATE OR REPLACE FUNCTION extension.extension_budget_create_table () RETURNS TEXT AS $$
 	CREATE TABLE extension.tbl_budget_antrag_status
 	(
 		budgetantrag_status_id integer NOT NULL,
@@ -32,12 +32,12 @@ CREATE OR REPLACE FUNCTION extension_budget_create_table () RETURNS TEXT AS $$
  $$
 LANGUAGE 'sql';
 
-SELECT 
-	CASE 
+SELECT
+	CASE
 	WHEN (SELECT true::BOOLEAN FROM pg_catalog.pg_tables WHERE schemaname = 'extension' AND tablename = 'tbl_budget_antrag_status')
 	THEN (SELECT 'success'::TEXT)
-	ELSE (SELECT extension_budget_create_table())
+	ELSE (SELECT extension.extension_budget_create_table())
 END;
 
 -- Drop function
-DROP FUNCTION extension_budget_create_table();
+DROP FUNCTION extension.extension_budget_create_table();

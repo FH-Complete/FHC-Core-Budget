@@ -318,7 +318,8 @@ var BudgetantraegeHtml = {
 	 */
 	getModalSentHtml: function ()
 	{
-		return '<p>Der Status des Antrags wird auf <i class="frgAdj"></i> gesetzt. Die Verantwortlichen erhalten eine Benachrichtigungsmail, damit der Antrag freigegeben werden kann. '+
+		return '<p>Der Status des Antrags wird auf <i class="frgAdj"></i> gesetzt. '+
+			//Die Verantwortlichen erhalten eine Benachrichtigungsmail, damit der Antrag freigegeben werden kann. '+
 			'Der Antrag kann jedoch noch bearbeitet werden.</p>'+
 			'<p>Alle nicht gespeicherten Daten gehen verloren. Bist du sicher, dass du den Budgetantrag <span class="frgVerb"></span> m&ouml;chtest?</p>';
 	},

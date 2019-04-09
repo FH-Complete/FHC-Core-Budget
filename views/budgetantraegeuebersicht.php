@@ -7,6 +7,7 @@ $this->load->view(
 		'bootstrap' => true,
 		'fontawesome' => true,
 		'sbadmintemplate' => true,
+		'dialoglib' => true,
 		'ajaxlib' => true,
 		'navigationwidget' => true,
 		'jquerytreetable' => true,

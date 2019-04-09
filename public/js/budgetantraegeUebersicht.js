@@ -68,7 +68,7 @@ var BudgetantraegeUebersicht = {
 				},
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
-					alert(textStatus + " - " + errorThrown + " - " + jqXHR.responseText);
+					FHC_DialogLib.alertError("Fehler beim Lesen des OE Kostenstellenbaums");
 				}
 			}
 		);

@@ -472,7 +472,7 @@ var BudgetantraegeController = {
 	{
 		if (!FHC_AjaxClient.hasData(data))
 		{
-			alert("Fehler beim Speichern der Budgetantragsbezeichnung!");
+			FHC_DialogLib.alertError("Fehler beim Speichern der Budgetantragsbezeichnung!");
 			return;
 		}
 
@@ -487,7 +487,7 @@ var BudgetantraegeController = {
 	{
 		if (!FHC_AjaxClient.hasData(data))
 		{
-			alert("Fehler beim Löschen des Budgetantrags!");
+			FHC_DialogLib.alertError("Fehler beim Löschen des Budgetantrags!");
 			return;
 		}
 

@@ -16,7 +16,7 @@ var BudgetantraegeAjax = {
 				},
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
-					alert("error when retrieving Projekte!");
+					FHC_DialogLib.alertError("error when retrieving Projekte!");
 				}
 			}
 		);
@@ -31,7 +31,7 @@ var BudgetantraegeAjax = {
 				successCallback: successCallback,
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
-					alert("error when retrieving Konten!");
+					FHC_DialogLib.alertError("error when retrieving Konten!");
 				}
 			}
 		);
@@ -49,7 +49,7 @@ var BudgetantraegeAjax = {
 				successCallback: successCallback,
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
-					alert("error when checking if verwaltbar!");
+					FHC_DialogLib.alertError("error when checking if verwaltbar!");
 				}
 			}
 		);
@@ -66,7 +66,7 @@ var BudgetantraegeAjax = {
 				successCallback: successCallback,
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
-					alert("error when checking Kst freigebbar!");
+					FHC_DialogLib.alertError("error when checking Kst freigebbar!");
 				}
 			}
 		);
@@ -83,7 +83,7 @@ var BudgetantraegeAjax = {
 				successCallback: successCallback,
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
-					alert("error when retrieving Kostenstellen!");
+					FHC_DialogLib.alertError("error when retrieving Kostenstellen!");
 				}
 			}
 		);
@@ -104,7 +104,7 @@ var BudgetantraegeAjax = {
 				},
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
-					alert("error when retrieving Budgetantraege!");
+					FHC_DialogLib.alertError("error when retrieving Budgetantraege!");
 				}
 			}
 		);
@@ -128,7 +128,7 @@ var BudgetantraegeAjax = {
 				},
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
-					alert("error when retrieving Budgetantraege!");
+					FHC_DialogLib.alertError("error when retrieving Budgetantraege!");
 				}
 			}
 		);
@@ -146,7 +146,7 @@ var BudgetantraegeAjax = {
 				},
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
-					alert("error when adding Budgetantrag!");
+					FHC_DialogLib.alertError("error when adding Budgetantrag!");
 				}
 			}
 		);
@@ -166,7 +166,7 @@ var BudgetantraegeAjax = {
 				},
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
-					alert("error when updating Budgetantragsbezeichnung!");
+					FHC_DialogLib.alertError("error when updating Budgetantragsbezeichnung!");
 				},
 				veilTimeout: 0
 			}
@@ -185,7 +185,7 @@ var BudgetantraegeAjax = {
 				},
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
-					alert("error when updating Budgetpositionen!");
+					FHC_DialogLib.alertError("error when updating Budgetpositionen!");
 				}
 			}
 		);
@@ -203,7 +203,7 @@ var BudgetantraegeAjax = {
 				},
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
-					alert("error when deleting Budgetantrag!");
+					FHC_DialogLib.alertError("error when deleting Budgetantrag!");
 				},
 				veilTimeout: 0
 			}
@@ -225,7 +225,7 @@ var BudgetantraegeAjax = {
 				},
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{
-					alert("error when updating Budgetantragstatus!");
+					FHC_DialogLib.alertError("error when updating Budgetantragstatus!");
 				},
 				veilTimeout: 0
 			}

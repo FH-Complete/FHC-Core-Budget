@@ -30,7 +30,7 @@ class Budgetantrag_model extends DB_Model
 		$this->addOrder('budgetantrag_id');
 		$budgetantraege = $this->loadWhere(array('geschaeftsjahr_kurzbz' => $geschaeftsjahr, 'kostenstelle_id' => $kostenstelle));
 
-		if($budgetantraege->error)
+		if ($budgetantraege->error)
 			return error($budgetantraege->retval);
 
 		$resultArr = array();

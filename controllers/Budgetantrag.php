@@ -71,8 +71,12 @@ class Budgetantrag extends Auth_Controller
 	 * @param null $geschaeftsjahr
 	 * @param null $kostenstelle_id
 	 */
-	public function showVerwalten($geschaeftsjahr = null, $kostenstelle_id = null)
+	public function showVerwalten()
 	{
+		$geschaeftsjahr = $this->input->get('geschaeftsjahr');
+		$kostenstelle_id = $this->input->get('kostenstelle_id');
+		$budgetantrag_id = $this->input->get('budgetantrag_id');
+
 		$this->GeschaeftsjahrModel->addSelect('geschaeftsjahr_kurzbz');
 		$this->GeschaeftsjahrModel->addOrder('start', 'DESC');
 		$geschaeftsjahre = $this->GeschaeftsjahrModel->load();
@@ -111,7 +115,8 @@ class Budgetantrag extends Auth_Controller
 				'geschaeftsjahre' => $geschaeftsjahre->retval,
 				'kostenstellen' => $kostenstellen->retval,
 				'selectedgeschaeftsjahr' => $geschaeftsjahr,
-				'selectedkostenstelle' => $kostenstelle_id
+				'selectedkostenstelle' => $kostenstelle_id,
+				'budgetantrag_id' => $budgetantrag_id
 			)
 		);
 	}

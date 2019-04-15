@@ -80,6 +80,7 @@ $this->load->view(
 						</div>
 					</div> <!-- ./first column -->
 				</div> <!-- ./main row -->
+				<input type="hidden" id="budgetantrag_id" value="<?php echo $budgetantrag_id ?>">
 				<br>
 				<div id="budgetantraegehtml"></div>
 				<!-- modal for deleting of a budgetantrag -->

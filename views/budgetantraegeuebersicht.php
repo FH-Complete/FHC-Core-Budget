@@ -4,6 +4,7 @@ $this->load->view(
 	array(
 		'title' => 'BudgetantraegeÜbersicht',
 		'jquery' => true,
+		'jqueryui' => true,
 		'bootstrap' => true,
 		'fontawesome' => true,
 		'sbadmintemplate' => true,
@@ -32,7 +33,7 @@ $this->load->view(
 				<div class="row">
 					<div class="col-lg-12">
 						<h3 class="page-header">
-							Budgetantr&auml;ge Übersicht
+							Budgetantr&auml;ge Organisationsübersicht
 						</h3>
 					</div>
 				</div>

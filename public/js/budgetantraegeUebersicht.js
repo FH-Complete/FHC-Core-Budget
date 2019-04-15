@@ -169,7 +169,7 @@ var BudgetantraegeUebersicht = {
 					{
 						var elid = this.id;
 						var kostenstelleid = elid.substr(elid.indexOf("_") + 1);
-						window.location = EXTENSION_URL + "Budgetantrag/showVerwalten/" + encodeURIComponent(geschaeftsjahr) + "/" + encodeURIComponent(kostenstelleid);
+						window.location = EXTENSION_URL + "Budgetantrag/showVerwalten?geschaeftsjahr=" + encodeURIComponent(geschaeftsjahr) + "&kostenstelle_id=" + encodeURIComponent(kostenstelleid);
 					}
 				)
 			}

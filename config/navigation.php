@@ -4,15 +4,21 @@ $config['navigation_header']['*']['Organisation']['children']['Budgetantrag'] = 
 	'link' => site_url('extensions/FHC-Core-Budget/BudgetantragUebersicht'),
 	'sort' => 25,
 	'description' => 'Budgetverwaltung',
-	'expand' => false
+	'expand' => false,
+	'requiredPermissions' => 'extension/budget_verwaltung:r'
 );
 
 // Add Menu-Entry to Extension Page
 $config['navigation_menu']['extensions/FHC-Core-Budget/*'] = array(
 	'Budgetanträge Übersicht' => array(
 		'link' => site_url('extensions/FHC-Core-Budget/BudgetantragUebersicht'),
-		'description' => 'Budgetanträge Übersicht',
-		'icon' => 'bar-chart-o'//fa-list-alt
+		'description' => 'Budgetanträge Statusübersicht',
+		'icon' => 'navicon'
+	),
+	'Budgetanträge OE Übersicht' => array(
+		'link' => site_url('extensions/FHC-Core-Budget/BudgetantragUebersicht/oeUebersicht'),
+		'description' => 'Budgetanträge Organisationsübersicht',
+		'icon' => 'sitemap'
 	),
 	'Budgetanträge verwalten' => array(
 		'link' => site_url('extensions/FHC-Core-Budget/Budgetantrag'),

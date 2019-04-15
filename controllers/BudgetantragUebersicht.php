@@ -4,6 +4,7 @@
  */
 class BudgetantragUebersicht extends Auth_Controller
 {
+	const VERWALTENPERMISSION = 'extension/budget_verwaltung';
 
 	/**
 	 * Constructor
@@ -12,8 +13,9 @@ class BudgetantragUebersicht extends Auth_Controller
 	{
 		parent::__construct(
 			array(
-				'index' => 'extension/budget_verwaltung:r',
-				'getKostenstellenTree' => 'extension/budget_verwaltung:r'
+				'index' => self::VERWALTENPERMISSION.':r',
+				'oeUebersicht' => self::VERWALTENPERMISSION.':r',
+				'getKostenstellenTree' => self::VERWALTENPERMISSION.':r'
 			)
 		);
 
@@ -27,16 +29,53 @@ class BudgetantragUebersicht extends Auth_Controller
 		$this->load->model('accounting/konto_model', 'KontoModel');
 		$this->load->model('project/projekt_model', 'ProjektModel');
 
+		$this->loadPhrases(
+			array(
+				'filter',
+				'global',
+				'ui'
+			)
+		);
+
 		// Loads libraries
 		$this->load->library('WidgetLib');
+
+		$this->setControllerId(); // sets the controller id
 
 		$this->_setAuthUID(); // sets property uid
 	}
 
 	/**
-	 * Loads initial view with geschaeftsjahr
+	 * Loads initial view with Budgetantragsstatusübersicht
 	 */
 	public function index()
+	{
+		$kostenstellen = $this->Kostenstelle_model->getKostenstellenBerechtigt(self::VERWALTENPERMISSION, 's');
+		$kostenstellenids = array();
+
+		if (hasData($kostenstellen))
+		{
+			//take only ids
+			foreach ($kostenstellen->retval as $kostenstelle)
+			{
+				$kostenstellenids[] = $kostenstelle->kostenstelle_id;
+			}
+		}
+
+		$kostenstellenidsstring = implode(",", $kostenstellenids);
+
+		$this->load->view(
+			'extensions/FHC-Core-Budget/budgetantraegestatusuebersicht.php',
+			array(
+				'kostenstellenberechtigt' => $kostenstellenidsstring
+			)
+		);
+	}
+
+	/**
+	 * Loads Budgetantragsübersicht inf form of OE-tree
+	 */
+	public function oeUebersicht()
 	{
 		$this->GeschaeftsjahrModel->addSelect('geschaeftsjahr_kurzbz');
 		$this->GeschaeftsjahrModel->addOrder('start', 'DESC');

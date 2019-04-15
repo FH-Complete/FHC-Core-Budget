@@ -71,7 +71,10 @@ var BudgetantraegeView = {
 			var editable = BudgetantraegeController.global_booleans.editmode === true
 				&& GLOBAL_STATUSES[budgetantrag.budgetstatus.budgetstatus_kurzbz].editable === true;
 
-			BudgetantraegeView.appendBudgetantrag(budgetantragid, {"bezeichnung": budgetantrag.bezeichnung}, 0, false, editable);
+			var hidden_budgetantrag_id = $("#budgetantrag_id").val();
+			var opened = hidden_budgetantrag_id == budgetantragid;
+
+			BudgetantraegeView.appendBudgetantrag(budgetantragid, {"bezeichnung": budgetantrag.bezeichnung}, 0, opened, editable);
 
 			var sum = 0;
 			for (var j = 0; j < budgetantrag.budgetpositionen.length; j++)

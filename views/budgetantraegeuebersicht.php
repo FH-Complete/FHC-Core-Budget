@@ -71,7 +71,7 @@ $this->load->view(
 								<tr>
 									<th>
 										Organisationseinheit/Kostenstelle&nbsp;&nbsp;&nbsp;
-										<button type="button" class="btn btn-default btn-xs" id="expall"><i class="fa fa-toggle-down"></i>&nbsp;&nbsp;&nbsp;alle erweitern</button>
+										<button type="button" class="btn btn-default btn-xs" id="expall"><i class="fa fa-toggle-down"></i>&nbsp;&nbsp;&nbsp;alle aufklappen</button>
 										<button type="button" class="btn btn-default btn-xs" id="collall"><i class="fa fa-toggle-up"></i>&nbsp;&nbsp;&nbsp;alle einklappen</button>
 									</th>
 									<th class="text-center">Budget gesamt (€ brutto)</th>

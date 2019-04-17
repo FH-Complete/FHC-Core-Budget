@@ -1,7 +1,7 @@
 <?php
 
 $query = 'SELECT budgetantrag_id, tbl_budget_antrag.bezeichnung AS "Budgetantrag", tbl_kostenstelle.kostenstelle_id, tbl_kostenstelle.bezeichnung AS "Kostenstelle",
-  tbl_kostenstelle.oe_kurzbz AS "Organisationseinheit", tbl_budget_antrag.geschaeftsjahr_kurzbz AS "Geschäftsjahr",
+  tbl_organisationseinheit.bezeichnung AS "Organisationseinheit", tbl_budget_antrag.geschaeftsjahr_kurzbz AS "Geschäftsjahr",
    (SELECT tbl_budget_status.bezeichnung
   	FROM extension.tbl_budget_antrag_status 
   	JOIN extension.tbl_budget_status USING (budgetstatus_kurzbz)
@@ -15,6 +15,7 @@ $query = 'SELECT budgetantrag_id, tbl_budget_antrag.bezeichnung AS "Budgetantrag
 	) AS "Betrag"
 	FROM extension.tbl_budget_antrag
 	JOIN wawi.tbl_kostenstelle USING (kostenstelle_id)
+	JOIN public.tbl_organisationseinheit USING (oe_kurzbz)
 	WHERE tbl_budget_antrag.kostenstelle_id IN ('.$kostenstellenberechtigt.')
 	ORDER BY geschaeftsjahr_kurzbz DESC, "Kostenstelle", "Organisationseinheit", "Budgetstatus", "Budgetantrag"';
 

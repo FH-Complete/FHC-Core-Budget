@@ -145,6 +145,7 @@ class BudgetantragUebersicht extends Auth_Controller
 			$kostenstelle->freigegebensumme = $kostenstelleoe->kostenstelle_freigegebensumme;
 			$kostenstelle->oe_kurzbz = $kostenstelleoe->oe_kurzbz;
 			$kostenstelle->oe_bezeichnung = $kostenstelleoe->oe_bezeichnung;
+			$kostenstelle->level = $kostenstelleoe->level;
 
 			// ignore if kostenstelle is inaktiv and no Budget
 			if ($kostenstelle->kostenstelle_id !== null && !$kostenstelle->aktiv && !isset($kostenstelle->budgetsumme))
@@ -186,6 +187,7 @@ class BudgetantragUebersicht extends Auth_Controller
 					'budgetsumme' => $kostenstelle->budgetsumme,
 					'freigegebensumme' => $kostenstelle->freigegebensumme,
 					'kostenstellen' => $kostenstellen,
+					'level' => $kostenstelle->level,
 					'children' => array()
 				);
 		}
@@ -239,6 +241,7 @@ class BudgetantragUebersicht extends Auth_Controller
 								'budgetsumme' => $kostenstelle->budgetsumme,
 								'freigegebensumme' => $kostenstelle->freigegebensumme,
 								'kostenstellen' => $kostenstellen,
+								'level' => $kostenstelle->level,
 								'children' => array()
 							);
 					}

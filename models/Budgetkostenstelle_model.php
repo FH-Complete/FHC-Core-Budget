@@ -6,6 +6,7 @@
 
 class Budgetkostenstelle_model extends Kostenstelle_model
 {
+	const VERWALTEN_BERECHTIUNG = 'extension/budget_verwaltung';
 
 	public function __construct()
 	{
@@ -22,8 +23,6 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 	 */
 	public function getKostenstellenForGeschaeftsjahrWithOe($geschaeftsjahr = null, $alloes = false)
 	{
-		$this->load->model('organisation/geschaeftsjahr_model', 'GeschaeftsjahrModel');
-
 		$gj = $this->_getGeschaeftsjahr($geschaeftsjahr);
 
 		if (hasData($gj))
@@ -96,7 +95,7 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 
 			if ($alloes != true)
 			{
-					$query .= " WHERE EXISTS
+				$query .= " WHERE EXISTS
                         (
                           WITH RECURSIVE oes(oe_kurzbz, oe_parent_kurzbz) as
                           (
@@ -152,7 +151,7 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 
 		if (hasData($kostenstellen))
 		{
-			$kostenstellenresult = $this->filterKostenstellenByBerechtigung($kostenstellen->retval);
+			$kostenstellenresult = $this->filterOeKostenstellen($kostenstellen->retval);
 
 			$kostenstellen = success($kostenstellenresult);
 		}
@@ -175,11 +174,39 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 		{
 			if (isset($kostenstelle->kostenstelle_id) && isset($kostenstelle->oe_kurzbz))
 			{
-				if ($this->permissionlib->isBerechtigt('extension/budget_verwaltung', 's', null, $kostenstelle->kostenstelle_id) === true)
+				if ($this->permissionlib->isBerechtigt(self::VERWALTEN_BERECHTIUNG, 's', null, $kostenstelle->kostenstelle_id) === true)
 				{
-					$this->load->model('organisation/organisationseinheit_model', 'OrganisationseinheitModel');
+					$kostenstellenresult[] = $kostenstelle;
+				}
+			}
+		}
 
-					// add parents as "oe only" if e.g. only berechtigung for one kostenstelle
+		return $kostenstellenresult;
+	}
+
+	/**
+	 * Filters Kostenstellen and Oes.
+	 * Checks permissions, removes inactive Kostenstellen with no Budgetanträge.
+	 * @param $kostenstellen
+	 * @return array
+	 */
+	private function filterOeKostenstellen($kostenstellen)
+	{
+		$this->load->model('organisation/organisationseinheit_model', 'OrganisationseinheitModel');
+		$this->load->library('PermissionLib');
+
+		$kostenstellenresult = array();
+
+		foreach ($kostenstellen as $index => $kostenstelle)
+		{
+			if (isset($kostenstelle->kostenstelle_id) && isset($kostenstelle->oe_kurzbz))
+			{
+				// pass only if berechtigt for Kostenstelle, also Kostenstelle is aktiv or has as Budgetsumme
+				if ($this->permissionlib->isBerechtigt(self::VERWALTEN_BERECHTIUNG, 's', null, $kostenstelle->kostenstelle_id) === true
+					&& ($kostenstelle->kostenstelle_aktiv || isset($kostenstelle->kostenstelle_budgetsumme))
+				)
+				{
+					// add parents as "oe only", fill up oes up to root
 					$parents = $this->OrganisationseinheitModel->getParents($kostenstelle->oe_kurzbz);
 
 					$kostenstellenabove = array_slice($kostenstellen, 0, $index);
@@ -218,6 +245,48 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 			}
 		}
 
+		// sorting Kostenstellen, sql order could have been mixed up after fill up with oes
+		usort($kostenstellenresult, array($this, 'cmpOeKostenstellen'));
+
 		return $kostenstellenresult;
+	}
+
+	/**
+	 * Sorts Array with Kostenstellen and OEs.
+	 * Order: level, typ, oe bezeichnung, kst bezeichnung.
+	 * @param $ksta
+	 * @param $kstb
+	 * @return int
+	 */
+	private function cmpOeKostenstellen($ksta, $kstb)
+	{
+		if ($ksta->level - $kstb->level !== 0)
+			return $ksta->level - $kstb->level;
+
+		if ($ksta->typ !== $kstb->typ)
+		{
+			$typprio = array('Erhalter', 'Fakultaet', 'Department', 'Abteilung', 'Institut', 'Studiengang');
+
+			foreach ($typprio as $prio)
+			{
+				if ($ksta->typ === $prio)
+					return -1;
+
+				if ($kstb->typ === $prio)
+					return 1;
+			}
+
+			return strcmp($ksta->typ, $kstb->typ);
+		}
+
+		$oebezdiff = strcmp($ksta->oe_bezeichnung, $kstb->oe_bezeichnung);
+		if ($oebezdiff !== 0)
+			return $oebezdiff;
+
+		$kstbezdiff = strcmp($ksta->kostenstelle_bezeichnung, $kstb->kostenstelle_bezeichnung);
+		if ($kstbezdiff !== 0)
+			return $kstbezdiff;
+
+		return -1;
 	}
 }

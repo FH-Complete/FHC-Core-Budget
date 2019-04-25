@@ -90,7 +90,7 @@ var BudgetantraegeUebersicht = {
 			var parentclass = parent === null ? "" : " data-tt-parent-id='" + parent + "'";
 
 			// print oe
-			var strTree = "<tr data-tt-id='" + oeitem.oe_kurzbz + "'" + parentclass + " class='oerow'>" +
+			var strTree = "<tr data-tt-id='" + oeitem.oe_kurzbz + "'" + parentclass + " data-level='" + oeitem.level + "' class='oerow'>" +
 				"<td>" + oeitem.bezeichnung + "</td>" +
 				"<td class='text-center'>" + BudgetantraegeLib.formatDecimalGerman(oeitem.budgetsumme) + "</td>" +
 				"<td class='text-center'>" + BudgetantraegeLib.formatDecimalGerman(oeitem.freigegebensumme) + "</td>";
@@ -126,7 +126,7 @@ var BudgetantraegeUebersicht = {
 	 * Prints Organisationseinheiten Tree with Kostenstellen
 	 * @param data array with oes, each having Kostenstellen and Children
 	 * @param geschaeftsjahr
-	 * @param expansionlevel to what degree to expand the tree nodes, 0 - only root nod3es,
+	 * @param expansionlevel to what degree to expand the tree nodes, 0 - only root nodes,
 	 * 1 - root + first level, 2 - all nodes
 	 * @private
 	 */
@@ -173,6 +173,12 @@ var BudgetantraegeUebersicht = {
 					}
 				)
 			}
+
+			// expand oe if alone on its level
+			var noleveloes = $("#ksttree tbody tr[data-level='"+$(element).attr("data-level")+"']").length;
+
+			if (noleveloes === 1)
+				$("#ksttree").treetable("expandNode", $(element).attr("data-tt-id"));
 
 			if (expansionlevel === 1)
 			{

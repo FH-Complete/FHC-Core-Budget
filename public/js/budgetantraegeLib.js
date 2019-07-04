@@ -28,7 +28,7 @@ var BudgetantraegeLib = {
 	checkDecimalFormat: function(value)
 	{
 		//var betragregex = /^[0-9]{1,3}([\.]?[0-9]{3})*([,][0-9]{1,2})?$/;
-		var betragregex = /^([.0-9])+([,][0-9]{1,2})?$/;
+		var betragregex = /^([-])?([.0-9])+([,][0-9]{1,2})?$/;
 		return value.match(betragregex);
 	},
 

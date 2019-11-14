@@ -7,14 +7,14 @@
 const CALLED_PATH = FHC_JS_DATA_STORAGE_OBJECT.called_path;
 //id prefixes
 const NEW_BUDGET_PREFIX = "newb", NEW_POSITION_PREFIX = "newp", BUDGETANTRAG_PREFIX = "budget", POSITION_PREFIX = "position";
-const GLOBAL_STATUSES = {"new" : {"bez": "new", "editable": true},
-						"sent" : {"bez": "sent", "verb": "abschicken", "adj": "abgeschickt", "editable": true},
-						"rejected" : {"bez": "rejected", "verb": "ablehnen", "adj": "abgelehnt", "editable": false},
-						"approved" : {"bez": "approved", "verb": "freigeben", "adj": "freigegeben", "editable": false}
+const GLOBAL_STATUSES = {"new" : {"bez": "new", "verb": "auf \"neu\" setzen", "adj": "auf \"neu\" gesetzt", "editable": true},
+						"sent" : {"bez": "sent", "verb": "abschicken", "adj": "auf \"abgeschickt\" gesetzt", "editable": true},
+						"rejected" : {"bez": "rejected", "verb": "ablehnen", "adj": "auf \"abgelehnt\" gesetzt", "editable": false},
+						"approved" : {"bez": "approved", "verb": "freigeben", "adj": "auf \"freigegeben\" gesetzt", "editable": false}
 						};
 
 $(document).ready(function () {
-	if (sessionStorage.getItem("budgetgeschaeftsjahr") !== null && typeof(Storage) !== "undefined")
+	if (typeof(Storage) !== "undefined" && sessionStorage.getItem("budgetgeschaeftsjahr") !== null)
 	{
 		$("#geschaeftsjahr").val(sessionStorage.getItem("budgetgeschaeftsjahr"));
 	}
@@ -209,7 +209,6 @@ var BudgetantraegeController = {
 			}
 			return;
 		}
-
 		BudgetantraegeAjax.updateBudgetantragBezeichnung(budgetantragid, bezeichnung);
 	},
 
@@ -475,8 +474,10 @@ var BudgetantraegeController = {
 			FHC_DialogLib.alertError("Fehler beim Speichern der Budgetantragsbezeichnung!");
 			return;
 		}
-
-		BudgetantraegeView.setBudgetantragBezeichnungEditConfirm(data.retval, bezeichnung);
+		var budgetantragid = data.retval;
+		var budgetantrag = BudgetantraegeLib.findInArray(BudgetantraegeController.global_budgetantraege.existentBudgetantraege, budgetantragid);
+		budgetantrag.bezeichnung = bezeichnung;
+		BudgetantraegeView.setBudgetantragBezeichnungEditConfirm(budgetantragid, bezeichnung);
 	},
 
 	/**
@@ -515,11 +516,10 @@ var BudgetantraegeController = {
 		{
 			BudgetantraegeView.setMessage(budgetantragid, "text-danger", "Fehler beim Ändern des Budgetstatus!");
 			return;
-
 		}
 		var budgetantragstatus = data.retval[0];
 
-		BudgetantraegeAjax.getBudgetantrag(budgetantragid, budgetantragstatus.bezeichnung.toLowerCase());
+		BudgetantraegeAjax.getBudgetantrag(budgetantragid, GLOBAL_STATUSES[budgetantragstatus.budgetstatus_kurzbz].adj);
 	},
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -544,7 +544,7 @@ var BudgetantraegeController = {
 		BudgetantraegeView.appendBudgetantrag(budgetantragid, {"bezeichnung": passed}, 0, true, true);
 		BudgetantraegeView.setBudgetantragStatus(budgetantragid, { "bezeichnung": "Neu", "datum": ""});
 		BudgetantraegeController.appendNewBudgetposition(budgetantragid);
-		BudgetantraegeView.appendBudgetantragFooter(budgetantragid, true, true);
+		BudgetantraegeView.appendBudgetantragFooter(budgetantragid, {isNewAntrag: true, freigabeAufhebenBtn: false}, true);
 	},
 
 	/**

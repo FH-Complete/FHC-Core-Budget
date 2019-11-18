@@ -269,12 +269,11 @@ var BudgetantraegeView = {
 		var html = BudgetantraegeHtml.getBudgetpositionHtml(positionargs, editable);
 
 		$("#budgetPosition_" + budgetantragid).append(html);
+
 		$("#removePosition_" + positionid).click(
 			function ()
 			{
 				BudgetantraegeController.deleteBudgetposition(budgetantragid, positionid);
-				$("#" + POSITION_PREFIX + "_" + positionid).remove();
-				BudgetantraegeView.checkIfSaved(budgetantragid);
 			}
 		);
 
@@ -292,6 +291,15 @@ var BudgetantraegeView = {
 				BudgetantraegeView.checkIfSaved(budgetantragid);
 			}
 		);
+	},
+
+	/**
+	 * Removes a Budgetposition from the GUI
+	 * @param positionid
+	 */
+	removeBudgetposition: function(positionid)
+	{
+		$("#" + POSITION_PREFIX + "_" + positionid).remove();
 	},
 
 	/**
@@ -765,6 +773,11 @@ var BudgetantraegeView = {
 	{
 		$(".accordion-toggle").addClass("collapsed");
 		$(".panel-collapse").removeClass("in");
-	}
+	}/*,
 
+	collapseAllBudgetpositionen: function(budgetantrag_id)
+	{
+		$("#budgetPosition_"+budgetantrag_id+" .accordion-toggle").addClass("collapsed");
+		$("#budgetPosition_"+budgetantrag_id+" .panel-collapse").removeClass("in");
+	}*/
 };

@@ -11,6 +11,9 @@ var BudgetantraegeLib = {
 	 */
 	findInArray: function (array, id)
 	{
+		if (!$.isArray(array))
+			return false;
+
 		for(var i = 0; i < array.length; i++)
 		{
 			var element = array[i];

@@ -29,6 +29,7 @@ class Budgetantrag extends Auth_Controller
 				'showVerwalten' => 'extension/budget_verwaltung:r',
 				'checkIfVerwaltbar' => 'extension/budget_verwaltung:r',
 				'checkIfKostenstelleFreigebbar' => 'extension/budget_verwaltung:r',
+				'checkBudgetpositionDependencies' => 'extension/budget_verwaltung:r',
 				'getKostenstellen' => 'extension/budget_verwaltung:r',
 				'getBudgetantraege' => 'extension/budget_verwaltung:r',
 				'getBudgetantrag' => 'extension/budget_verwaltung:r',
@@ -184,6 +185,24 @@ class Budgetantrag extends Auth_Controller
 	}
 
 	/**
+	 * Finds objects dependent on a budgetposition (e.g. Bestellungen)
+	 */
+	public function checkBudgetpositionDependencies()
+	{
+		$budgetposition_id = $this->input->get('budgetposition_id');
+		$dependencies = array();
+
+		$dependentBestellungen = $this->BudgetpositionModel->getDependentBestellungen($budgetposition_id);
+
+		if (hasData($dependentBestellungen))
+		{
+			$dependencies['Bestellungen'] = $dependentBestellungen->retval;
+		}
+
+		$this->outputJsonSuccess($dependencies);
+	}
+
+	/**
 	 * Gets all Kostenstellen for given Geschäftsjahr in JSON format
 	 */
 	public function getKostenstellen()
@@ -219,14 +238,14 @@ class Budgetantrag extends Auth_Controller
 
 	/**
 	 * Gets a Budgetantrag for a given id in JSON format
-	 * @param $budgetantragid
+	 * @param $budgetantrag_id
 	 */
-	public function getBudgetantrag($budgetantragid)
+	public function getBudgetantrag($budgetantrag_id)
 	{
 		$result = null;
 
-		if ($this->_checkBudgetverwaltenPermission($budgetantragid, 's'))
-			$result = $this->BudgetantragModel->getBudgetantrag($budgetantragid);
+		if ($this->_checkBudgetverwaltenPermission($budgetantrag_id, 's'))
+			$result = $this->BudgetantragModel->getBudgetantrag($budgetantrag_id);
 
 		if (isSuccess($result))
 			$this->outputJsonSuccess($result->retval);
@@ -297,7 +316,7 @@ class Budgetantrag extends Auth_Controller
 		$positionen_todelete = $this->input->post('positionentodelete');
 
 		$inserted = $updated = $deleted = array();
-		$errors = 0;
+		$errors = array();
 
 		if ($this->_checkBudgetverwaltenPermission($budgetantrag_id, 'suid'))
 		{
@@ -315,7 +334,7 @@ class Budgetantrag extends Auth_Controller
 					if (isSuccess($result))
 						$inserted[] = $result->retval;
 					else
-						$errors++;
+						$errors[] = $position['budgetposten'];
 				}
 			}
 
@@ -330,7 +349,7 @@ class Budgetantrag extends Auth_Controller
 					if (isSuccess($result))
 						$updated[] = $result->retval;
 					else
-						$errors++;
+						$errors[] = $position['budgetposition_id'];
 				}
 			}
 
@@ -343,7 +362,7 @@ class Budgetantrag extends Auth_Controller
 					if (isSuccess($result))
 						$deleted[] = $result->retval;
 					else
-						$errors++;
+						$errors[] = $position['budgetposition_id'];
 				}
 			}
 		}
@@ -363,7 +382,17 @@ class Budgetantrag extends Auth_Controller
 
 		if ($this->_checkBudgetverwaltenPermission($budgetantrag_id, 'suid'))
 		{
-			$result = $this->BudgetantragModel->deleteBudgetantrag($budgetantrag_id);
+			$bestellungen = $this->_getDependentBestellungen($budgetantrag_id);
+			if (count($bestellungen) <= 0)
+			{
+				$result = $this->BudgetantragModel->deleteBudgetantrag($budgetantrag_id);
+			}
+			else
+			{
+				$bestellungenstr = implode(", ", $bestellungen);
+				$this->outputJsonError('Budgetantrag kann nicht gelöscht werden, da es abhängige Bestellungen gibt. (' . $bestellungenstr . ')');
+				return;
+			}
 		}
 
 		if (isSuccess($result))
@@ -478,6 +507,26 @@ class Budgetantrag extends Auth_Controller
 			return true;
 
 		return $this->permissionlib->isBerechtigt($this->budgetstatus_permissions[$budgetstatus_kurzbz], 'suid', null, $result->retval[0]->kostenstelle_id);
+	}
+
+	/**
+	 * Gets Bestellungen for a Budgetposition of a given Budgetantrag
+	 * @param $budgetantrag_id
+	 * @return array
+	 */
+	private function _getDependentBestellungen($budgetantrag_id)
+	{
+		$dependentBestellungen = array();
+		$budgetpositionen = $this->BudgetpositionModel->loadWhere(array('budgetantrag_id' => $budgetantrag_id));
+
+		foreach ($budgetpositionen->retval as $budgetposition)
+		{
+			$bestellungen = $this->BudgetpositionModel->getDependentBestellungen($budgetposition->budgetposition_id);
+			if (hasData($bestellungen))
+				$dependentBestellungen = array_merge($dependentBestellungen, $bestellungen->retval);
+		}
+
+		return $dependentBestellungen;
 	}
 
 	/**

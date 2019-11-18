@@ -4,6 +4,7 @@ $this->load->view(
 	array(
 		'title' => 'BudgetantraegeVerwaltung',
 		'jquery' => true,
+		'jqueryui' => true,
 		'bootstrap' => true,
 		'fontawesome' => true,
 		'sbadmintemplate' => true,

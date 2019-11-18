@@ -234,7 +234,7 @@ var BudgetantraegeHtml = {
 		}
 
 		var html =
-			'<div class="panel panel-default" id="'+POSITION_PREFIX+'_'+args.positionid+'">'+
+			'<div class="panel panel-default budgetpositioncollapse" id="'+POSITION_PREFIX+'_'+args.positionid+'">'+
 				'<div class="panel-heading">' +
 					'<div class="row">'+
 							'<a class="accordion-toggle'+args.collapseHtml+'" data-toggle="collapse" href="#collapsePosition'+args.positionid+'">'+

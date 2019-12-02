@@ -61,18 +61,18 @@ var BudgetantraegeHtml = {
 								'<input class="form-control budgetbezinput" id="budgetbezinput_'+args.budgetantragid+'">'+
 								'<span class="input-group-btn"><button class="btn btn-default budgetbezconfirm" type="button" id="budgetbezconfirm_'+args.budgetantragid+'"><i class="fa fa-check"></i></button></span>'+
 							'</div>'+
-							'&nbsp;&nbsp;|&nbsp;'+
 							'<a class="accordion-toggle'+args.collapseHtml+'" data-toggle="collapse" data-parent="#budgetantraege" href="#collapse'+args.budgetantragid+'">'+
+							'&nbsp;|&nbsp;'+
 								'<span id="budgetstatus_'+args.budgetantragid+'"></span>'+
 								'<span id="unsaved_'+args.budgetantragid+'" class="hidden">&nbsp;&nbsp;<i class="glyphicon glyphicon-floppy-remove text-danger"></i></span>'+
-							'</a>'+
 							'</h4>'+
 						'</div>'+
 						'<div class="col-xs-2 text-center">' +
 							'<span id = "sum_'+args.budgetantragid+'"></span>' +
 						'</div>'+
 	/*					'<div class="col-lg-2 col-lg-offset-2 col-sm-3 col-sm-offset-1 text-right">Budgetantrag</div>'+*/
-						'<div class="col-xs-1 col-xs-offset-4 text-right">';
+						'<div class="col-xs-1 col-xs-offset-4 text-right">' +
+							'</a>';
 
 		if (editable === true)
 			html += 		'<i class="fa fa-times text-danger" id="remove_'+args.budgetantragid+'" role="button"></i>';
@@ -117,11 +117,29 @@ var BudgetantraegeHtml = {
 	 */
 	getBudgetantragFooterHtml: function(args, editable)
 	{
+		var html = '';
+
 		if (editable === false)
 		{
-			return '<div class="row">'+
-						'<div class="col-lg-2 col-lg-offset-5 text-center antragMsg" id="msg_'+args.budgetantragid+'"></div>'+
-					'</div>';
+			html += '<div class="row">';
+
+			var coloffset = " col-lg-offset-5";
+
+			if (args.freigabeAufhebenBtn === true && BudgetantraegeController.global_booleans.freigebbar === true)
+			{
+				html += '<div class="col-lg-5">'+
+							'<button class="btn btn-default" id="revertfreigabe_'+args.budgetantragid+'">'+
+								'<i class="fa fa-undo"></i>&nbsp;'+
+								'<span>Freigabe aufheben</span>'+
+							'</button>'+
+						'</div>';
+				coloffset = "";
+			}
+
+			html += '<div class="col-lg-2'+coloffset+' text-center antragMsg" id="msg_'+args.budgetantragid+'"></div>';
+			html += '</div>';
+
+			return html;
 		}
 
 		var saveBtnHtml = '<button class="btn btn-default" id="save_'+args.budgetantragid+'">'+
@@ -138,8 +156,6 @@ var BudgetantraegeHtml = {
 			'<i class="glyphicon glyphicon-remove"></i>&nbsp;'+
 			'Ablehnen' +
 			'</button>';
-
-		var html = '';
 
 		if (args.isNewAntrag === true)
 		{
@@ -218,7 +234,7 @@ var BudgetantraegeHtml = {
 		}
 
 		var html =
-			'<div class="panel panel-default" id="'+POSITION_PREFIX+'_'+args.positionid+'">'+
+			'<div class="panel panel-default budgetpositioncollapse" id="'+POSITION_PREFIX+'_'+args.positionid+'">'+
 				'<div class="panel-heading">' +
 					'<div class="row">'+
 							'<a class="accordion-toggle'+args.collapseHtml+'" data-toggle="collapse" href="#collapsePosition'+args.positionid+'">'+
@@ -318,7 +334,7 @@ var BudgetantraegeHtml = {
 	 */
 	getModalSentHtml: function ()
 	{
-		return '<p>Der Status des Antrags wird auf <i class="frgAdj"></i> gesetzt. '+
+		return '<p>Der Status des Antrags wird <span class="frgAdj"></span>. '+
 			//Die Verantwortlichen erhalten eine Benachrichtigungsmail, damit der Antrag freigegeben werden kann. '+
 			'Der Antrag kann jedoch noch bearbeitet werden.</p>'+
 			'<p>Alle nicht gespeicherten Daten gehen verloren. Bist du sicher, dass du den Budgetantrag <span class="frgVerb"></span> m&ouml;chtest?</p>';
@@ -330,7 +346,17 @@ var BudgetantraegeHtml = {
 	 */
 	getModalApprovedHtml: function()
 	{
-		return '<p>Der Status des Antrags wird auf <i class="frgAdj"></i> gesetzt, der Antrag kann nicht mehr bearbeitet werden.</p>'+
+		return '<p>Der Status des Antrags wird <span class="frgAdj"></span>, der Antrag kann nicht mehr bearbeitet werden.</p>'+
 			'<p>Alle nicht gespeicherten Daten gehen verloren. Bist du sicher, dass du den Budgetantrag <span class="frgVerb"></span> m&ouml;chtest?</p>';
+	},
+
+	/**
+	 * Return bodytext for modal for changing Budgetantrag to new
+	 * @returns {string}
+	 */
+	getModalNewHtml: function()
+	{
+		return '<p>Der Status des Antrags wird auf <span class="frgAdj"></span> gesetzt, der Antrag kann wieder bearbeitet werden.</p>'+
+			'<p>Bist du sicher, dass du den Budgetantrag <span class="frgVerb"></span> m&ouml;chtest?</p>';
 	}
 };

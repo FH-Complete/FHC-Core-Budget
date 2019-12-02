@@ -4,6 +4,7 @@ $this->load->view(
 	array(
 		'title' => 'BudgetantraegeVerwaltung',
 		'jquery' => true,
+		'jqueryui' => true,
 		'bootstrap' => true,
 		'fontawesome' => true,
 		'sbadmintemplate' => true,
@@ -92,7 +93,7 @@ $this->load->view(
 								<h4 class="modal-title">Budgetantrag l&ouml;schen</h4>
 								</div>
 							<div class="modal-body">
-								<p>Bist du sicher, dass du den Budgetantrag <span id="delBudgetantragBez"></span> l&ouml;schen m&ouml;chtest?</p>
+								<p>Budgetantrag <span id="delBudgetantragBez"></span> l&ouml;schen?</p>
 								</div>
 							<div class="modal-footer">
 								<button type="button" class="btn btn-default" data-dismiss="modal">Abbrechen</button>
@@ -110,7 +111,7 @@ $this->load->view(
 								<h4 class="modal-title">Budgetantrag <span class="frgVerb"></span></h4>
 							</div>
 							<div class="modal-body">
-								<p>Der Status des Antrags wird auf <i class="frgAdj"></i> gesetzt, der Antrag kann nicht mehr bearbeitet werden.</p>
+								<p>Der Status des Antrags wird <span class="frgAdj"></span>, der Antrag kann nicht mehr bearbeitet werden.</p>
 								<p>Alle nicht gespeicherten Daten gehen verloren. Bist du sicher, dass du den Budgetantrag <span class="frgVerb"></span> m&ouml;chtest?</p>
 							</div>
 							<div class="modal-footer">

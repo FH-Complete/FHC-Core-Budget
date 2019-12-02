@@ -72,6 +72,26 @@ var BudgetantraegeAjax = {
 		);
 	},
 
+	checkBudgetpositionDependencies: function(budgetantrag_id, budgetposition_id)
+	{
+		FHC_AjaxClient.ajaxCallGet(
+			CALLED_PATH + "/checkBudgetpositionDependencies",
+			{
+				"budgetposition_id": budgetposition_id
+			},
+			{
+				successCallback: function(data)
+				{
+					BudgetantraegeController.afterBudgetpositionDependenciesGet(data, budgetantrag_id, budgetposition_id);
+				},
+				errorCallback: function (jqXHR, textStatus, errorThrown)
+				{
+					FHC_DialogLib.alertError("error when checking budgetposition removal!");
+				}
+			}
+		);
+	},
+
 	getKostenstellen: function(geschaeftsjahr, successCallback)
 	{
 		FHC_AjaxClient.ajaxCallGet(
@@ -114,9 +134,9 @@ var BudgetantraegeAjax = {
 	 * Ajax call for retrieving a single Budgetantrag. After execution, updates of view are triggered.
 	 * Called each time a Budgetantrag is updated
 	 * @param budgetantragid
-	 * @param updatetype type of Budgetantrag update (e.g. save, status change...)
+	 * @param message type of Budgetantrag update (e.g. save, status change...) or array with budgetpositions with error
 	 */
-	getBudgetantrag: function(budgetantragid, updatetype)
+	getBudgetantrag: function(budgetantragid, message)
 	{
 		FHC_AjaxClient.ajaxCallGet(
 			CALLED_PATH + "/getBudgetantrag/"+encodeURIComponent(budgetantragid),
@@ -124,7 +144,7 @@ var BudgetantraegeAjax = {
 			{
 				successCallback: function (data, textStatus, jqXHR)
 				{
-					BudgetantraegeController.afterBudgetantragGet(data, budgetantragid, updatetype);
+					BudgetantraegeController.afterBudgetantragGet(data, budgetantragid, message);
 				},
 				errorCallback: function (jqXHR, textStatus, errorThrown)
 				{

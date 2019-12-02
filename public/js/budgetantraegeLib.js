@@ -11,6 +11,9 @@ var BudgetantraegeLib = {
 	 */
 	findInArray: function (array, id)
 	{
+		if (!$.isArray(array))
+			return false;
+
 		for(var i = 0; i < array.length; i++)
 		{
 			var element = array[i];
@@ -28,8 +31,8 @@ var BudgetantraegeLib = {
 	checkDecimalFormat: function(value)
 	{
 		//var betragregex = /^[0-9]{1,3}([\.]?[0-9]{3})*([,][0-9]{1,2})?$/;
-		var betragregex = /^([-])?([.0-9])+([,][0-9]{1,2})?$/;
-		return value.match(betragregex);
+		var betragregex = new RegExp(/^([-])?([.0-9])+([,][0-9]{1,2})?$/);
+		return betragregex.test(value);
 	},
 
 	/**

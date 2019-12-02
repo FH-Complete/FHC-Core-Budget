@@ -4,17 +4,17 @@
  * and calls functions from the js ajax files to perform calls to the Budgetantraege controller
  */
 
-const CALLED_PATH = FHC_JS_DATA_STORAGE_OBJECT.called_path;
+var CALLED_PATH = FHC_JS_DATA_STORAGE_OBJECT.called_path;
 //id prefixes
-const NEW_BUDGET_PREFIX = "newb", NEW_POSITION_PREFIX = "newp", BUDGETANTRAG_PREFIX = "budget", POSITION_PREFIX = "position";
-const GLOBAL_STATUSES = {"new" : {"bez": "new", "editable": true},
-						"sent" : {"bez": "sent", "verb": "abschicken", "adj": "abgeschickt", "editable": true},
-						"rejected" : {"bez": "rejected", "verb": "ablehnen", "adj": "abgelehnt", "editable": false},
-						"approved" : {"bez": "approved", "verb": "freigeben", "adj": "freigegeben", "editable": false}
+var NEW_BUDGET_PREFIX = "newb", NEW_POSITION_PREFIX = "newp", BUDGETANTRAG_PREFIX = "budget", POSITION_PREFIX = "position";
+var GLOBAL_STATUSES = {"new" : {"bez": "new", "verb": "auf \"neu\" setzen", "adj": "auf \"neu\" gesetzt", "editable": true},
+						"sent" : {"bez": "sent", "verb": "abschicken", "adj": "auf \"abgeschickt\" gesetzt", "editable": true},
+						"rejected" : {"bez": "rejected", "verb": "ablehnen", "adj": "auf \"abgelehnt\" gesetzt", "editable": false},
+						"approved" : {"bez": "approved", "verb": "freigeben", "adj": "auf \"freigegeben\" gesetzt", "editable": false}
 						};
 
 $(document).ready(function () {
-	if (sessionStorage.getItem("budgetgeschaeftsjahr") !== null && typeof(Storage) !== "undefined")
+	if (typeof(Storage) !== "undefined" && sessionStorage.getItem("budgetgeschaeftsjahr") !== null)
 	{
 		$("#geschaeftsjahr").val(sessionStorage.getItem("budgetgeschaeftsjahr"));
 	}
@@ -209,7 +209,6 @@ var BudgetantraegeController = {
 			}
 			return;
 		}
-
 		BudgetantraegeAjax.updateBudgetantragBezeichnung(budgetantragid, bezeichnung);
 	},
 
@@ -223,7 +222,8 @@ var BudgetantraegeController = {
 	{
 		var positionen = BudgetantraegeView.retrieveBudgetantragPositionen(budgetantragid, true);
 
-		if (positionen === null) return;
+		if (positionen === null)
+			return;
 
 		var positionenToAdd = [], positionenToUpdate = [], positionenToDelete = [];
 
@@ -320,7 +320,9 @@ var BudgetantraegeController = {
 	 */
 	afterKostenstellenGet: function(data)
 	{
-		if (FHC_AjaxClient.isError(data)) return;
+		if (FHC_AjaxClient.isError(data))
+			return;
+
 		var kostenstellen = data.retval;
 
 		var kstgone = true;
@@ -359,7 +361,7 @@ var BudgetantraegeController = {
 	 * Executes after Ajax for getting all Konten is finished
 	 * @param data
 	 */
-	afterKontenGet: function(data, textStatus, jqXHR)
+	afterKontenGet: function(data)
 	{
 		if (FHC_AjaxClient.isError(data))
 			return;
@@ -370,10 +372,8 @@ var BudgetantraegeController = {
 	/**
 	 * Executes after Ajax for checking if Kostenstelle is freigebbar is finished
 	 * @param data
-	 * @param textStatus
-	 * @param jqXHR
 	 */
-	afterKstFreigebbarGet: function (data, textStatus, jqXHR)
+	afterKstFreigebbarGet: function (data)
 	{
 		if (FHC_AjaxClient.hasData(data))
 		{
@@ -384,6 +384,38 @@ var BudgetantraegeController = {
 			BudgetantraegeController.global_booleans.freigebbar = false;
 		}
 		BudgetantraegeController.getBudgetantraege();
+	},
+
+	/**
+	 * Executes after Ajax for checking Budgetposition dependencies is finished
+	 * @param data
+	 * @param budgetantrag_id
+	 * @param budgetposition_id
+	 */
+	afterBudgetpositionDependenciesGet: function (data, budgetantrag_id, budgetposition_id)
+	{
+		if (FHC_AjaxClient.isError(data))
+		{
+			FHC_DialogLib.alertError("Fehler bei Prüfung der Budgetantragsabhängigkeiten!");
+			return;
+		}
+
+		if (FHC_AjaxClient.hasData(data))
+		{
+			var abhaengigkeiten = data.retval;
+			for (var abhTyp in abhaengigkeiten)
+			{
+				FHC_DialogLib.alertError("Budgetposition kann nicht gelöscht werden, da es abhängige" + abhTyp + " gibt. (" + abhaengigkeiten[abhTyp].join(", ") + ")");
+			}
+		}
+		else
+		{
+			var budgetantrag = BudgetantraegeLib.findInArray(BudgetantraegeController.global_budgetantraege.existentBudgetantraege, budgetantrag_id);
+			budgetantrag.positionentodelete.push({"id": budgetposition_id});
+			//remove from GUI
+			BudgetantraegeView.removeBudgetposition(budgetposition_id);
+			BudgetantraegeView.checkIfSaved(budgetantrag_id);
+		}
 	},
 
 	/**
@@ -434,26 +466,41 @@ var BudgetantraegeController = {
 	 */
 	afterBudgetantragUpdate: function(data, budgetantragid)
 	{
-		if (!FHC_AjaxClient.hasData(data) || data.retval.errors > 0)
-		{
-			BudgetantraegeView.setMessage(budgetantragid, "text-danger", "Fehler beim Speichern des Budgetantrags!");
-		}
 		var budgetantrag = BudgetantraegeLib.findInArray(BudgetantraegeController.global_budgetantraege.existentBudgetantraege, budgetantragid);
+		var hasError = false;
+		var errorpositions = [];
+		if (!FHC_AjaxClient.hasData(data) || data.retval.errors.length > 0)
+		{
+			hasError = true;
+			for (var erridx in data.retval.errors)
+			{
+				var errorvalue = data.retval.errors[erridx];
+				var budgetposition = BudgetantraegeLib.findInArray(budgetantrag.positionen, errorvalue);
+				if (budgetposition.budgetposten)
+					errorpositions.push(budgetposition.budgetposten);
+				else
+					errorpositions.push(errorvalue);
+			}
+		}
 
 		//reset delete and add ids
 		budgetantrag.positionentodelete = [];
 		budgetantrag.positionentoadd = [];
 
-		BudgetantraegeAjax.getBudgetantrag(budgetantragid, "gespeichert");
+		var message = "gespeichert";
+		if (hasError)
+			message = {"errors": errorpositions};
+
+		BudgetantraegeAjax.getBudgetantrag(budgetantragid, message);
 	},
 
 	/**
 	 * Executes after Ajax for getting a single Budgetantrag is finished, for refreshing html and array
 	 * @param data
 	 * @param oldbudgetantragid id before update for messaging (in case of error)
-	 * @param updatetype type of performed update (freigeben, speichern...) before the get
+	 * @param message type of performed update (freigeben, speichern...) before the get
 	 */
-	afterBudgetantragGet: function(data, oldbudgetantragid, updatetype)
+	afterBudgetantragGet: function(data, oldbudgetantragid, message)
 	{
 		if (!FHC_AjaxClient.hasData(data))
 		{
@@ -465,7 +512,12 @@ var BudgetantraegeController = {
 		BudgetantraegeController.addAntragToExistingAntraegeArray(budgetantrag);
 		BudgetantraegeView.refreshBudgetantrag(budgetantrag);
 		BudgetantraegeController.calculateBudgetantragSums();
-		BudgetantraegeView.setMessage(oldbudgetantragid, 'text-success', 'Budgetantrag erfolgreich '+updatetype+'!');
+		if (typeof message === "string")
+			BudgetantraegeView.setMessage(oldbudgetantragid, 'text-success', 'Budgetantrag erfolgreich '+message+'!');
+		else if (message.errors)
+		{
+			BudgetantraegeView.setMessage(oldbudgetantragid, 'text-danger', 'Fehler beim Speichern des Budgetantrags! Betroffene Positionen: '+message.errors.join(', '));
+		}
 	},
 
 	afterBudgetantragBezeichnungUpdate: function(data, bezeichnung)
@@ -475,8 +527,10 @@ var BudgetantraegeController = {
 			FHC_DialogLib.alertError("Fehler beim Speichern der Budgetantragsbezeichnung!");
 			return;
 		}
-
-		BudgetantraegeView.setBudgetantragBezeichnungEditConfirm(data.retval, bezeichnung);
+		var budgetantragid = data.retval;
+		var budgetantrag = BudgetantraegeLib.findInArray(BudgetantraegeController.global_budgetantraege.existentBudgetantraege, budgetantragid);
+		budgetantrag.bezeichnung = bezeichnung;
+		BudgetantraegeView.setBudgetantragBezeichnungEditConfirm(budgetantragid, bezeichnung);
 	},
 
 	/**
@@ -487,7 +541,11 @@ var BudgetantraegeController = {
 	{
 		if (!FHC_AjaxClient.hasData(data))
 		{
-			FHC_DialogLib.alertError("Fehler beim Löschen des Budgetantrags!");
+			if (typeof data.retval === 'string')
+				FHC_DialogLib.alertError(data.retval);
+			else
+				FHC_DialogLib.alertError("Fehler beim Löschen des Budgetantrags!");
+
 			return;
 		}
 
@@ -515,11 +573,10 @@ var BudgetantraegeController = {
 		{
 			BudgetantraegeView.setMessage(budgetantragid, "text-danger", "Fehler beim Ändern des Budgetstatus!");
 			return;
-
 		}
 		var budgetantragstatus = data.retval[0];
 
-		BudgetantraegeAjax.getBudgetantrag(budgetantragid, budgetantragstatus.bezeichnung.toLowerCase());
+		BudgetantraegeAjax.getBudgetantrag(budgetantragid, GLOBAL_STATUSES[budgetantragstatus.budgetstatus_kurzbz].adj);
 	},
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -544,7 +601,7 @@ var BudgetantraegeController = {
 		BudgetantraegeView.appendBudgetantrag(budgetantragid, {"bezeichnung": passed}, 0, true, true);
 		BudgetantraegeView.setBudgetantragStatus(budgetantragid, { "bezeichnung": "Neu", "datum": ""});
 		BudgetantraegeController.appendNewBudgetposition(budgetantragid);
-		BudgetantraegeView.appendBudgetantragFooter(budgetantragid, true, true);
+		BudgetantraegeView.appendBudgetantragFooter(budgetantragid, {isNewAntrag: true, freigabeAufhebenBtn: false}, true);
 	},
 
 	/**
@@ -563,32 +620,43 @@ var BudgetantraegeController = {
 			budgetantrag.positionentoadd.push({"id": positionid});
 
 		BudgetantraegeController.global_counters.countNewPosition++;
+		//BudgetantraegeView.collapseAllBudgetpositionen(budgetantragid);
 		BudgetantraegeView.appendBudgetposition(budgetantragid, positionid, null, true, true);
 		BudgetantraegeView.checkIfSaved(budgetantragid);
 	},
 
 	/**
-	 * Saves Position to be removed from a Budgetantrag
+	 * Initialises deletion of budgetposition to be removed from a Budgetantrag
 	 * @param budgetantragid
 	 * @param positionid
 	 */
 	deleteBudgetposition: function(budgetantragid, positionid)
 	{
 		var budgetantrag = BudgetantraegeLib.findInArray(BudgetantraegeController.global_budgetantraege.existentBudgetantraege, budgetantragid);
-		if (budgetantrag === false) return;
 
-		//remove from positionentoadd
-		budgetantrag.positionentoadd = budgetantrag.positionentoadd.filter(
-			function (el)
+		//new budgetantrag - only delete from GUI
+		if (budgetantrag === false)
+		{
+			BudgetantraegeView.removeBudgetposition(positionid);
+		}
+		else
+		{
+			var budgetposition = BudgetantraegeLib.findInArray(budgetantrag.positionen, positionid);
+
+			//new Budgetposition is deleted - only delete from GUI
+			if (budgetposition === false)
 			{
-				return el.id !== positionid;
+				//remove from positionentoadd
+				budgetantrag.positionentoadd = budgetantrag.positionentoadd.filter(
+					function (el) {
+						return el.id !== positionid;
+					}
+				);
+				BudgetantraegeView.removeBudgetposition(positionid);
 			}
-		);
-
-		var budgetposition = BudgetantraegeLib.findInArray(budgetantrag.positionen, positionid);
-		if (budgetposition === false) return;
-
-		budgetantrag.positionentodelete.push({"id": positionid});
+			else //existing Budgetposition is deleted - initialise deletion check
+				BudgetantraegeAjax.checkBudgetpositionDependencies(budgetantragid, positionid, BudgetantraegeController.afterBudgetpositionDependenciesGet);
+		}
 	},
 
 	/**
@@ -606,7 +674,7 @@ var BudgetantraegeController = {
 		{
 			var position = budgetantragToAdd.budgetpositionen[i];
 			var betrag = position.betrag === null ? 0 : parseFloat(position.betrag);
-			updatedPositionen.push({"id": position.budgetposition_id, "betrag": betrag});
+			updatedPositionen.push({"id": position.budgetposition_id, "budgetposten": position.budgetposten, "betrag": betrag});
 		}
 
 		var budgetantragData = {

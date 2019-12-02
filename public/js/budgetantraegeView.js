@@ -57,7 +57,7 @@ var BudgetantraegeView = {
 	},
 
 	/**
-	 * Appends an array of Budgetantraegen and their positions
+	 * Appends an array of Budgetantraege and their Budgetpositions
 	 * @param antraege
 	 */
 	appendBudgetantraege: function(antraege)
@@ -70,6 +70,9 @@ var BudgetantraegeView = {
 
 			var editable = BudgetantraegeController.global_booleans.editmode === true
 				&& GLOBAL_STATUSES[budgetantrag.budgetstatus.budgetstatus_kurzbz].editable === true;
+			var freigabeAufhebenBtn = budgetantrag.budgetstatus.budgetstatus_kurzbz === GLOBAL_STATUSES.approved.bez &&
+								BudgetantraegeController.global_booleans.editmode === true;
+			var footer_args = {"isNewAntrag": false, "freigabeAufhebenBtn": freigabeAufhebenBtn};
 
 			var hidden_budgetantrag_id = $("#budgetantrag_id").val();
 			var opened = hidden_budgetantrag_id == budgetantragid;
@@ -92,7 +95,7 @@ var BudgetantraegeView = {
 			}
 			BudgetantraegeView.setBudgetantragStatus(budgetantragid, budgetantrag.budgetstatus);
 			BudgetantraegeView.setSum(budgetantragid, sum);
-			BudgetantraegeView.appendBudgetantragFooter(budgetantragid, false, editable);
+			BudgetantraegeView.appendBudgetantragFooter(budgetantragid, footer_args, editable);
 		}
 	},
 
@@ -172,58 +175,63 @@ var BudgetantraegeView = {
 	 * Appends the footer for a Budgetantrag.
 	 * There are different kinds of footers for a new Antrag and an Antrag to update.
 	 * @param budgetantragid
-	 * @param isNewAntrag - wether the Antrag is yet to be added or is already added and can be updated
+	 * @param footer_args
 	 * @param editable - whether the Budgetantrag is editable or readonly
 	 */
-	appendBudgetantragFooter: function(budgetantragid, isNewAntrag, editable)
+	appendBudgetantragFooter: function(budgetantragid, footer_args, editable)
 	{
 		var footerel = $("#budgetfooter_" + budgetantragid);
 
-		var html = BudgetantraegeHtml.getBudgetantragFooterHtml({"budgetantragid": budgetantragid, "isNewAntrag": isNewAntrag}, editable);
+		var html = BudgetantraegeHtml.getBudgetantragFooterHtml({"budgetantragid": budgetantragid, "isNewAntrag": footer_args.isNewAntrag, "freigabeAufhebenBtn": footer_args.freigabeAufhebenBtn}, editable);
 		footerel.html(html);
 
-		if (editable === false)
-			return;
-
-		if (isNewAntrag === true)
+		if (editable === true)
 		{
-			$("#save_" + budgetantragid).click(
-				function ()
-				{
-					BudgetantraegeController.addNewBudgetantrag(budgetantragid);
-				}
-			);
+			if (footer_args.isNewAntrag === true)
+			{
+				$("#save_" + budgetantragid).click(
+					function () {
+						BudgetantraegeController.addNewBudgetantrag(budgetantragid);
+					}
+				);
+			}
+			else
+			{
+				$("#save_" + budgetantragid).click(
+					function () {
+						BudgetantraegeController.updateBudgetpositionen(budgetantragid);
+					}
+				);
+
+				$("#abschicken_" + budgetantragid).click(
+					function () {
+						BudgetantraegeController.updateBudgetantragStatus(budgetantragid, GLOBAL_STATUSES.sent.bez);
+					}
+				);
+
+				$("#freigeben_" + budgetantragid).click(
+					function () {
+						BudgetantraegeController.updateBudgetantragStatus(budgetantragid, GLOBAL_STATUSES.approved.bez);
+					}
+				);
+
+				$("#ablehnen_" + budgetantragid).click(
+					function () {
+						BudgetantraegeController.updateBudgetantragStatus(budgetantragid, GLOBAL_STATUSES.rejected.bez);
+					}
+				);
+			}
 		}
 		else
 		{
-			$("#save_" + budgetantragid).click(
-				function ()
-				{
-					BudgetantraegeController.updateBudgetpositionen(budgetantragid);
-				}
-			);
-
-			$("#abschicken_" + budgetantragid).click(
-				function ()
-				{
-					BudgetantraegeController.updateBudgetantragStatus(budgetantragid, GLOBAL_STATUSES.sent.bez);
-				}
-			);
-
-			$("#freigeben_" + budgetantragid).click(
-				function ()
-				{
-					BudgetantraegeController.updateBudgetantragStatus(budgetantragid, GLOBAL_STATUSES.approved.bez);
-				}
-			);
-
-			$("#ablehnen_" + budgetantragid).click(
-				function ()
-				{
-					BudgetantraegeController.updateBudgetantragStatus(budgetantragid, GLOBAL_STATUSES.rejected.bez);
-				}
-			);
-
+			if (footer_args.freigabeAufhebenBtn)
+			{
+				$("#revertfreigabe_" + budgetantragid).click(
+					function () {
+						BudgetantraegeController.updateBudgetantragStatus(budgetantragid, GLOBAL_STATUSES.new.bez);
+					}
+				);
+			}
 		}
 	},
 
@@ -261,12 +269,11 @@ var BudgetantraegeView = {
 		var html = BudgetantraegeHtml.getBudgetpositionHtml(positionargs, editable);
 
 		$("#budgetPosition_" + budgetantragid).append(html);
+
 		$("#removePosition_" + positionid).click(
 			function ()
 			{
 				BudgetantraegeController.deleteBudgetposition(budgetantragid, positionid);
-				$("#" + POSITION_PREFIX + "_" + positionid).remove();
-				BudgetantraegeView.checkIfSaved(budgetantragid);
 			}
 		);
 
@@ -287,6 +294,15 @@ var BudgetantraegeView = {
 	},
 
 	/**
+	 * Removes a Budgetposition from the GUI
+	 * @param positionid
+	 */
+	removeBudgetposition: function(positionid)
+	{
+		$("#" + POSITION_PREFIX + "_" + positionid).remove();
+	},
+
+	/**
 	 * Refreshes a Budgetantrag after it is updated, includes emptying the Budgetantrag element and appending it again
 	 * @param budgetantrag
 	 */
@@ -297,7 +313,7 @@ var BudgetantraegeView = {
 		var statuskurzbz = budgetantrag.budgetstatus.budgetstatus_kurzbz;
 		var editable = BudgetantraegeController.global_booleans.editmode === true
 			&& GLOBAL_STATUSES[statuskurzbz].editable === true;
-		var freigebbar = budgetantrag.freigebbar;
+		var freigabeAufhebenBtn =  statuskurzbz === GLOBAL_STATUSES.approved.bez && BudgetantraegeController.global_booleans.editmode === true;
 
 		budgetantragEl.empty();
 
@@ -315,7 +331,7 @@ var BudgetantraegeView = {
 		}
 		BudgetantraegeView.setBudgetantragStatus(budgetantragid, budgetantrag.budgetstatus);
 		BudgetantraegeView.setSum(budgetantragid, sum);
-		BudgetantraegeView.appendBudgetantragFooter(budgetantragid, false, editable, freigebbar);
+		BudgetantraegeView.appendBudgetantragFooter(budgetantragid, {"isNewAntrag": false, "freigabeAufhebenBtn": freigabeAufhebenBtn}, editable);
 	},
 
 	/**
@@ -399,6 +415,8 @@ var BudgetantraegeView = {
 
 		if (statuskurzbz === GLOBAL_STATUSES.sent.bez)
 			modelelement.find(".modal-body").html(BudgetantraegeHtml.getModalSentHtml());
+		else if (statuskurzbz === GLOBAL_STATUSES.new.bez)
+			modelelement.find(".modal-body").html(BudgetantraegeHtml.getModalNewHtml());
 		else
 			modelelement.find(".modal-body").html(BudgetantraegeHtml.getModalApprovedHtml());
 
@@ -755,6 +773,11 @@ var BudgetantraegeView = {
 	{
 		$(".accordion-toggle").addClass("collapsed");
 		$(".panel-collapse").removeClass("in");
-	}
+	}/*,
 
+	collapseAllBudgetpositionen: function(budgetantrag_id)
+	{
+		$("#budgetPosition_"+budgetantrag_id+" .accordion-toggle").addClass("collapsed");
+		$("#budgetPosition_"+budgetantrag_id+" .panel-collapse").removeClass("in");
+	}*/
 };

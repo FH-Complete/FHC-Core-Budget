@@ -31,7 +31,7 @@ class Budgetantrag_model extends DB_Model
 		$budgetantraege = $this->loadWhere(array('geschaeftsjahr_kurzbz' => $geschaeftsjahr, 'kostenstelle_id' => $kostenstelle));
 
 		if ($budgetantraege->error)
-			return error($budgetantraege->retval);
+			return $budgetantraege;
 
 		$resultArr = array();
 
@@ -153,12 +153,12 @@ class Budgetantrag_model extends DB_Model
 		$this->BudgetpositionModel->addSelect('budgetposition_id');
 		$positionen = $this->BudgetpositionModel->loadWhere(array('budgetantrag_id' => $budgetantrag_id));
 		if ($positionen->error)
-			return error($positionen->retval);
+			return $positionen;
 
 		$this->BudgetantragstatusModel->addSelect('budgetantrag_status_id');
 		$stati = $this->BudgetantragstatusModel->loadWhere(array('budgetantrag_id' => $budgetantrag_id));
 		if ($stati->error)
-			return error($stati->retval);
+			return $stati;
 
 		// Start DB transaction
 		$this->db->trans_start(false);

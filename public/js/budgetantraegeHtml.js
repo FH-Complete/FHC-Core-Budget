@@ -208,6 +208,18 @@ var BudgetantraegeHtml = {
 		var betrag = BudgetantraegeLib.formatDecimalGerman(args.betrag);
 		var betragWithCrncy = betrag ? '€ '+betrag : '€ 0,00';
 
+		var jahrverteilenchecked = '';
+		var datefieldhidden = '';
+
+		//null means NULL in database (Betrag ist auf Jahr verteilt)
+		// string 'null' means new budgetposition (still show empty datefield)
+		if (args.benoetigt_am === null)
+		{
+			jahrverteilenchecked = ' checked="checked"';
+			datefieldhidden = ' hidden';
+		}
+		var benoetigt_am = args.benoetigt_am !== null && args.benoetigt_am !== 'null' ? BudgetantraegeLib.formatDateGerman(args.benoetigt_am) : '';
+
 		//get konto
 		for (var i = 0; i < BudgetantraegeController.global_preloads.konten.length; i++)
 		{
@@ -314,6 +326,27 @@ var BudgetantraegeHtml = {
 						'</div>'+//column
 					'</div>'+//form-group row
 				'</div>'+//column
+			'</div>'+//row
+			'<div class="row">'+
+				'<div class="col-lg-6">'+
+					'<div class="form-group row">'+
+						'<label class="col-lg-4 control-label label-required">Benötigt am</label>'+
+						'<div class="col-lg-8">'+
+							'<div class="input-group'+datefieldhidden+'" id="benoetigtamgroup_'+args.positionid+'">'+
+								'<span class = "input-group-addon">'+
+									'<i class="fa fa-calendar"></i>'+
+								'</span>'+
+								'<input type="text" class="form-control" name="benoetigtam"  id="benoetigtam_'+args.positionid+'" value="'+benoetigt_am+'"'+disabled+'>'+
+							'</div>'+//input-group
+			 				'<div class="input-group">'+
+								'<label class="checkbox-inline control-label">'+
+									'<input type="checkbox" name="jahrverteilen" id="jahrverteilen_'+args.positionid+'"'+disabled+jahrverteilenchecked+'>'+
+									'Betrag aufs Jahr verteilen'+
+								'</label>'+
+							'</div>'+//form-group row
+						'</div>'+//column
+					'</div>'+//form-group row
+				'</div>'+
 			'</div>'+//row
 			'<div class="form-group row">'+
 				'<label class="col-lg-2 control-label">Beschreibung</label>'+

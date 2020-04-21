@@ -538,6 +538,7 @@ class Budgetantrag extends Auth_Controller
 		$position['budgetposten'] = html_escape($position['budgetposten']);
 		$position['konto_id'] = isset($position['konto_id']) && is_numeric($position['konto_id']) ? $position['konto_id'] : null;
 		$position['projekt_id'] = isset($position['projekt_id']) && is_numeric($position['projekt_id'])? $position['projekt_id'] : null;
+		$position['benoetigt_am'] = isset($position['benoetigt_am']) && !isEmptyString($position['benoetigt_am'])? $position['benoetigt_am'] : null;
 	}
 
 	/**

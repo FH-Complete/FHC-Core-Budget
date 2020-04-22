@@ -572,6 +572,8 @@ var BudgetantraegeView = {
 						messages.push(positionFields.data[j]);
 				}
 				valid = false;
+				//mark position header as error
+				$("#position_"+position_id+" .panel-heading a.accordion-toggle").addClass("text-danger");
 			}
 
 			var positiondata = positionFields.data;

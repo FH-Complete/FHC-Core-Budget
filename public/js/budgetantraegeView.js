@@ -580,7 +580,7 @@ var BudgetantraegeView = {
 				continue;
 
 			positiondata.projekt_id.val = positiondata.projekt_id.val === 'null' ? null : positiondata.projekt_id.val;
-			positiondata.benoetigt_am.val = positiondata.benoetigt_am.val === '' ? null : BudgetantraegeLib.formatDateDb(positiondata.benoetigt_am.val);
+			positiondata.benoetigt_am.val = positiondata.benoetigt_am.val === '' || positiondata.benoetigt_am.val === null ? null : BudgetantraegeLib.formatDateDb(positiondata.benoetigt_am.val);
 
 			var position = {
 				"budgetposten": positiondata.budgetposten.val,
@@ -590,8 +590,6 @@ var BudgetantraegeView = {
 				"benoetigt_am": positiondata.benoetigt_am.val,
 				"kommentar": positiondata.kommentar.val
 			};
-
-			console.log(position);
 
 			//id wrapper for update
 			if (withid === true)

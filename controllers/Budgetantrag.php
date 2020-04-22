@@ -274,6 +274,12 @@ class Budgetantrag extends Auth_Controller
 				'insertvon' => $this->uid
 			);
 
+			foreach ($positionen as $positionkey => $position)
+			{
+				$this->_preparePositionArray($position);
+				$positionen[$positionkey] = $position;
+			}
+
 			$result = $this->BudgetantragModel->addBudgetantrag($budgetantragData, $positionen);
 		}
 
@@ -317,6 +323,7 @@ class Budgetantrag extends Auth_Controller
 
 		$inserted = $updated = $deleted = array();
 		$errors = array();
+
 
 		if ($this->_checkBudgetverwaltenPermission($budgetantrag_id, 'suid'))
 		{

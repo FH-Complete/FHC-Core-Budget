@@ -324,7 +324,6 @@ class Budgetantrag extends Auth_Controller
 		$inserted = $updated = $deleted = array();
 		$errors = array();
 
-
 		if ($this->_checkBudgetverwaltenPermission($budgetantrag_id, 'suid'))
 		{
 			if (is_array($positionen_toadd))

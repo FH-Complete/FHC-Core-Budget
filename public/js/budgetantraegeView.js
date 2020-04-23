@@ -251,6 +251,7 @@ var BudgetantraegeView = {
 			"projekt_id": "null",
 			"konto_id": "null",
 			"betrag": "",
+			"benoetigt_am": "null",
 			"kommentar": ""
 		};
 
@@ -260,6 +261,8 @@ var BudgetantraegeView = {
 			if (positionobj.projekt_id !== null) positionargs.projekt_id = positionobj.projekt_id;
 			if (positionobj.konto_id !== null) positionargs.konto_id = positionobj.konto_id;
 			if (positionobj.betrag !== null) positionargs.betrag = positionobj.betrag;
+			//if null - comes from db and Betrag is auf Jahr verteilt, string null - benoetigt_am has to be entered
+			positionargs.benoetigt_am = positionobj.benoetigt_am;
 			if (positionobj.kommentar !== null) positionargs.kommentar = positionobj.kommentar;
 		}
 
@@ -274,6 +277,25 @@ var BudgetantraegeView = {
 			function ()
 			{
 				BudgetantraegeController.deleteBudgetposition(budgetantragid, positionid);
+			}
+		);
+
+		//datepicker for benoetigt am field
+		var benoetigtamel = $("#benoetigtam_" + positionid);
+		var benoetigtamgroup = $("#benoetigtamgroup_" + positionid);
+		benoetigtamel.datepicker();
+
+		$("#jahrverteilen_" + positionid).change(
+			function()
+			{
+				if ($(this).is(":checked"))
+				{
+					benoetigtamgroup.addClass('hidden');
+				}
+				else
+				{
+					benoetigtamgroup.removeClass('hidden');
+				}
 			}
 		);
 
@@ -550,6 +572,8 @@ var BudgetantraegeView = {
 						messages.push(positionFields.data[j]);
 				}
 				valid = false;
+				//mark position header as error
+				$("#position_"+position_id+" .panel-heading a.accordion-toggle").addClass("text-danger");
 			}
 
 			var positiondata = positionFields.data;
@@ -558,12 +582,14 @@ var BudgetantraegeView = {
 				continue;
 
 			positiondata.projekt_id.val = positiondata.projekt_id.val === 'null' ? null : positiondata.projekt_id.val;
+			positiondata.benoetigt_am.val = positiondata.benoetigt_am.val === '' || positiondata.benoetigt_am.val === null ? null : BudgetantraegeLib.formatDateDb(positiondata.benoetigt_am.val);
 
 			var position = {
 				"budgetposten": positiondata.budgetposten.val,
 				"projekt_id": positiondata.projekt_id.val,
 				"konto_id": positiondata.konto_id.val,
 				"betrag": positiondata.betrag.val,
+				"benoetigt_am": positiondata.benoetigt_am.val,
 				"kommentar": positiondata.kommentar.val
 			};
 
@@ -700,15 +726,20 @@ var BudgetantraegeView = {
 		var projektidelem = positionFormDom.find("select[name=projekt_id]");
 		var kontoidelem = positionFormDom.find("select[name=konto_id]");
 		var betragelem = positionFormDom.find("input[name=betrag]");
+		var benoetigtamelem = positionFormDom.find("input[name=benoetigtam]");
+		var jahrverteilen = positionFormDom.find("input[name=jahrverteilen]");
 		var kommentarelem = positionFormDom.find("textarea[name=kommentar]");
 
 		var positionFields = {};
 		var messages = [];
 
+		var jahrverteilt = jahrverteilen.prop("checked");
+
 		positionFields.budgetposten = {"elem": budgetpostenelem, "val": budgetpostenelem.val(), "required": true};
 		positionFields.projekt_id = {"elem": projektidelem, "val": projektidelem.val(), "required": false};
 		positionFields.konto_id = {"elem": kontoidelem, "val": kontoidelem.val(), "required": true};
 		positionFields.betrag = {"elem": betragelem, "val": betragelem.val(), "required": true};
+		positionFields.benoetigt_am = {"elem": benoetigtamelem, "val": jahrverteilt ? null : benoetigtamelem.val(), "required": !jahrverteilt};
 		positionFields.kommentar= {"elem": kommentarelem, "val": kommentarelem.val(), "required": false};
 
 		//check required fields
@@ -723,6 +754,13 @@ var BudgetantraegeView = {
 		if (!valid)
 		{
 			messages.push("Pflichtfelder nicht ausgefüllt!");
+		}
+
+		if (!jahrverteilt && !BudgetantraegeLib.checkDate(positionFields.benoetigt_am.val))
+		{
+			valid = false;
+			benoetigtamelem.parent().addClass("has-error");
+			messages.push("Ungültiges Datum! (Richtiges Format: Tag.Monat.Jahr)");
 		}
 
 		if (!BudgetantraegeLib.checkDecimalFormat(positionFields.betrag.val))

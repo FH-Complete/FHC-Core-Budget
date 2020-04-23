@@ -36,6 +36,16 @@ var BudgetantraegeLib = {
 	},
 
 	/**
+	 * Checks if a date has correct (german) format and is valid
+	 * @param date
+	 */
+	checkDate: function(date)
+	{
+		var dateregex = new RegExp(/^[0-3][0-9].[0,1][0-9].[0-9]{4}$/);
+		return dateregex.test(date) && Date.parse(BudgetantraegeLib.formatDateDb(date));
+	},
+
+	/**
 	 * Formats a numeric value as a float with two decimals
 	 * @param sum
 	 * @returns {string}
@@ -67,12 +77,22 @@ var BudgetantraegeLib = {
 	},
 
 	/**
-	 * Formats a date in format YYYY-mm-dd to dd.mm.YYYY
+	 * Formats a date in format dd.mm.YYYY to YYYY-mm-dd
 	 * @param date
 	 * @returns {string}
 	 */
 	formatDateGerman: function(date)
 	{
 		return date.substring(8, 10) + "." + date.substring(5, 7) + "." + date.substring(0, 4);
+	},
+
+	/**
+	 * Formats a date in format YYYY-mm-dd to dd.mm.YYYY
+	 * @param date
+	 * @returns {string}
+	 */
+	formatDateDb: function(date)
+	{
+		return date.substring(6, 10) + "-" + date.substring(3, 5) + "-" + date.substring(0, 2);
 	}
 };

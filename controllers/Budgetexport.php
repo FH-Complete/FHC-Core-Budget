@@ -40,7 +40,7 @@ class Budgetexport extends Auth_Controller
 	public function generateCSV()
 	{
 		$csv = $this->budgetexportlib->generateCSV();
-		var_dump($csv);
+		return $csv;
 	}
 
 }

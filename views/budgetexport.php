@@ -26,14 +26,14 @@ $this->load->view(
 	<?php echo $this->widgetlib->widget('NavigationWidget'); ?>
 	<div id="page-wrapper">
 		<div class="container-fluid">
-			<div class="row">
-				<div class="col-lg-12">
+			<div class="row align-items-center">
+				<div class="col-lg-12 align-items-center">
 					<form method="post" action=" <?php echo site_url("/extensions/FHC-Core-Budget/Budgetexport/generateCSV");?>">
 				        <input type="submit" value="download CSV">
                     </form>
-			</div>
+			    </div>
 
-
+            </div>
 		</div> <!-- ./container-fluid -->
 	</div> <!-- ./page-wrapper -->
 </div> <!-- ./wrapper -->

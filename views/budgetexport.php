@@ -29,7 +29,9 @@ $this->load->view(
 			<div class="row align-items-center">
 				<div class="col-lg-12 align-items-center">
 					<form method="post" action=" <?php echo site_url("/extensions/FHC-Core-Budget/Budgetexport/generateCSV");?>">
-				        <input type="submit" value="download CSV">
+                        <div class="form-group">
+				            <input type="submit" value="download CSV">
+                        </div>
                     </form>
 			    </div>
 

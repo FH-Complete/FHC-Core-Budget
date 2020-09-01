@@ -34,6 +34,7 @@ class BudgetExportLib
 		$csvResult = $dbModel->execReadOnlyQuery('
 			
 			SELECT
+				wawi.tbl_konto.ext_id,
 				tbl_sap_organisationsstruktur.oe_kurzbz_sap, kostenstelle_id,
 			tbl_konto.konto_id, sum(betrag),
 				tbl_kostenstelle.bezeichnung, tbl_budget_position.benoetigt_am
@@ -48,9 +49,7 @@ class BudgetExportLib
 			WHERE
 				geschaeftsjahr_kurzbz=\'GJ2020-2021\' 
 				
-				--AND tbl_konto.konto_id IN (31,104,111)
-				
-			GROUP BY tbl_sap_organisationsstruktur.oe_kurzbz_sap,
+			GROUP BY wawi.tbl_konto.ext_id, tbl_sap_organisationsstruktur.oe_kurzbz_sap,
 				kostenstelle_id, tbl_konto.konto_id,     tbl_kostenstelle.bezeichnung,
 				tbl_budget_position.benoetigt_am
 			ORDER BY kostenstelle_id, konto_id');
@@ -111,11 +110,11 @@ class BudgetExportLib
 		for ($month = 1; $month <= 12; $month++)
 		{
 			$unternehmen = "100000";
-			$konto_id = $budgetRequest->konto_id;
+			$konto_id = $budgetRequest->ext_id;
 			$kostenstelle_id = $budgetRequest->oe_kurzbz_sap;
 			$profit_center= "";
 			$period = $this->getBuchungsperiodeForCorrespondingMonth($month);
-			$geschaeftsjahr = "2020";
+			$geschaeftsjahr = "2021";
 
 			$budgetForPeriod = $this->generateBudgetForPeriod($unternehmen, $konto_id, $kostenstelle_id, $profit_center,
 													$period, $geschaeftsjahr, $betrag_distributed_equally);
@@ -142,7 +141,7 @@ class BudgetExportLib
 		for ($month = 1; $month <= 12; $month++)
 		{
 			$unternehmen = "100000";
-			$konto_id = $budgetRequest->konto_id;
+			$konto_id = $budgetRequest->ext_id;
 			$kostenstelle_id = $budgetRequest->oe_kurzbz_sap;
 			$profit_center= "";
 			$period = $this->getBuchungsperiodeForCorrespondingMonth($month);

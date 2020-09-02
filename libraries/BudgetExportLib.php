@@ -25,7 +25,8 @@ class BudgetExportLib
 	// Public methods
 
 	/**
-	 * To get all the most recently added jobs using the given job type
+	 * Generates a csv file for Budget year
+	 * @return csv
 	 */
 	public function generateCSV()
 	{

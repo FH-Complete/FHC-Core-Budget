@@ -146,7 +146,7 @@ class BudgetExportLib
 			$kostenstelle_id = $budgetRequest->oe_kurzbz_sap;
 			$profit_center= "";
 			$period = $this->getBuchungsperiodeForCorrespondingMonth($month);
-			$geschaeftsjahr = "2020";
+			$geschaeftsjahr = "2021";
 
 			if($month===$benoetigt_am_month) $betrag = (float)$budgetRequest->sum;
 			else $betrag = 0.0;

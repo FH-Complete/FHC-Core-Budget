@@ -12,8 +12,8 @@ class Budgetexport extends Auth_Controller
 	{
 		parent::__construct(
 			array(
-				'index' => 'extension/budget_verwaltung:r',
-				'generateCSV' => 'extension/budget_verwaltung:r'
+				'index' => 'extension/budget_freigabe:r',
+				'generateCSV' => 'extension/budget_freigabe:r'
 			)
 		);
 

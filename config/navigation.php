@@ -28,6 +28,7 @@ $config['navigation_menu']['extensions/FHC-Core-Budget/*'] = array(
 	'Budgetanträge exportieren' => array(
 		'link' => site_url('extensions/FHC-Core-Budget/Budgetexport'),
 		'description' => 'Budgetanträge exportieren',
-		'icon' => 'edit'
+		'icon' => 'edit',
+		'requiredPermissions' => 'extension/budget_freigabe:r'
 	)
 );

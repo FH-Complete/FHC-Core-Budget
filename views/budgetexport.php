@@ -28,14 +28,15 @@ $this->load->view(
 		<div class="container-fluid">
 			<div class="row align-items-center">
 				<div class="col-lg-12 align-items-center">
+					<br />
+					<br />
 					<form method="post" action=" <?php echo site_url("/extensions/FHC-Core-Budget/Budgetexport/generateCSV");?>">
-                        <div class="form-group">
-				            <input type="submit" value="download CSV">
-                        </div>
-                    </form>
-			    </div>
-
-            </div>
+						<div class="form-group">
+							<input type="submit" class="btn btn-default" value="Budget Export SAP">
+						</div>
+					</form>
+				</div>
+			</div>
 		</div> <!-- ./container-fluid -->
 	</div> <!-- ./page-wrapper -->
 </div> <!-- ./wrapper -->

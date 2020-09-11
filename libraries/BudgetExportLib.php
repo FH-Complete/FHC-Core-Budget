@@ -106,7 +106,7 @@ class BudgetExportLib
 	private function distributeBudgetRequestOverYearEqually($budgetRequest)
 	{
 		$monthlyBudgetRequestArray = array();
-		$betrag_distributed_equally = money_format("%.2n", (int)$budgetRequest->sum / 12);
+		$betrag_distributed_equally = number_format((int)$budgetRequest->sum / 12,  $decimals = 2 , $dec_point = ".", $thousands_sep = "");
 
 		for ($month = 1; $month <= 12; $month++)
 		{

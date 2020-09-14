@@ -33,7 +33,7 @@ class BudgetExportLib
 		$dbModel = new DB_Model();
 
 		$csvResult = $dbModel->execReadOnlyQuery('
-			
+
 			SELECT
 				wawi.tbl_konto.ext_id,
 				tbl_sap_organisationsstruktur.oe_kurzbz_sap, kostenstelle_id,
@@ -48,8 +48,8 @@ class BudgetExportLib
 				LEFT JOIN sync.tbl_sap_organisationsstruktur
 			ON(tbl_kostenstelle.oe_kurzbz=tbl_sap_organisationsstruktur.oe_kurzbz)
 			WHERE
-				geschaeftsjahr_kurzbz=\'GJ2020-2021\' 
-				
+				geschaeftsjahr_kurzbz=\'GJ2020-2021\'
+
 			GROUP BY wawi.tbl_konto.ext_id, tbl_sap_organisationsstruktur.oe_kurzbz_sap,
 				kostenstelle_id, tbl_konto.konto_id,     tbl_kostenstelle.bezeichnung,
 				tbl_budget_position.benoetigt_am
@@ -106,7 +106,7 @@ class BudgetExportLib
 	private function distributeBudgetRequestOverYearEqually($budgetRequest)
 	{
 		$monthlyBudgetRequestArray = array();
-		$betrag_distributed_equally = number_format((int)$budgetRequest->sum / 12,  $decimals = 2 , $dec_point = ".", $thousands_sep = "");
+		$betrag_distributed_equally = number_format((float)$budgetRequest->sum / 12,  $decimals = 2 , $dec_point = ".", $thousands_sep = "");
 
 		for ($month = 1; $month <= 12; $month++)
 		{
@@ -148,7 +148,7 @@ class BudgetExportLib
 			$period = $this->getBuchungsperiodeForCorrespondingMonth($month);
 			$geschaeftsjahr = "2021";
 
-			if($month===$benoetigt_am_month) $betrag = (float)$budgetRequest->sum;
+			if($month===$benoetigt_am_month) $betrag = number_format((float)$budgetRequest->sum,  $decimals = 2 , $dec_point = ".", $thousands_sep = "");
 			else $betrag = 0.0;
 
 			$budgetForPeriod = $this->generateBudgetForPeriod($unternehmen, $konto_id, $kostenstelle_id, $profit_center,
@@ -170,7 +170,7 @@ class BudgetExportLib
 	 * @param $period
 	 * @param $geschaeftsjahr
 	 * @param $betrag
-	 * 
+	 *
 	 * @return  stdClass
 	 */
 	private function generateBudgetForPeriod($unternehmen, $konto_id, $kostenstelle_id, $profit_center,
@@ -190,9 +190,9 @@ class BudgetExportLib
 
 	/** Merges all identical Budget Periods in 2 Dimensional Array  and returns a 1 Dimensional Array in which each
 	 *  each entriy represents a Budget Period.
-	 * 
+	 *
 	 * @param $hashArray
-	 * 
+	 *
 	 * @return array
 	 */
 	private function mergeIdenticalPeriods($hashArray)
@@ -219,7 +219,7 @@ class BudgetExportLib
 					$betrag = $betrag + $requestBetrag;
 				}
 
-				$monthRow->betrag = $betrag;
+				$monthRow->betrag = number_format((float)$betrag,  $decimals = 2 , $dec_point = ".", $thousands_sep = "");
 
 				array_push($formattedDataArray, $monthRow);
 			}
@@ -235,8 +235,8 @@ class BudgetExportLib
 	/** Returns the Buchungsperiode For the corresponding Month
 	 *
 	 * @param $month
-	 * 
-	 * @return int 
+	 *
+	 * @return int
 	 */
 	private function getBuchungsperiodeForCorrespondingMonth($month)
 	{
@@ -256,12 +256,12 @@ class BudgetExportLib
 		];
 		return $mapping[$month];
 	}
-	
-	/** Returns the Geschäftsjahr for given Period and Akademic Year 
-	 * 
+
+	/** Returns the Geschäftsjahr for given Period and Akademic Year
+	 *
 	 * @param $period
 	 * @param $requestedYear
-	 * 
+	 *
 	 * @return int
 	 */
 	private function getGeschaeftsjahrForPeriod($period, $requestedYear)

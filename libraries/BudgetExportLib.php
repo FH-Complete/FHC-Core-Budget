@@ -28,32 +28,30 @@ class BudgetExportLib
 	 * Generates a csv file for Budget year
 	 * @return csv
 	 */
-	public function generateCSV()
+	public function generateCSV($geschaeftsjahr)
 	{
 		$dbModel = new DB_Model();
 
 		$csvResult = $dbModel->execReadOnlyQuery('
-
 			SELECT
 				wawi.tbl_konto.ext_id,
 				tbl_sap_organisationsstruktur.oe_kurzbz_sap, kostenstelle_id,
-			tbl_konto.konto_id, sum(betrag),
-				tbl_kostenstelle.bezeichnung, tbl_budget_position.benoetigt_am
+				tbl_konto.konto_id, sum(betrag),
+				tbl_kostenstelle.bezeichnung, tbl_budget_position.benoetigt_am,
+				date_part(\'year\', tbl_geschaeftsjahr.ende) as jahr
 			FROM
 				extension.tbl_budget_antrag
 				JOIN extension.tbl_budget_position USING(budgetantrag_id)
-				LEFT JOIN wawi.tbl_konto
-			ON(tbl_budget_position.konto_id=tbl_konto.konto_id)
+				LEFT JOIN wawi.tbl_konto ON(tbl_budget_position.konto_id=tbl_konto.konto_id)
 				LEFT JOIN wawi.tbl_kostenstelle USING(kostenstelle_id)
-				LEFT JOIN sync.tbl_sap_organisationsstruktur
-			ON(tbl_kostenstelle.oe_kurzbz=tbl_sap_organisationsstruktur.oe_kurzbz)
+				LEFT JOIN sync.tbl_sap_organisationsstruktur ON(tbl_kostenstelle.oe_kurzbz=tbl_sap_organisationsstruktur.oe_kurzbz)
+				JOIN public.tbl_geschaeftsjahr USING(geschaeftsjahr_kurzbz)
 			WHERE
-				geschaeftsjahr_kurzbz=\'GJ2020-2021\'
-
+				geschaeftsjahr_kurzbz=?
 			GROUP BY wawi.tbl_konto.ext_id, tbl_sap_organisationsstruktur.oe_kurzbz_sap,
 				kostenstelle_id, tbl_konto.konto_id,     tbl_kostenstelle.bezeichnung,
-				tbl_budget_position.benoetigt_am
-			ORDER BY kostenstelle_id, konto_id');
+				tbl_budget_position.benoetigt_am, tbl_geschaeftsjahr.ende
+			ORDER BY kostenstelle_id, konto_id', array($geschaeftsjahr));
 
 		// If error occurred while retrieving new users from database then return the error
 		if (isError($csvResult)) return getError($csvResult);
@@ -115,7 +113,7 @@ class BudgetExportLib
 			$kostenstelle_id = $budgetRequest->oe_kurzbz_sap;
 			$profit_center= "";
 			$period = $this->getBuchungsperiodeForCorrespondingMonth($month);
-			$geschaeftsjahr = "2021";
+			$geschaeftsjahr = $budgetRequest->jahr;
 
 			$budgetForPeriod = $this->generateBudgetForPeriod($unternehmen, $konto_id, $kostenstelle_id, $profit_center,
 													$period, $geschaeftsjahr, $betrag_distributed_equally);
@@ -146,7 +144,7 @@ class BudgetExportLib
 			$kostenstelle_id = $budgetRequest->oe_kurzbz_sap;
 			$profit_center= "";
 			$period = $this->getBuchungsperiodeForCorrespondingMonth($month);
-			$geschaeftsjahr = "2021";
+			$geschaeftsjahr = $budgetRequest->jahr;
 
 			if($month===$benoetigt_am_month) $betrag = number_format((float)$budgetRequest->sum,  $decimals = 2 , $dec_point = ".", $thousands_sep = "");
 			else $betrag = 0.0;
@@ -308,4 +306,3 @@ class BudgetExportLib
 
 
 }
-

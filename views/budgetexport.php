@@ -26,15 +26,47 @@ $this->load->view(
 	<?php echo $this->widgetlib->widget('NavigationWidget'); ?>
 	<div id="page-wrapper">
 		<div class="container-fluid">
-			<div class="row align-items-center">
-				<div class="col-lg-12 align-items-center">
-					<br />
-					<br />
-					<form method="post" action=" <?php echo site_url("/extensions/FHC-Core-Budget/Budgetexport/generateCSV");?>">
-						<div class="form-group">
-							<input type="submit" class="btn btn-default" value="Budget Export SAP">
+			<form method="post" action=" <?php echo site_url("/extensions/FHC-Core-Budget/Budgetexport/generateCSV");?>">
+			<div class="row">
+				<div class="col-lg-12">
+					<h3 class="page-header">
+						Budgetantr&auml;ge exportieren
+					</h3>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-lg-7">
+					<div class="row">
+						<div class="col-lg-5">
+							<div class="form-group" id="gjgroup">
+								<label for="geschaeftsjahr">Geschäftsjahr</label>
+								<select class="form-control" id="geschaeftsjahr" name="geschaeftsjahr">
+									<option value="null">Geschäftsjahr wählen...</option>
+									<?php
+									foreach ($geschaeftsjahre as $geschaeftsjahr):
+										$selected = $selectedgeschaeftsjahr === $geschaeftsjahr->geschaeftsjahr_kurzbz ? 'selected' : '';
+										?>
+										<option value="<?php echo $geschaeftsjahr->geschaeftsjahr_kurzbz; ?>" <?php echo $selected; ?>>
+											<?php echo $geschaeftsjahr->geschaeftsjahr_kurzbz ?>
+										</option>
+									<?php endforeach; ?>
+								</select>
+							</div>
 						</div>
-					</form>
+					</div>
+					<div class="row">
+						<div class="col-lg-7">
+							<div class="row">
+								<div class="col-lg-5">
+						<input type="submit" class="btn btn-default" value="Budget Export SAP">
+					</div>
+				</div>
+			</div>
+			</form>
+			<br /><br />
+			<div class="row">
+				<div class="col-lg-12">
+				Hinweis: Das Format der Spalte Buchungsperiode muss auf "Text" geändert werden damit die führenden Nullen erhalten bleiben!
 				</div>
 			</div>
 		</div> <!-- ./container-fluid -->

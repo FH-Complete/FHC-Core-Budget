@@ -21,6 +21,7 @@ class Budgetexport extends Auth_Controller
 		$this->load->library('extensions/FHC-Core-Budget/BudgetExportLib');
 		$this->load->library('WidgetLib');
 
+		$this->load->model('organisation/geschaeftsjahr_model', 'GeschaeftsjahrModel');
 
 	}
 
@@ -29,7 +30,35 @@ class Budgetexport extends Auth_Controller
 	 */
 	public function index()
 	{
-		$this->load->view('extensions/FHC-Core-Budget/budgetexport.php');
+		$this->GeschaeftsjahrModel->addSelect('geschaeftsjahr_kurzbz');
+		$this->GeschaeftsjahrModel->addOrder('start', 'DESC');
+		$geschaeftsjahre = $this->GeschaeftsjahrModel->load();
+
+		if (isError($geschaeftsjahre))
+		{
+			show_error($geschaeftsjahre->retval);
+		}
+
+		$geschaeftsjahr = $this->GeschaeftsjahrModel->getNextGeschaeftsjahr();
+
+		if (hasData($geschaeftsjahr))
+		{
+			$geschaeftsjahr = $geschaeftsjahr->retval[0]->geschaeftsjahr_kurzbz;
+		}
+		else
+		{
+			if (hasData($geschaeftsjahre))
+				$geschaeftsjahr = $geschaeftsjahre->retval[0]->geschaeftsjahr_kurzbz;
+			else
+				$geschaeftsjahr = null;
+		}
+
+		$this->load->view('extensions/FHC-Core-Budget/budgetexport.php',
+			array(
+				'geschaeftsjahre' => $geschaeftsjahre->retval,
+				'selectedgeschaeftsjahr' => $geschaeftsjahr
+			)
+		);
 	}
 
 	/**
@@ -39,7 +68,8 @@ class Budgetexport extends Auth_Controller
 	 */
 	public function generateCSV()
 	{
-		$csv = $this->budgetexportlib->generateCSV();
+		$geschaeftsjahr = $this->input->post('geschaeftsjahr');
+		$csv = $this->budgetexportlib->generateCSV($geschaeftsjahr);
 		return $csv;
 	}
 

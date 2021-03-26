@@ -211,7 +211,12 @@ var BudgetantraegeHtml = {
 		var jahrverteilenchecked = '';
 		var datefieldhidden = '';
 
-		//null means NULL in database (Betrag ist auf Jahr verteilt)
+		var investition_checked = '';
+		var nutzungsdauer_hidden = 'hidden';
+
+		var erloese_checked = '';
+
+		// null means NULL in database (Betrag ist auf Jahr verteilt)
 		// string 'null' means new budgetposition (still show empty datefield)
 		if (args.benoetigt_am === null)
 		{
@@ -220,7 +225,17 @@ var BudgetantraegeHtml = {
 		}
 		var benoetigt_am = args.benoetigt_am !== null && args.benoetigt_am !== 'null' ? BudgetantraegeLib.formatDateGerman(args.benoetigt_am) : '';
 
-		//get konto
+		// erloese
+		if (args.erloese === true) erloese_checked = ' checked="checked"';
+
+		// investition
+		if (args.investition === true)
+		{
+			investition_checked = ' checked="checked"';
+			nutzungsdauer_hidden = '';
+		}
+
+		// Get konto
 		for (var i = 0; i < BudgetantraegeController.global_preloads.konten.length; i++)
 		{
 			var konto = BudgetantraegeController.global_preloads.konten[i];
@@ -298,6 +313,7 @@ var BudgetantraegeHtml = {
 					'</div>'+
 				'</div>'+ //column
 			'</div>'+//row
+
 			'<div class="row">'+
 				'<div class="col-lg-6">'+
 					'<div class="form-group row">'+
@@ -327,6 +343,49 @@ var BudgetantraegeHtml = {
 					'</div>'+//form-group row
 				'</div>'+//column
 			'</div>'+//row
+
+			'<div class="row">'+
+				'<div class="col-lg-6">'+
+					'<div class="form-group row">'+
+						'<label class="col-lg-4 control-label">Investition</label>'+
+						'<div class="col-lg-8">'+
+			 				'<div class="input-group">'+
+								'<label class="checkbox-inline control-label">'+
+									'<input type="checkbox" name="investition" id="investition_'+args.positionid+'"'+disabled+investition_checked+'>'+
+								'</label>'+
+							'</div>'+//form-group row
+						'</div>'+//column
+					'</div>'+//form-group row
+				'</div>'+
+				'<div class="col-lg-5">'+
+					'<div class="form-group row">'+
+						'<label class="col-lg-4 control-label">Erlöse</label>'+
+						'<div class="col-lg-8">'+
+			 				'<div class="input-group">'+
+								'<label class="checkbox-inline control-label">'+
+									'<input type="checkbox" name="erloese" id="erloese_'+args.positionid+'"'+disabled+erloese_checked+'>'+
+								'</label>'+
+							'</div>'+//form-group row
+						'</div>'+//column
+					'</div>'+//form-group row
+				'</div>'+
+			'</div>'+//row
+
+			'<div class="row '+nutzungsdauer_hidden+'" id="nutzungsdauer_group_'+args.positionid+'">'+
+				'<div class="col-lg-6">'+
+					'<div class="form-group row">'+
+						'<label class="col-lg-4 control-label">Nutzungsdauer</label>'+
+						'<div class="col-lg-8">'+
+							'<div class="input-group">'+
+								'<input type="number" class="form-control" name="nutzungsdauer" id="nutzungsdauer_'+args.positionid+'" value="'+args.nutzungsdauer+'"'+disabled+'>'+
+							'</div>'+//input-group
+						'</div>'+
+					'</div>'+
+				'</div>'+
+				'<div class="col-lg-5">'+
+				'</div>'+
+			'</div>'+
+
 			'<div class="row">'+
 				'<div class="col-lg-6">'+
 					'<div class="form-group row">'+
@@ -348,6 +407,7 @@ var BudgetantraegeHtml = {
 					'</div>'+//form-group row
 				'</div>'+
 			'</div>'+//row
+
 			'<div class="form-group row">'+
 				'<label class="col-lg-2 control-label">Beschreibung</label>'+
 				'<div class="col-lg-9">'+

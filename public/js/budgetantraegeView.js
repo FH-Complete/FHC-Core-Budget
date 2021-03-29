@@ -252,7 +252,10 @@ var BudgetantraegeView = {
 			"konto_id": "null",
 			"betrag": "",
 			"benoetigt_am": "null",
-			"kommentar": ""
+			"kommentar": "",
+			"erloese": "false",
+			"investition": "false",
+			"nutzungsdauer": 4
 		};
 
 		if (positionobj !== null)
@@ -264,6 +267,9 @@ var BudgetantraegeView = {
 			//if null - comes from db and Betrag is auf Jahr verteilt, string null - benoetigt_am has to be entered
 			positionargs.benoetigt_am = positionobj.benoetigt_am;
 			if (positionobj.kommentar !== null) positionargs.kommentar = positionobj.kommentar;
+			if (positionobj.erloese !== null) positionargs.erloese = positionobj.erloese;
+			if (positionobj.investition !== null) positionargs.investition = positionobj.investition;
+			if (positionobj.nutzungsdauer !== null) positionargs.nutzungsdauer = positionobj.nutzungsdauer;
 		}
 
 		positionargs.collapseInHtml = opened === true ? " in" : "";
@@ -283,6 +289,7 @@ var BudgetantraegeView = {
 		//datepicker for benoetigt am field
 		var benoetigtamel = $("#benoetigtam_" + positionid);
 		var benoetigtamgroup = $("#benoetigtamgroup_" + positionid);
+		var nutzungsdauer_group = $("#nutzungsdauer_group_" + positionid);
 		benoetigtamel.datepicker();
 
 		$("#jahrverteilen_" + positionid).change(
@@ -299,7 +306,22 @@ var BudgetantraegeView = {
 			}
 		);
 
-		//events - on change of form show that unsaved
+		$("#investition_" + positionid).change(
+			function()
+			{
+				if ($(this).is(":checked"))
+				{
+					nutzungsdauer_group.removeClass('hidden');
+				}
+				else
+				{
+					nutzungsdauer_group.addClass('hidden');
+				}
+			}
+		);
+
+		// Events - on change of form show that unsaved
+		// Inputs text and textareas
 		$("#form_"+positionid).find("input[type=text], textarea").keyup(
 			function()
 			{
@@ -307,6 +329,15 @@ var BudgetantraegeView = {
 			}
 		);
 
+		// Inputs checkbox
+		$("#form_"+positionid).find("input[type=checkbox]").change(
+			function()
+			{
+				BudgetantraegeView.checkIfSaved(budgetantragid);
+			}
+		);
+
+		// Drop-down lists
 		$("#form_"+positionid+" select").change(
 			function()
 			{
@@ -590,7 +621,10 @@ var BudgetantraegeView = {
 				"konto_id": positiondata.konto_id.val,
 				"betrag": positiondata.betrag.val,
 				"benoetigt_am": positiondata.benoetigt_am.val,
-				"kommentar": positiondata.kommentar.val
+				"kommentar": positiondata.kommentar.val,
+				"erloese": positiondata.erloese.val,
+				"investition": positiondata.investition.val,
+				"nutzungsdauer": positiondata.nutzungsdauer.val
 			};
 
 			//id wrapper for update
@@ -729,11 +763,16 @@ var BudgetantraegeView = {
 		var benoetigtamelem = positionFormDom.find("input[name=benoetigtam]");
 		var jahrverteilen = positionFormDom.find("input[name=jahrverteilen]");
 		var kommentarelem = positionFormDom.find("textarea[name=kommentar]");
+		var erloeseElem = positionFormDom.find("input[name=erloese]");
+		var investitionElem = positionFormDom.find("input[name=investition]");
+		var nutzungsdauerElem = positionFormDom.find("input[name=nutzungsdauer]");
 
 		var positionFields = {};
 		var messages = [];
 
 		var jahrverteilt = jahrverteilen.prop("checked");
+		var erloese = erloeseElem.prop("checked");
+		var investition = investitionElem.prop("checked");
 
 		positionFields.budgetposten = {"elem": budgetpostenelem, "val": budgetpostenelem.val(), "required": true};
 		positionFields.projekt_id = {"elem": projektidelem, "val": projektidelem.val(), "required": false};
@@ -741,6 +780,9 @@ var BudgetantraegeView = {
 		positionFields.betrag = {"elem": betragelem, "val": betragelem.val(), "required": true};
 		positionFields.benoetigt_am = {"elem": benoetigtamelem, "val": jahrverteilt ? null : benoetigtamelem.val(), "required": !jahrverteilt};
 		positionFields.kommentar= {"elem": kommentarelem, "val": kommentarelem.val(), "required": false};
+		positionFields.erloese = {"elem": erloeseElem, "val": erloese, "required": false};
+		positionFields.investition = {"elem": investitionElem, "val": investition, "required": false};
+		positionFields.nutzungsdauer = {"elem": nutzungsdauerElem, "val": !investition ? 4 : nutzungsdauerElem.val(), "required": investition};
 
 		//check required fields
 		$.each(positionFields, function(name, value) {
@@ -761,6 +803,14 @@ var BudgetantraegeView = {
 			valid = false;
 			benoetigtamelem.parent().addClass("has-error");
 			messages.push("Ungültiges Datum! (Richtiges Format: Tag.Monat.Jahr)");
+		}
+
+		// If investition is checked and nutzungsdauer is not a valid number
+		if (investition && positionFields.nutzungsdauer.val != parseInt(positionFields.nutzungsdauer.val, 10))
+		{
+			valid = false;
+			nutzungsdauerElem.parent().addClass("has-error");
+			messages.push("Ungültiges Nutzungsdauer!");
 		}
 
 		if (!BudgetantraegeLib.checkDecimalFormat(positionFields.betrag.val))

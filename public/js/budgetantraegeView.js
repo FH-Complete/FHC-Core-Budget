@@ -255,7 +255,7 @@ var BudgetantraegeView = {
 			"kommentar": "",
 			"erloese": "false",
 			"investition": "false",
-			"nutzungsdauer": ""
+			"nutzungsdauer": 4
 		};
 
 		if (positionobj !== null)
@@ -782,7 +782,7 @@ var BudgetantraegeView = {
 		positionFields.kommentar= {"elem": kommentarelem, "val": kommentarelem.val(), "required": false};
 		positionFields.erloese = {"elem": erloeseElem, "val": erloese, "required": false};
 		positionFields.investition = {"elem": investitionElem, "val": investition, "required": false};
-		positionFields.nutzungsdauer = {"elem": nutzungsdauerElem, "val": !investition ? 0 : nutzungsdauerElem.val(), "required": investition};
+		positionFields.nutzungsdauer = {"elem": nutzungsdauerElem, "val": !investition ? 4 : nutzungsdauerElem.val(), "required": investition};
 
 		//check required fields
 		$.each(positionFields, function(name, value) {

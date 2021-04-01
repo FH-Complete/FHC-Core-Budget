@@ -336,13 +336,11 @@ var BudgetantraegeView = {
 			{
 				if ($(this).is(":checked"))
 				{
-					$("#betrag_" + positionid).prop('disabled', true);
 					$("#betragWithCrncy_" + positionid).html('€ 0,00');
 					$("#erloeseWithCrncy_" + positionid).html('€ '+BudgetantraegeLib.formatDecimalGerman(positionobj.betrag));
 				}
 				else
 				{
-					$("#betrag_" + positionid).prop('disabled', false);
 					$("#betragWithCrncy_" + positionid).html('€ '+BudgetantraegeLib.formatDecimalGerman(positionobj.betrag));
 					$("#erloeseWithCrncy_" + positionid).html('€ 0,00');
 				}

@@ -214,7 +214,6 @@ var BudgetantraegeHtml = {
 		var betrag = BudgetantraegeLib.formatDecimalGerman(args.betrag);
 		var betragWithCrncy = betrag ? '€ '+betrag : '€ 0,00';
 		var erloeseWithCrncy = '€ 0,00';
-		var betragDisabled = '';
 
 		var jahrverteilenchecked = '';
 		var datefieldhidden = '';
@@ -238,7 +237,6 @@ var BudgetantraegeHtml = {
 		{
 			erloese_checked = ' checked="checked"';
 			betragWithCrncy = '€ 0,00';
-			betragDisabled = ' disabled';
 			erloeseWithCrncy = betrag ? '€ '+betrag : '€ 0,00';
 		}
 
@@ -365,7 +363,7 @@ var BudgetantraegeHtml = {
 								'<span class = "input-group-addon">'+
 									'<i class="fa fa-eur"></i>'+
 								'</span>'+
-								'<input type="text" class="form-control" id="betrag_'+args.positionid+'" name="betrag" value="'+betrag+'" placeholder="0,00" '+disabled+' '+betragDisabled+'>'+
+								'<input type="text" class="form-control" id="betrag_'+args.positionid+'" name="betrag" value="'+betrag+'" placeholder="0,00" '+disabled+'>'+
 							'</div>'+//input-group
 						'</div>'+//column
 					'</div>'+//form-group row

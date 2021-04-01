@@ -54,6 +54,7 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 					kst.bezeichnung as kostenstelle_bezeichnung,
 					kst.aktiv as kostenstelle_aktiv,
 					kst.budgetsumme as kostenstelle_budgetsumme,
+					kst.erloesesumme as kostenstelle_erloesesumme,
 					kst.freigegebensumme as kostenstelle_freigegebensumme
 			  FROM tree rec
 				LEFT JOIN (
@@ -65,6 +66,17 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 							JOIN extension.tbl_budget_position USING (budgetantrag_id)
 							WHERE extension.tbl_budget_antrag.geschaeftsjahr_kurzbz = ?
 							AND wawi.tbl_kostenstelle.kostenstelle_id = ksttable.kostenstelle_id
+							AND extension.tbl_budget_position.erloese = false
+							GROUP BY wawi.tbl_kostenstelle.kostenstelle_id
+						),
+						(
+							SELECT sum(betrag) AS erloesesumme
+							FROM wawi.tbl_kostenstelle
+							JOIN extension.tbl_budget_antrag USING (kostenstelle_id)
+							JOIN extension.tbl_budget_position USING (budgetantrag_id)
+							WHERE extension.tbl_budget_antrag.geschaeftsjahr_kurzbz = ?
+							AND wawi.tbl_kostenstelle.kostenstelle_id = ksttable.kostenstelle_id
+							AND extension.tbl_budget_position.erloese = true
 							GROUP BY wawi.tbl_kostenstelle.kostenstelle_id
 						),
 						(
@@ -113,7 +125,7 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 
 			$query .= " ORDER BY level, typ, oe_bezeichnung, kostenstelle_bezeichnung;";
 
-			return $this->execQuery($query, array($gjkurzbz, $gjkurzbz, $gjstart, $gjstart));
+			return $this->execQuery($query, array($gjkurzbz, $gjkurzbz, $gjkurzbz, $gjstart, $gjstart));
 		}
 		else
 		{

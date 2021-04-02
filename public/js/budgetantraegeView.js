@@ -77,16 +77,27 @@ var BudgetantraegeView = {
 			var hidden_budgetantrag_id = $("#budgetantrag_id").val();
 			var opened = hidden_budgetantrag_id == budgetantragid;
 
-			BudgetantraegeView.appendBudgetantrag(budgetantragid, {"bezeichnung": budgetantrag.bezeichnung}, 0, opened, editable);
+			BudgetantraegeView.appendBudgetantrag(budgetantragid, {"bezeichnung": budgetantrag.bezeichnung}, 0, 0, opened, editable);
 
 			var sum = 0;
+			var erloeseSum = 0;
+
 			for (var j = 0; j < budgetantrag.budgetpositionen.length; j++)
 			{
 				var position = budgetantrag.budgetpositionen[j];
 				var positionid = position.budgetposition_id;
 
 				if (position.betrag !== null)
-					sum += parseFloat(position.betrag);
+				{
+					if (position.erloese === true)
+					{
+						erloeseSum += parseFloat(position.betrag);
+					}
+					else
+					{
+						sum += parseFloat(position.betrag);
+					}
+				}
 
 				BudgetantraegeView.appendBudgetposition(budgetantragid, positionid, position, false, editable);
 
@@ -94,7 +105,7 @@ var BudgetantraegeView = {
 				BudgetantraegeController.saveInitialFormState(budgetantragid, position.budgetposition_id);
 			}
 			BudgetantraegeView.setBudgetantragStatus(budgetantragid, budgetantrag.budgetstatus);
-			BudgetantraegeView.setSum(budgetantragid, sum);
+			BudgetantraegeView.setSum(budgetantragid, sum, erloeseSum);
 			BudgetantraegeView.appendBudgetantragFooter(budgetantragid, footer_args, editable);
 		}
 	},
@@ -107,7 +118,7 @@ var BudgetantraegeView = {
 	 * @param opened - whether the panel for the Budgetantrag is collapsed or opened
 	 * @param editable - whether the Budgetantrag is editable or readonly
 	 */
-	appendBudgetantrag: function(budgetantragid, data, sum, opened, editable)
+	appendBudgetantrag: function(budgetantragid, data, sum, erloeseSum, opened, editable)
 	{
 		var collapseInHtml = opened === true ? " in" : "";
 		var collapseHtml = opened === true ? "" : " collapsed";
@@ -128,7 +139,7 @@ var BudgetantraegeView = {
 				budgetantrHtml +
 				'</div><br>');//panel
 
-		BudgetantraegeView.setSum(budgetantragid, sum);
+		BudgetantraegeView.setSum(budgetantragid, sum, erloeseSum);
 
 		$("#budgetbezconfirm_" + budgetantragid).click(
 			function ()
@@ -320,6 +331,22 @@ var BudgetantraegeView = {
 			}
 		);
 
+		$("#erloese_" + positionid).change(
+			function()
+			{
+				if ($(this).is(":checked"))
+				{
+					$("#betragWithCrncy_" + positionid).html('€ 0,00');
+					$("#erloeseWithCrncy_" + positionid).html('€ '+BudgetantraegeLib.formatDecimalGerman(positionobj.betrag));
+				}
+				else
+				{
+					$("#betragWithCrncy_" + positionid).html('€ '+BudgetantraegeLib.formatDecimalGerman(positionobj.betrag));
+					$("#erloeseWithCrncy_" + positionid).html('€ 0,00');
+				}
+			}
+		);
+
 		// Events - on change of form show that unsaved
 		// Inputs text and textareas
 		$("#form_"+positionid).find("input[type=text], textarea").keyup(
@@ -370,20 +397,32 @@ var BudgetantraegeView = {
 
 		budgetantragEl.empty();
 
-		BudgetantraegeView.appendBudgetantrag(budgetantragid, {"bezeichnung": budgetantrag.bezeichnung}, 0, true, editable);
+		BudgetantraegeView.appendBudgetantrag(budgetantragid, {"bezeichnung": budgetantrag.bezeichnung}, 0, 0, true, editable);
 
 		var sum = 0;
+		var erloeseSum = 0;
 
 		for (var i = 0; i < budgetantrag.budgetpositionen.length; i++)
 		{
 			var position = budgetantrag.budgetpositionen[i];
+
 			if (position.betrag !== null)
-				sum += parseFloat(position.betrag);
+			{
+				if (position.erloese === true)
+				{
+					erloeseSum += parseFloat(position.betrag);
+				}
+				else
+				{
+					sum += parseFloat(position.betrag);
+				}
+			}
+
 			BudgetantraegeView.appendBudgetposition(budgetantragid, position.budgetposition_id, position, false, editable);
 			BudgetantraegeController.saveInitialFormState(budgetantragid, position.budgetposition_id);
 		}
 		BudgetantraegeView.setBudgetantragStatus(budgetantragid, budgetantrag.budgetstatus);
-		BudgetantraegeView.setSum(budgetantragid, sum);
+		BudgetantraegeView.setSum(budgetantragid, sum, erloeseSum);
 		BudgetantraegeView.appendBudgetantragFooter(budgetantragid, {"isNewAntrag": false, "freigabeAufhebenBtn": freigabeAufhebenBtn}, editable);
 	},
 
@@ -483,9 +522,10 @@ var BudgetantraegeView = {
 	 * @param budgetantragid
 	 * @param sum
 	 */
-	setSum: function (budgetantragid, sum)
+	setSum: function (budgetantragid, sum, erloeseSum)
 	{
 		$("#sum_" + budgetantragid).text('€ ' + BudgetantraegeLib.formatDecimalGerman(sum));
+		$("#erloeseSum_" + budgetantragid).text('€ ' + BudgetantraegeLib.formatDecimalGerman(erloeseSum));
 	},
 
 	/**
@@ -495,6 +535,7 @@ var BudgetantraegeView = {
 	setTotalSums: function(sums)
 	{
 		$("#savedSum").text('€ '+BudgetantraegeLib.formatDecimalGerman(sums.savedsum));
+		$("#erloeseSavedSum").text('€ '+BudgetantraegeLib.formatDecimalGerman(sums.erloeseSavedSum));
 	},
 
 	/**
@@ -861,11 +902,6 @@ var BudgetantraegeView = {
 	{
 		$(".accordion-toggle").addClass("collapsed");
 		$(".panel-collapse").removeClass("in");
-	}/*,
-
-	collapseAllBudgetpositionen: function(budgetantrag_id)
-	{
-		$("#budgetPosition_"+budgetantrag_id+" .accordion-toggle").addClass("collapsed");
-		$("#budgetPosition_"+budgetantrag_id+" .panel-collapse").removeClass("in");
-	}*/
+	}
 };
+

@@ -247,7 +247,9 @@ var BudgetantraegeController = {
 
 			//updated if it is in existentBudgetantraege, has changed, and is not going to be deleted anyway
 			if (initialPosition !== false && BudgetantraegeView.checkIfBudgetpositionFormChanged(initialPosition) && !BudgetantraegeLib.findInArray(idsToDelete, positionid))
+			{
 				positionenToUpdate.push(position);
+			}
 		}
 
 		for (var j = 0; j < idsToDelete.length; j++)
@@ -598,7 +600,7 @@ var BudgetantraegeController = {
 		BudgetantraegeController.global_budgetantraege.newBudgetantraege.push({"id": budgetantragid, "bezeichnung": passed, "positionen": []});
 		BudgetantraegeController.global_counters.countNewAntraege++;
 
-		BudgetantraegeView.appendBudgetantrag(budgetantragid, {"bezeichnung": passed}, 0, true, true);
+		BudgetantraegeView.appendBudgetantrag(budgetantragid, {"bezeichnung": passed}, 0, 0, true, true);
 		BudgetantraegeView.setBudgetantragStatus(budgetantragid, { "bezeichnung": "Neu", "datum": ""});
 		BudgetantraegeController.appendNewBudgetposition(budgetantragid);
 		BudgetantraegeView.appendBudgetantragFooter(budgetantragid, {isNewAntrag: true, freigabeAufhebenBtn: false}, true);
@@ -674,7 +676,7 @@ var BudgetantraegeController = {
 		{
 			var position = budgetantragToAdd.budgetpositionen[i];
 			var betrag = position.betrag === null ? 0 : parseFloat(position.betrag);
-			updatedPositionen.push({"id": position.budgetposition_id, "budgetposten": position.budgetposten, "betrag": betrag});
+			updatedPositionen.push({"id": position.budgetposition_id, "budgetposten": position.budgetposten, "betrag": betrag, "erloese": position.erloese});
 		}
 
 		var budgetantragData = {
@@ -732,7 +734,10 @@ var BudgetantraegeController = {
 	 */
 	calculateBudgetantragSums: function()
 	{
-		var sums = {"savedsum": 0};
+		var sums = {
+			"savedsum": 0,
+			"erloeseSavedSum": 0
+		};
 		for (var i = 0; i < BudgetantraegeController.global_budgetantraege.existentBudgetantraege.length; i++)
 		{
 			var budgetantrag = BudgetantraegeController.global_budgetantraege.existentBudgetantraege[i];
@@ -740,7 +745,16 @@ var BudgetantraegeController = {
 			{
 				var betrag = budgetantrag.positionen[j].betrag;
 				if (betrag !== null)
-					sums.savedsum += budgetantrag.positionen[j].betrag;
+				{
+					if (budgetantrag.positionen[j].erloese === true)
+					{
+						sums.erloeseSavedSum += budgetantrag.positionen[j].betrag;
+					}
+					else
+					{
+						sums.savedsum += budgetantrag.positionen[j].betrag;
+					}
+				}
 			}
 		}
 

@@ -142,6 +142,7 @@ class BudgetantragUebersicht extends Auth_Controller
 			$kostenstelle->bezeichnung = $kostenstelleoe->kostenstelle_bezeichnung;
 			$kostenstelle->aktiv = $kostenstelleoe->kostenstelle_aktiv;
 			$kostenstelle->budgetsumme = $kostenstelleoe->kostenstelle_budgetsumme;
+			$kostenstelle->erloesesumme = $kostenstelleoe->kostenstelle_erloesesumme;
 			$kostenstelle->freigegebensumme = $kostenstelleoe->kostenstelle_freigegebensumme;
 			$kostenstelle->oe_kurzbz = $kostenstelleoe->oe_kurzbz;
 			$kostenstelle->oe_bezeichnung = $kostenstelleoe->oe_bezeichnung;

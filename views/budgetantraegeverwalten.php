@@ -60,9 +60,9 @@ $this->load->view(
 							</div>
 							<div class="col-lg-7">
 								<div class="form-group" id="kstgroup">
-									<label for="kostenstelle">Kostenstelle</label>
+									<label for="kostenstelle">Kostenstelle/Kostensammler</label>
 									<select class="form-control" id="kostenstelle">
-										<option value="null">Kostenstelle wählen...</option>
+										<option value="null">Kostenstelle/Kostensammler wählen...</option>
 										<?php
 										foreach ($kostenstellen as $kostenstelle):
 											$selected = $selectedkostenstelle === $kostenstelle->kostenstelle_id ? ' selected' : '';

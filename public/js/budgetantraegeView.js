@@ -322,10 +322,12 @@ var BudgetantraegeView = {
 			{
 				if ($(this).is(":checked"))
 				{
+					$("#erloese_" + positionid).prop('disabled', true);
 					nutzungsdauer_group.removeClass('hidden');
 				}
 				else
 				{
+					$("#erloese_" + positionid).prop('disabled', false);
 					nutzungsdauer_group.addClass('hidden');
 				}
 			}
@@ -336,11 +338,13 @@ var BudgetantraegeView = {
 			{
 				if ($(this).is(":checked"))
 				{
+					$("#investition_" + positionid).prop('disabled', true);
 					$("#betragWithCrncy_" + positionid).html('€ 0,00');
 					$("#erloeseWithCrncy_" + positionid).html('€ '+BudgetantraegeLib.formatDecimalGerman(positionobj.betrag));
 				}
 				else
 				{
+					$("#investition_" + positionid).prop('disabled', false);
 					$("#betragWithCrncy_" + positionid).html('€ '+BudgetantraegeLib.formatDecimalGerman(positionobj.betrag));
 					$("#erloeseWithCrncy_" + positionid).html('€ 0,00');
 				}
@@ -869,7 +873,7 @@ var BudgetantraegeView = {
 			{
 				valid = false;
 				betragelem.parent().addClass("has-error");
-				messages.push("Betrag muss < 10^8 sein!");
+				messages.push("Teilbudget muss < 10^8 sein!");
 			}
 			else
 			{

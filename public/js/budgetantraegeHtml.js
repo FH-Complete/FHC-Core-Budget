@@ -224,6 +224,9 @@ var BudgetantraegeHtml = {
 
 		var erloese_checked = '';
 
+		var investitionDisabled = '';
+		var erloeseDisabled = '';
+
 		// null means NULL in database (Betrag ist auf Jahr verteilt)
 		// string 'null' means new budgetposition (still show empty datefield)
 		if (args.benoetigt_am === null)
@@ -239,6 +242,7 @@ var BudgetantraegeHtml = {
 			erloese_checked = ' checked="checked"';
 			betragWithCrncy = '€ 0,00';
 			erloeseWithCrncy = betrag ? '€ '+betrag : '€ 0,00';
+			investitionDisabled = ' disabled';
 		}
 
 		// investition
@@ -246,6 +250,7 @@ var BudgetantraegeHtml = {
 		{
 			investition_checked = ' checked="checked"';
 			nutzungsdauer_hidden = '';
+			erloeseDisabled = ' disabled';
 		}
 
 		// Get konto
@@ -373,7 +378,7 @@ var BudgetantraegeHtml = {
 						'<div class="col-lg-8">'+
 			 				'<div class="input-group">'+
 								'<label class="checkbox-inline control-label">'+
-									'<input type="checkbox" name="investition" id="investition_'+args.positionid+'"'+disabled+investition_checked+'>'+
+									'<input type="checkbox" name="investition" id="investition_'+args.positionid+'"'+disabled+investition_checked+investitionDisabled+'>'+
 								'</label>'+
 							'</div>'+//form-group row
 						'</div>'+//column
@@ -385,7 +390,7 @@ var BudgetantraegeHtml = {
 						'<div class="col-lg-8">'+
 			 				'<div class="input-group">'+
 								'<label class="checkbox-inline control-label">'+
-									'<input type="checkbox" name="erloese" id="erloese_'+args.positionid+'"'+disabled+erloese_checked+'>'+
+									'<input type="checkbox" name="erloese" id="erloese_'+args.positionid+'"'+disabled+erloese_checked+erloeseDisabled+'>'+
 								'</label>'+
 							'</div>'+//form-group row
 						'</div>'+//column

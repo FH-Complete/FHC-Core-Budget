@@ -23,8 +23,8 @@ var BudgetantraegeHtml = {
 						'<table class="table table-bordered table-condensed text-center" id="sumtable">'+
 							'<tbody>'+
 								'<tr>'+
-									'<td><strong>Budgetsumme: </strong><span id="savedSum">€ 0,00</span></td>'+
-									'<td><strong>Erlösesumme: </strong><span id="erloeseSavedSum">€ 0,00</span></td>'+
+									'<td><strong>Summe Budget: </strong><span id="savedSum">€ 0,00</span></td>'+
+									'<td><strong>Summe Erlöse: </strong><span id="erloeseSavedSum">€ 0,00</span></td>'+
 								'</tr>'+
 							'</tbody>'+
 						'</table>'+
@@ -68,17 +68,18 @@ var BudgetantraegeHtml = {
 								'<span id="unsaved_'+args.budgetantragid+'" class="hidden">&nbsp;&nbsp;<i class="glyphicon glyphicon-floppy-remove text-danger"></i></span>'+
 							'</h4>'+
 						'</div>'+
-						'<div class="col-xs-3 text-center">' +
+						'<div class="col-xs-4 text-center">' +
 							'<span>' +
-								'<span>Betrag: </span>' +
+								'<span>Teilbudget: </span>' +
 								'<span id="sum_'+args.budgetantragid+'"></span>' +
 								'<span> | </span>' +
 								'<span>Erlöse: </span>' +
 								'<span id="erloeseSum_'+args.budgetantragid+'"></span>' +
 							'</span>' +
 						'</div>'+
-						'<div class="col-xs-2 col-xs-offset-2 text-right">' +
-							'</a>';
+						'<div class="col-xs-1 text-right"></div>' +
+							'</a>'+
+						'<div class="col-xs-2 text-right">';
 
 		if (editable === true)
 			html += 		'<i class="fa fa-times text-danger" id="remove_'+args.budgetantragid+'" role="button"></i>';
@@ -223,6 +224,9 @@ var BudgetantraegeHtml = {
 
 		var erloese_checked = '';
 
+		var investitionDisabled = '';
+		var erloeseDisabled = '';
+
 		// null means NULL in database (Betrag ist auf Jahr verteilt)
 		// string 'null' means new budgetposition (still show empty datefield)
 		if (args.benoetigt_am === null)
@@ -238,6 +242,7 @@ var BudgetantraegeHtml = {
 			erloese_checked = ' checked="checked"';
 			betragWithCrncy = '€ 0,00';
 			erloeseWithCrncy = betrag ? '€ '+betrag : '€ 0,00';
+			investitionDisabled = ' disabled';
 		}
 
 		// investition
@@ -245,6 +250,7 @@ var BudgetantraegeHtml = {
 		{
 			investition_checked = ' checked="checked"';
 			nutzungsdauer_hidden = '';
+			erloeseDisabled = ' disabled';
 		}
 
 		// Get konto
@@ -281,20 +287,15 @@ var BudgetantraegeHtml = {
 									args.budgetposten+selectedKontoKurzbz+
 								'</div>'+
 								'<div class="col-xs-3 text-center">'+
-									'<span>'+
-										'Betrag: '+
-									'</span>'+
-									'<span id="betragWithCrncy_'+args.positionid+'">'+
-										betragWithCrncy+
-									'</span>'+
+									'<span>' +
+										'<span>Teilbudget: </span>' +
+										'<span id="betragWithCrncy_'+args.positionid+'">'+betragWithCrncy+'</span>' +
+										'<span> | </span>' +
+										'<span>Erlöse: </span>' +
+										'<span id="erloeseWithCrncy_'+args.positionid+'">'+erloeseWithCrncy+'</span>' +
+									'</span>' +
 								'</div>'+
 								'<div class="col-xs-2 text-center">'+
-									'<span>'+
-										'Erlöse: '+
-									'</span>'+
-									'<span id="erloeseWithCrncy_'+args.positionid+'">'+
-										erloeseWithCrncy+
-									'</span>'+
 								'</div>'+
 							'</a>'+
 						'<div class="col-xs-2 text-right">';
@@ -377,7 +378,7 @@ var BudgetantraegeHtml = {
 						'<div class="col-lg-8">'+
 			 				'<div class="input-group">'+
 								'<label class="checkbox-inline control-label">'+
-									'<input type="checkbox" name="investition" id="investition_'+args.positionid+'"'+disabled+investition_checked+'>'+
+									'<input type="checkbox" name="investition" id="investition_'+args.positionid+'"'+disabled+investition_checked+investitionDisabled+'>'+
 								'</label>'+
 							'</div>'+//form-group row
 						'</div>'+//column
@@ -389,7 +390,7 @@ var BudgetantraegeHtml = {
 						'<div class="col-lg-8">'+
 			 				'<div class="input-group">'+
 								'<label class="checkbox-inline control-label">'+
-									'<input type="checkbox" name="erloese" id="erloese_'+args.positionid+'"'+disabled+erloese_checked+'>'+
+									'<input type="checkbox" name="erloese" id="erloese_'+args.positionid+'"'+disabled+erloese_checked+erloeseDisabled+'>'+
 								'</label>'+
 							'</div>'+//form-group row
 						'</div>'+//column
@@ -429,7 +430,7 @@ var BudgetantraegeHtml = {
 			 				'<div class="input-group">'+
 								'<label class="checkbox-inline control-label">'+
 									'<input type="checkbox" name="jahrverteilen" id="jahrverteilen_'+args.positionid+'"'+disabled+jahrverteilenchecked+'>'+
-									'Betrag aufs Jahr verteilen'+
+									'Teilbudget aufs Jahr verteilen'+
 								'</label>'+
 							'</div>'+//form-group row
 						'</div>'+//column

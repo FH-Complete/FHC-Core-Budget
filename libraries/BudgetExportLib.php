@@ -32,21 +32,28 @@ class BudgetExportLib
 	{
 		$dbModel = new DB_Model();
 
-		// Erloese werden nicht exportiert
+		// Erloese werden mit negativen Beträgen exportiert
 		// Investitionen werden nur fuer ein Jahr exportiert (Betrag/Nutzungsdauer)
 		// Investitionen weren immer auf Konto 704000 Abschreibungen Sachanlagen gebucht
 		$csvResult = $dbModel->execReadOnlyQuery('
 			SELECT
-				CASE WHEN tbl_budget_position.investition=true 
+				CASE WHEN tbl_budget_position.investition=true
 					THEN 704000
 					ELSE wawi.tbl_konto.ext_id
 				END as ext_id,
 				tbl_sap_organisationsstruktur.oe_kurzbz_sap, kostenstelle_id,
-				tbl_konto.konto_id, 
+				tbl_konto.konto_id,
 				sum(
-					CASE WHEN tbl_budget_position.investition=true 
-					THEN betrag/nutzungsdauer 
-					ELSE betrag 
+					CASE WHEN tbl_budget_position.investition=true
+					THEN
+						betrag/nutzungsdauer
+					ELSE
+						CASE WHEN tbl_budget_position.erloese=true
+						THEN
+							(betrag * (-1))
+						ELSE
+							betrag
+						END
 					END
 				),
 				tbl_kostenstelle.bezeichnung, tbl_budget_position.benoetigt_am,
@@ -59,8 +66,8 @@ class BudgetExportLib
 				LEFT JOIN sync.tbl_sap_organisationsstruktur ON(tbl_kostenstelle.oe_kurzbz=tbl_sap_organisationsstruktur.oe_kurzbz)
 				JOIN public.tbl_geschaeftsjahr USING(geschaeftsjahr_kurzbz)
 			WHERE
-				tbl_budget_position.erloese=false
-				AND geschaeftsjahr_kurzbz=?
+				--tbl_budget_position.erloese=false AND
+				geschaeftsjahr_kurzbz=?
 			GROUP BY 1, tbl_sap_organisationsstruktur.oe_kurzbz_sap,
 				kostenstelle_id, tbl_konto.konto_id,     tbl_kostenstelle.bezeichnung,
 				tbl_budget_position.benoetigt_am, tbl_geschaeftsjahr.ende

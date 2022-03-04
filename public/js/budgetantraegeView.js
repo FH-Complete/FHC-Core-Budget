@@ -69,8 +69,8 @@ var BudgetantraegeView = {
 			var budgetantragid = budgetantrag.budgetantrag_id;
 
 			var editable = BudgetantraegeController.global_booleans.editmode === true
-				&& GLOBAL_STATUSES[budgetantrag.budgetstatus.budgetstatus_kurzbz].editable === true;
-			var freigabeAufhebenBtn = budgetantrag.budgetstatus.budgetstatus_kurzbz === GLOBAL_STATUSES.approved.bez &&
+				&& (!budgetantrag.hasOwnProperty('budgetstatus') || GLOBAL_STATUSES[budgetantrag.budgetstatus.budgetstatus_kurzbz].editable === true);
+			var freigabeAufhebenBtn = budgetantrag.hasOwnProperty('budgetstatus') && budgetantrag.budgetstatus.budgetstatus_kurzbz === GLOBAL_STATUSES.approved.bez &&
 								BudgetantraegeController.global_booleans.editmode === true;
 			var footer_args = {"isNewAntrag": false, "freigabeAufhebenBtn": freigabeAufhebenBtn};
 
@@ -394,10 +394,11 @@ var BudgetantraegeView = {
 	{
 		var budgetantragid = budgetantrag.budgetantrag_id;
 		var budgetantragEl = $("#" + BUDGETANTRAG_PREFIX + "_" + budgetantragid);
-		var statuskurzbz = budgetantrag.budgetstatus.budgetstatus_kurzbz;
+		var hasStatus = budgetantrag.hasOwnProperty('budgetstatus');
+		var statuskurzbz = hasStatus ? budgetantrag.budgetstatus.budgetstatus_kurzbz : null;
 		var editable = BudgetantraegeController.global_booleans.editmode === true
-			&& GLOBAL_STATUSES[statuskurzbz].editable === true;
-		var freigabeAufhebenBtn =  statuskurzbz === GLOBAL_STATUSES.approved.bez && BudgetantraegeController.global_booleans.editmode === true;
+			&& (!hasStatus || GLOBAL_STATUSES[statuskurzbz].editable === true);
+		var freigabeAufhebenBtn =  hasStatus && statuskurzbz === GLOBAL_STATUSES.approved.bez && BudgetantraegeController.global_booleans.editmode === true;
 
 		budgetantragEl.empty();
 
@@ -575,6 +576,9 @@ var BudgetantraegeView = {
 	 */
 	setBudgetantragStatus: function(budgetantragid, status)
 	{
+		if (typeof status === 'undefined')
+			return;
+
 		var statustext = status.bezeichnung + (status.datum === "" ? "" : " am "+BudgetantraegeLib.formatDateGerman(status.datum));
 		$("#budgetstatus_"+budgetantragid).text(statustext);
 	},

@@ -262,7 +262,7 @@ var BudgetantraegeHtml = {
 			if (args.konto_id === konto.konto_id)
 			{
 				selected = ' selected=""';
-				selectedKontoKurzbz = ' | Kontokategorie '+konto.kurzbz;
+				selectedKontoKurzbz = ' | Budgetkategorie '+konto.kurzbz;
 			}
 
 			var kurzbz = konto.kurzbz + " (" + konto.kontonr + ")";
@@ -344,10 +344,10 @@ var BudgetantraegeHtml = {
 			'<div class="row">'+
 				'<div class="col-lg-6">'+
 					'<div class="form-group row">'+
-						'<label class="col-lg-4 control-label label-required">Kontokategorie</label>'+
+						'<label class="col-lg-4 control-label label-required">Budgetkategorie</label>'+
 						'<div class="col-lg-8">'+
 							'<select class="form-control" name="konto_id" '+disabled+'>'+
-								'<option value="null">Kontokategorie wählen...</option>';
+								'<option value="null">Budgetkategorie wählen...</option>';
 
 		html += kontooptionshtml;
 

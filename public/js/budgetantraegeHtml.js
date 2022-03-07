@@ -322,28 +322,6 @@ var BudgetantraegeHtml = {
 				'</div>'+
 				'<div class="col-lg-5">'+
 					'<div class="form-group row">'+
-						'<label class="col-lg-4 control-label">Projekt</label>'+
-						'<div class="col-lg-8">'+
-							'<select class="form-control" name="projekt_id" '+disabled+'>'+
-								'<option value="null">Projekt wählen...</option>';
-
-		for (var j = 0; j < BudgetantraegeController.global_preloads.projekte.length; j++)
-		{
-			var projekt = BudgetantraegeController.global_preloads.projekte[j];
-			var selected = args.projekt_id === projekt.projekt_id ? ' selected=""' : '';
-			html += '<option value="' + projekt.projekt_id + '"' + selected + '>' + projekt.titel + '</option>';
-		}
-
-		html +=
-							'</select>'+
-						'</div>'+
-					'</div>'+
-				'</div>'+ //column
-			'</div>'+//row
-
-			'<div class="row">'+
-				'<div class="col-lg-6">'+
-					'<div class="form-group row">'+
 						'<label class="col-lg-4 control-label label-required">Budgetkategorie</label>'+
 						'<div class="col-lg-8">'+
 							'<select class="form-control" name="konto_id" '+disabled+'>'+
@@ -356,7 +334,10 @@ var BudgetantraegeHtml = {
 						'</div>'+
 					'</div>'+
 				'</div>'+
-				'<div class="col-lg-5">'+
+			'</div>'+//row
+
+			'<div class="row">'+
+				'<div class="col-lg-6">'+
 					'<div class="form-group row">'+
 						'<label class="col-lg-4 control-label label-required">Bruttobetrag</label>'+
 						'<div class="col-lg-8">'+
@@ -369,52 +350,27 @@ var BudgetantraegeHtml = {
 						'</div>'+//column
 					'</div>'+//form-group row
 				'</div>'+//column
-			'</div>'+//row
-
-			'<div class="row">'+
-				'<div class="col-lg-6">'+
+				'<div class="col-lg-5 col-lg-offset-1">'+
 					'<div class="form-group row">'+
-						'<label class="col-lg-4 control-label">Investition</label>'+
-						'<div class="col-lg-8">'+
+						'<div class="col-lg-6">'+
 			 				'<div class="input-group">'+
 								'<label class="checkbox-inline control-label">'+
 									'<input type="checkbox" name="investition" id="investition_'+args.positionid+'"'+disabled+investition_checked+investitionDisabled+'>'+
+									'Investition'+
 								'</label>'+
 							'</div>'+//form-group row
 						'</div>'+//column
-					'</div>'+//form-group row
-				'</div>'+
-				'<div class="col-lg-5">'+
-					'<div class="form-group row">'+
-						'<label class="col-lg-4 control-label">Erlöse</label>'+
-						'<div class="col-lg-8">'+
+						'<div class="col-lg-6">'+
 			 				'<div class="input-group">'+
 								'<label class="checkbox-inline control-label">'+
 									'<input type="checkbox" name="erloese" id="erloese_'+args.positionid+'"'+disabled+erloese_checked+erloeseDisabled+'>'+
+									'Erlöse'+
 								'</label>'+
 							'</div>'+//form-group row
 						'</div>'+//column
 					'</div>'+//form-group row
 				'</div>'+
 			'</div>'+//row
-
-			'<div class="row '+nutzungsdauer_hidden+'" id="nutzungsdauer_group_'+args.positionid+'">'+
-				'<div class="col-lg-6">'+
-					'<div class="form-group row">'+
-						'<label class="col-lg-4 control-label">Nutzungsdauer</label>'+
-						'<div class="col-lg-2">'+
-							'<div class="input-group">'+
-								'<input type="number" class="form-control" name="nutzungsdauer" id="nutzungsdauer_'+args.positionid+'" value="'+args.nutzungsdauer+'"'+disabled+'>'+
-							'</div>'+//input-group
-						'</div>'+
-						'<div class="col-lg-1 control-label">'+
-							'Jahre'+
-						'</div>'+
-					'</div>'+
-				'</div>'+
-				'<div class="col-lg-5">'+
-				'</div>'+
-			'</div>'+
 
 			'<div class="row">'+
 				'<div class="col-lg-6">'+
@@ -435,6 +391,19 @@ var BudgetantraegeHtml = {
 							'</div>'+//form-group row
 						'</div>'+//column
 					'</div>'+//form-group row
+				'</div>'+
+				'<div class="col-lg-5 '+nutzungsdauer_hidden+'" id="nutzungsdauer_group_'+args.positionid+'">'+
+					'<div class="form-group row">'+
+						'<label class="col-lg-4 control-label">Nutzungsdauer</label>'+
+						'<div class="col-lg-6">'+
+							'<div class="input-group">'+
+								'<input type="number" class="form-control" name="nutzungsdauer" id="nutzungsdauer_'+args.positionid+'" value="'+args.nutzungsdauer+'"'+disabled+'>'+
+							'</div>'+//input-group
+						'</div>'+
+						'<div class="col-lg-1 control-label">'+
+							'Jahre'+
+						'</div>'+
+					'</div>'+
 				'</div>'+
 			'</div>'+//row
 

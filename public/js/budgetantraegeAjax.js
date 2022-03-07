@@ -4,7 +4,7 @@
 
 var BudgetantraegeAjax = {
 
-	getProjekte: function()
+/*	getProjekte: function()
 	{
 		FHC_AjaxClient.ajaxCallGet(
 			CALLED_PATH + "/getProjekte",
@@ -20,7 +20,7 @@ var BudgetantraegeAjax = {
 				}
 			}
 		);
-	},
+	},*/
 
 	getKonten: function(kostenstelle, successCallback)
 	{

@@ -1,7 +1,7 @@
 /**
  * javascript file for managing Budgetanträge
  * This controller calls functions from the js view for modifying the DOM,
- * and calls functions from the js ajax files to perform calls to the Budgetantraege controller
+ * and calls functions from the js ajax files to perform calls to the Codeigniter Budgetantraege controller
  */
 
 var CALLED_PATH = FHC_JS_DATA_STORAGE_OBJECT.called_path;

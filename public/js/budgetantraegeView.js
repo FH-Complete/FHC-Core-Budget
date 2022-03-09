@@ -48,6 +48,19 @@ var BudgetantraegeView = {
 
 		$("#budgetantraegehtml").html(html);
 
+		// add html for "plus" button for showing "add Budgetantrag" button
+		var showAddButtonHtml = BudgetantraegeHtml.getShowAddButtonHtml();
+
+		$("#showBudgetantragAddButtonContainer").html(showAddButtonHtml);
+
+		// show Budgetantrag add button when clicking plus button in upper right corner
+		$("#showBudgetantragAddButton").click(
+			function ()
+			{
+				BudgetantraegeView.toogleBudgetantraegeAddButtonVisibility();
+			}
+		);
+
 		$("#addBudgetantrag").click(
 			function ()
 			{
@@ -340,12 +353,14 @@ var BudgetantraegeView = {
 				{
 					$("#investition_" + positionid).prop('disabled', true);
 					$("#betragWithCrncy_" + positionid).html('€ 0,00');
-					$("#erloeseWithCrncy_" + positionid).html('€ '+BudgetantraegeLib.formatDecimalGerman(positionobj.betrag));
+					if (positionobj !== null)
+						$("#erloeseWithCrncy_" + positionid).html('€ '+BudgetantraegeLib.formatDecimalGerman(positionobj.betrag));
 				}
 				else
 				{
 					$("#investition_" + positionid).prop('disabled', false);
-					$("#betragWithCrncy_" + positionid).html('€ '+BudgetantraegeLib.formatDecimalGerman(positionobj.betrag));
+					if (positionobj !== null)
+						$("#betragWithCrncy_" + positionid).html('€ '+BudgetantraegeLib.formatDecimalGerman(positionobj.betrag));
 					$("#erloeseWithCrncy_" + positionid).html('€ 0,00');
 				}
 			}
@@ -904,9 +919,17 @@ var BudgetantraegeView = {
 	},
 
 	/**
+	 *	Show/hide the button for adding a Budgetatrag.
+	 */
+	toogleBudgetantraegeAddButtonVisibility: function ()
+	{
+		$("#addBudgetantragForm").toggleClass("hidden");
+	},
+
+	/**
 	 * Collapses all Budgetantraege (and Budgetpositionen) panels
 	 */
-	collapseAllBudgetantraege: function()
+	collapseAllBudgetantraege: function ()
 	{
 		$(".accordion-toggle").addClass("collapsed");
 		$(".panel-collapse").removeClass("in");

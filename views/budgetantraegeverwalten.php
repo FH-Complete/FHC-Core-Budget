@@ -80,6 +80,8 @@ $this->load->view(
 							</div>
 						</div>
 					</div> <!-- ./first column -->
+					<div class="col-lg-5 text-right" id="showBudgetantragAddButtonContainer">
+					</div>
 				</div> <!-- ./main row -->
 				<input type="hidden" id="budgetantrag_id" value="<?php echo $budgetantrag_id ?>">
 				<br>

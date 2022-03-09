@@ -8,7 +8,8 @@ var BudgetantraegeHtml = {
 		var html = '<div class="row">';
 
 		if (BudgetantraegeController.global_booleans.editmode === true)
-			html += '<div class="col-lg-7 col-xs-12">'+
+		{
+			html += '<div class="col-lg-7 col-xs-12 hidden" id="addBudgetantragForm">'+
 						'<div class="form-group input-group" id="budgetbezgroup">'+
 							'<input type="text" class="form-control" id="budgetbezeichnung" placeholder="Budgetantragsbezeichnung eingeben">'+
 							'<span class="input-group-btn">'+
@@ -18,25 +19,37 @@ var BudgetantraegeHtml = {
 							'</span>'+
 						'</div>'+
 					'</div>';
-
-			html += '<div class="col-lg-5 col-xs-12">'+
-						'<table class="table table-bordered table-condensed text-center" id="sumtable">'+
-							'<tbody>'+
-								'<tr>'+
-									'<td><strong>Summe Budget: </strong><span id="savedSum">€ 0,00</span></td>'+
-									'<td><strong>Summe Erlöse: </strong><span id="erloeseSavedSum">€ 0,00</span></td>'+
-								'</tr>'+
-							'</tbody>'+
-						'</table>'+
-					'</div>'+
-					'<br><br>'+
+		}
+		
+		html += '<div class="col-lg-5 col-xs-12">'+
+					'<table class="table table-bordered table-condensed text-center" id="sumtable">'+
+						'<tbody>'+
+							'<tr>'+
+								'<td><strong>Summe Budget: </strong><span id="savedSum">€ 0,00</span></td>'+
+								'<td><strong>Summe Erlöse: </strong><span id="erloeseSavedSum">€ 0,00</span></td>'+
+							'</tr>'+
+						'</tbody>'+
+					'</table>'+
 				'</div>'+
-				'<div class="row">'+
-					'<div class="col-xs-12">'+
-					'<div class="panel-group" id="budgetantraege"></div></div>'+
-				'</div>';
+				'<br><br>'+
+			'</div>'+
+			'<div class="row">'+
+				'<div class="col-xs-12">'+
+				'<div class="panel-group" id="budgetantraege"></div></div>'+
+			'</div>';
 
 		return html;
+	},
+
+	/**
+	 * Gets html of button on the upper right for showing Budgetantragg add form.
+	 * @returns {string} html string
+	 */
+	getShowAddButtonHtml: function()
+	{
+		return '<button id="showBudgetantragAddButton" class="btn btn-default btn-sm" title="Budgetantrag hinzufügen">' +
+					'<i class="fa fa-plus"></i>' +
+				'</button>';
 	},
 
 	/**

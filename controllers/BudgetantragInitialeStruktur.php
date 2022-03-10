@@ -94,7 +94,7 @@ class BudgetantragInitialeStruktur extends CLI_Controller
 			'Personal Sonstiges' => array(
 				array(
 					'budgetposten' => 'Studentische Hilfskräfte',
-					'konto_id' => 132
+					'konto_id' => 145
 				),
 				array(
 					'budgetposten' => 'Honorare, Prüfungsgebühren',

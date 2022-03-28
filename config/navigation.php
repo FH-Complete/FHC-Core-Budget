@@ -22,7 +22,7 @@ $config['navigation_menu']['extensions/FHC-Core-Budget/*'] = array(
 	),
 	'Budgetanträge verwalten' => array(
 		'link' => site_url('extensions/FHC-Core-Budget/Budgetantrag'),
-		'description' => 'Budgetanträge Verwaltung',
+		'description' => 'Budgetanträge',
 		'icon' => 'edit'
 	),
 	'Budgetanträge exportieren' => array(

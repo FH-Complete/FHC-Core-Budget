@@ -2,7 +2,7 @@
 $this->load->view(
 	'templates/FHC-Header',
 	array(
-		'title' => 'BudgetantraegeVerwaltung',
+		'title' => 'Budgetantraege',
 		'jquery' => true,
 		'jqueryui' => true,
 		'bootstrap' => true,
@@ -35,7 +35,7 @@ $this->load->view(
 				<div class="row">
 					<div class="col-lg-12">
 						<h3 class="page-header">
-							Budgetantr&auml;ge Verwaltung
+							Budgetantr&auml;ge
 						</h3>
 					</div>
 				</div>

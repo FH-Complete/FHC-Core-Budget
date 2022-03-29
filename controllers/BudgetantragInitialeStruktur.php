@@ -82,7 +82,8 @@ class BudgetantragInitialeStruktur extends CLI_Controller
 				array(
 					'budgetposten' => 'Investitionen',
 					'konto_id' => null,
-					'investition' => true
+					'investition' => true,
+					'benoetigt_am' => date('Y-09-01')
 				)
 			),
 			'Sachbudget' => array(

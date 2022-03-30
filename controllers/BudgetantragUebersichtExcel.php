@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Manages Budgetanträge. Enables adding, updating and deleting Budgetanträge and their Budgetposten.
+ * Shows overview of Budgetanträge, with possible excel export
  */
 class BudgetantragUebersichtExcel extends Auth_Controller
 {
@@ -25,7 +25,6 @@ class BudgetantragUebersichtExcel extends Auth_Controller
 	 */
 	public function index()
 	{
-
 		$this->load->view('extensions/FHC-Core-Budget/budgetantraegeuebersichtexcel.php');
 	}
 }

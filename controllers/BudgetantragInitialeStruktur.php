@@ -100,10 +100,6 @@ class BudgetantragInitialeStruktur extends CLI_Controller
 				array(
 					'budgetposten' => 'Honorare, Prüfungsgebühren',
 					'konto_id' => 143
-				),
-				array(
-					'budgetposten' => 'Werkverträge',
-					'konto_id' => 142
 				)
 			)
 		);

@@ -271,6 +271,7 @@ class Budgetantrag extends Auth_Controller
 				'kostenstelle_id' => $kostenstelle_id,
 				'geschaeftsjahr_kurzbz' => $geschaeftsjahr_kurzbz,
 				'bezeichnung' => html_escape($bezeichnung),
+				'uid' => $this->uid,
 				'insertvon' => $this->uid
 			);
 

@@ -20,15 +20,15 @@ class Budgetantrag_model extends DB_Model
 	/**
 	 * Gets Budgetanträge for a Geschäftsjahr and a Kostenstelle together with their Budgetpositionen,
 	 * each Budgetantrag has an array with Budgetpositionen
-	 * @param $geschaeftsjahr
-	 * @param $kostenstelle
+	 * @param $geschaeftsjahr_kurzbz
+	 * @param $kostenstelle_id
 	 * @return array
 	 */
-	public function getBudgetantraege($geschaeftsjahr, $kostenstelle)
+	public function getBudgetantraege($geschaeftsjahr_kurzbz, $kostenstelle_id)
 	{
 		$this->addSelect('budgetantrag_id');
 		$this->addOrder('budgetantrag_id');
-		$budgetantraege = $this->loadWhere(array('geschaeftsjahr_kurzbz' => $geschaeftsjahr, 'kostenstelle_id' => $kostenstelle));
+		$budgetantraege = $this->loadWhere(array('geschaeftsjahr_kurzbz' => $geschaeftsjahr_kurzbz, 'kostenstelle_id' => $kostenstelle_id));
 
 		if ($budgetantraege->error)
 			return $budgetantraege;
@@ -61,24 +61,34 @@ class Budgetantrag_model extends DB_Model
 		$budgetantrag = $this->load($budgetantrag_id);
 
 		if (isError($budgetantrag))
-			return error($budgetantrag->retval);
+			return $budgetantrag;
 
 		$this->BudgetpositionModel->addOrder('budgetposition_id');
 		$budgetpositionen = $this->BudgetpositionModel->loadWhere(array('budgetantrag_id' => $budgetantrag_id));
 
 		if (isError($budgetpositionen))
-			return error($budgetpositionen->retval);
+			return $budgetpositionen;
 
 		$laststatus = $this->BudgetantragstatusModel->getLastStatus($budgetantrag_id);
 
 		if (isError($laststatus))
-			return error($laststatus->retval);
+			return $laststatus;
 
 		if (hasData($budgetantrag))
 		{
-			$budgetantrag->retval[0]->budgetstatus = $laststatus->retval[0];
-			$budgetantrag->retval[0]->budgetpositionen = $budgetpositionen->retval;
+			$budgetantragData = getData($budgetantrag)[0];
+
+			if (hasData($laststatus))
+				$budgetantragData->budgetstatus = getData($laststatus)[0];
+
+			$budgetantragData->budgetpositionen = array();
+
+			if (hasData($budgetpositionen))
+				$budgetantragData->budgetpositionen = getData($budgetpositionen);
+
+			$budgetantrag = success(array($budgetantragData));
 		}
+
 		return $budgetantrag;
 	}
 
@@ -93,7 +103,21 @@ class Budgetantrag_model extends DB_Model
 		// Start DB transaction
 		$this->db->trans_start(false);
 
-		$result = $this->insert($data);
+		$fieldsToInsert = array(
+			'kostenstelle_id', 'geschaeftsjahr_kurzbz', 'bezeichnung', 'insertvon'
+		);
+
+		$dataToInsert = array();
+
+		foreach ($fieldsToInsert as $field)
+		{
+			if (!isset($data[$field]))
+				return error("$field missing");
+
+			$dataToInsert[$field] = $data[$field];
+		}
+
+		$result = $this->insert($dataToInsert);
 
 		if (isSuccess($result))
 		{
@@ -104,7 +128,7 @@ class Budgetantrag_model extends DB_Model
 					'budgetantrag_id' => $budgetantrag_id,
 					'budgetstatus_kurzbz' => 'new',
 					'datum' => date('Y-m-d H:i:s'),
-					'uid' => $data['insertvon'],
+					'uid' => isset($data['uid']) ? $data['uid'] : null,
 					'insertvon' => $data['insertvon']
 				)
 			);
@@ -116,7 +140,7 @@ class Budgetantrag_model extends DB_Model
 				{
 					$position['budgetantrag_id'] = $budgetantrag_id;
 					$position['budgetposten'] = html_escape($position['budgetposten']);
-					$position['betrag'] = $position['betrag'] === '' ? null : $position['betrag'];
+					$position['betrag'] = !isset($position['betrag']) || $position['betrag'] === '' ? null : $position['betrag'];
 					$position['projekt_id'] = isset($position['projekt_id']) && is_numeric($position['projekt_id']) ? $position['projekt_id'] : null;
 					$position['konto_id'] = isset($position['konto_id']) && is_numeric($position['konto_id'])? $position['konto_id'] : null;
 					$position['insertvon'] = $data['insertvon'];

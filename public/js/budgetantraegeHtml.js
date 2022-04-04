@@ -8,7 +8,8 @@ var BudgetantraegeHtml = {
 		var html = '<div class="row">';
 
 		if (BudgetantraegeController.global_booleans.editmode === true)
-			html += '<div class="col-lg-7 col-xs-12">'+
+		{
+			html += '<div class="col-lg-7 col-xs-12 hidden" id="addBudgetantragForm">'+
 						'<div class="form-group input-group" id="budgetbezgroup">'+
 							'<input type="text" class="form-control" id="budgetbezeichnung" placeholder="Budgetantragsbezeichnung eingeben">'+
 							'<span class="input-group-btn">'+
@@ -18,25 +19,37 @@ var BudgetantraegeHtml = {
 							'</span>'+
 						'</div>'+
 					'</div>';
-
-			html += '<div class="col-lg-5 col-xs-12">'+
-						'<table class="table table-bordered table-condensed text-center" id="sumtable">'+
-							'<tbody>'+
-								'<tr>'+
-									'<td><strong>Summe Budget: </strong><span id="savedSum">€ 0,00</span></td>'+
-									'<td><strong>Summe Erlöse: </strong><span id="erloeseSavedSum">€ 0,00</span></td>'+
-								'</tr>'+
-							'</tbody>'+
-						'</table>'+
-					'</div>'+
-					'<br><br>'+
+		}
+		
+		html += '<div class="col-lg-5 col-xs-12">'+
+					'<table class="table table-bordered table-condensed text-center" id="sumtable">'+
+						'<tbody>'+
+							'<tr>'+
+								'<td><strong>Summe Budget: </strong><span id="savedSum">€ 0,00</span></td>'+
+								'<td><strong>Summe Erlöse: </strong><span id="erloeseSavedSum">€ 0,00</span></td>'+
+							'</tr>'+
+						'</tbody>'+
+					'</table>'+
 				'</div>'+
-				'<div class="row">'+
-					'<div class="col-xs-12">'+
-					'<div class="panel-group" id="budgetantraege"></div></div>'+
-				'</div>';
+				'<br><br>'+
+			'</div>'+
+			'<div class="row">'+
+				'<div class="col-xs-12">'+
+				'<div class="panel-group" id="budgetantraege"></div></div>'+
+			'</div>';
 
 		return html;
+	},
+
+	/**
+	 * Gets html of button on the upper right for showing Budgetantragg add form.
+	 * @returns {string} html string
+	 */
+	getShowAddButtonHtml: function()
+	{
+		return '<button id="showBudgetantragAddButton" class="btn btn-default btn-sm" title="Budgetantrag hinzufügen">' +
+					'<i class="fa fa-plus"></i>' +
+				'</button>';
 	},
 
 	/**
@@ -262,7 +275,7 @@ var BudgetantraegeHtml = {
 			if (args.konto_id === konto.konto_id)
 			{
 				selected = ' selected=""';
-				selectedKontoKurzbz = ' | Kontokategorie '+konto.kurzbz;
+				selectedKontoKurzbz = ' | Budgetkategorie '+konto.kurzbz;
 			}
 
 			var kurzbz = konto.kurzbz + " (" + konto.kontonr + ")";
@@ -322,32 +335,10 @@ var BudgetantraegeHtml = {
 				'</div>'+
 				'<div class="col-lg-5">'+
 					'<div class="form-group row">'+
-						'<label class="col-lg-4 control-label">Projekt</label>'+
-						'<div class="col-lg-8">'+
-							'<select class="form-control" name="projekt_id" '+disabled+'>'+
-								'<option value="null">Projekt wählen...</option>';
-
-		for (var j = 0; j < BudgetantraegeController.global_preloads.projekte.length; j++)
-		{
-			var projekt = BudgetantraegeController.global_preloads.projekte[j];
-			var selected = args.projekt_id === projekt.projekt_id ? ' selected=""' : '';
-			html += '<option value="' + projekt.projekt_id + '"' + selected + '>' + projekt.titel + '</option>';
-		}
-
-		html +=
-							'</select>'+
-						'</div>'+
-					'</div>'+
-				'</div>'+ //column
-			'</div>'+//row
-
-			'<div class="row">'+
-				'<div class="col-lg-6">'+
-					'<div class="form-group row">'+
-						'<label class="col-lg-4 control-label label-required">Kontokategorie</label>'+
+						'<label class="col-lg-4 control-label label-required">Budgetkategorie</label>'+
 						'<div class="col-lg-8">'+
 							'<select class="form-control" name="konto_id" '+disabled+'>'+
-								'<option value="null">Kontokategorie wählen...</option>';
+								'<option value="null">Budgetkategorie wählen...</option>';
 
 		html += kontooptionshtml;
 
@@ -356,9 +347,12 @@ var BudgetantraegeHtml = {
 						'</div>'+
 					'</div>'+
 				'</div>'+
-				'<div class="col-lg-5">'+
+			'</div>'+//row
+
+			'<div class="row">'+
+				'<div class="col-lg-6">'+
 					'<div class="form-group row">'+
-						'<label class="col-lg-4 control-label label-required">Bruttobetrag</label>'+
+						'<label class="col-lg-4 control-label label-required">Betrag</label>'+
 						'<div class="col-lg-8">'+
 							'<div class="input-group">'+
 								'<span class = "input-group-addon">'+
@@ -369,52 +363,27 @@ var BudgetantraegeHtml = {
 						'</div>'+//column
 					'</div>'+//form-group row
 				'</div>'+//column
-			'</div>'+//row
-
-			'<div class="row">'+
-				'<div class="col-lg-6">'+
+				'<div class="col-lg-5 col-lg-offset-1">'+
 					'<div class="form-group row">'+
-						'<label class="col-lg-4 control-label">Investition</label>'+
-						'<div class="col-lg-8">'+
+						'<div class="col-lg-6">'+
 			 				'<div class="input-group">'+
 								'<label class="checkbox-inline control-label">'+
 									'<input type="checkbox" name="investition" id="investition_'+args.positionid+'"'+disabled+investition_checked+investitionDisabled+'>'+
+									'Investition'+
 								'</label>'+
 							'</div>'+//form-group row
 						'</div>'+//column
-					'</div>'+//form-group row
-				'</div>'+
-				'<div class="col-lg-5">'+
-					'<div class="form-group row">'+
-						'<label class="col-lg-4 control-label">Erlöse</label>'+
-						'<div class="col-lg-8">'+
+						'<div class="col-lg-6">'+
 			 				'<div class="input-group">'+
 								'<label class="checkbox-inline control-label">'+
 									'<input type="checkbox" name="erloese" id="erloese_'+args.positionid+'"'+disabled+erloese_checked+erloeseDisabled+'>'+
+									'Erlöse'+
 								'</label>'+
 							'</div>'+//form-group row
 						'</div>'+//column
 					'</div>'+//form-group row
 				'</div>'+
 			'</div>'+//row
-
-			'<div class="row '+nutzungsdauer_hidden+'" id="nutzungsdauer_group_'+args.positionid+'">'+
-				'<div class="col-lg-6">'+
-					'<div class="form-group row">'+
-						'<label class="col-lg-4 control-label">Nutzungsdauer</label>'+
-						'<div class="col-lg-2">'+
-							'<div class="input-group">'+
-								'<input type="number" class="form-control" name="nutzungsdauer" id="nutzungsdauer_'+args.positionid+'" value="'+args.nutzungsdauer+'"'+disabled+'>'+
-							'</div>'+//input-group
-						'</div>'+
-						'<div class="col-lg-1 control-label">'+
-							'Jahre'+
-						'</div>'+
-					'</div>'+
-				'</div>'+
-				'<div class="col-lg-5">'+
-				'</div>'+
-			'</div>'+
 
 			'<div class="row">'+
 				'<div class="col-lg-6">'+
@@ -435,6 +404,19 @@ var BudgetantraegeHtml = {
 							'</div>'+//form-group row
 						'</div>'+//column
 					'</div>'+//form-group row
+				'</div>'+
+				'<div class="col-lg-5 '+nutzungsdauer_hidden+'" id="nutzungsdauer_group_'+args.positionid+'">'+
+					'<div class="form-group row">'+
+						'<label class="col-lg-4 control-label">Nutzungsdauer</label>'+
+						'<div class="col-lg-6">'+
+							'<div class="input-group">'+
+								'<input type="number" class="form-control" name="nutzungsdauer" id="nutzungsdauer_'+args.positionid+'" value="'+args.nutzungsdauer+'"'+disabled+'>'+
+							'</div>'+//input-group
+						'</div>'+
+						'<div class="col-lg-1 control-label">'+
+							'Jahre'+
+						'</div>'+
+					'</div>'+
 				'</div>'+
 			'</div>'+//row
 

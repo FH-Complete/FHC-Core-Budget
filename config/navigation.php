@@ -22,7 +22,7 @@ $config['navigation_menu']['extensions/FHC-Core-Budget/*'] = array(
 	),
 	'Budgetanträge verwalten' => array(
 		'link' => site_url('extensions/FHC-Core-Budget/Budgetantrag'),
-		'description' => 'Budgetanträge Verwaltung',
+		'description' => 'Budgetanträge',
 		'icon' => 'edit'
 	),
 	'Budgetanträge exportieren' => array(
@@ -30,5 +30,11 @@ $config['navigation_menu']['extensions/FHC-Core-Budget/*'] = array(
 		'description' => 'Budgetanträge exportieren',
 		'icon' => 'edit',
 		'requiredPermissions' => 'extension/budget_freigabe:r'
-	)
+	)/*,
+	'Budgetanträge Übersicht Excel Export' => array(
+		'link' => site_url('extensions/FHC-Core-Budget/BudgetantragUebersichtExcel'),
+		'description' => 'Budgetanträge Report',
+		'icon' => 'dashboard',
+		'requiredPermissions' => 'extension/budget_verwaltung:r'
+	)*/
 );

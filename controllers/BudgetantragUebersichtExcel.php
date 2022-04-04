@@ -12,7 +12,7 @@ class BudgetantragUebersichtExcel extends Auth_Controller
 	{
 		parent::__construct(
 			array(
-				'index' => 'extension/budget_freigabe:r'
+				'index' => 'extension/budget_verwaltung:r'
 			)
 		);
 

@@ -7,6 +7,10 @@ if (!defined('BASEPATH')) exit('No direct script access allowed');
  */
 class BudgetExportLib
 {
+	const GMBH_OE_KURZBZ = 'gmbh';
+	const GMBH_UNTERNEHMENSTYP_NAME = 'gmbh';
+	const FH_UNTERNEHMEN_CODE = '100000';
+	const GMBH_UNTERNEHMEN_CODE = '200000';
 	private $_ci; // CI instance
 
 	/**
@@ -19,6 +23,7 @@ class BudgetExportLib
 
 		// Loads all needed models
 		$this->_ci->load->model('extensions/FHC-Core-Budget/Budgetantrag_model', 'BudgetanragModel');
+		$this->_ci->load->model('organisation/organisationseinheit_model', 'OrganisationseinheitModel');
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -28,14 +33,33 @@ class BudgetExportLib
 	 * Generates a csv file for Budget year
 	 * @return csv
 	 */
-	public function generateCSV($geschaeftsjahr)
+	public function generateCSV($geschaeftsjahr, $unternehmenstyp)
 	{
+		$gmbhOes = array();
+
+		// Get all oes under gmbh for check unternehmen of Kostenstelle
+		$gmbhOesRes = $this->_ci->OrganisationseinheitModel->getChilds(self::GMBH_OE_KURZBZ, true);
+
+		if (isError($gmbhOesRes)) return getError($gmbhOesRes);
+
+		if (hasData($gmbhOesRes))
+		{
+			$gmbhOesData = getData($gmbhOesRes);
+
+			foreach ($gmbhOesData as $gmbhOe)
+			{
+				$gmbhOes[] = $gmbhOe->oe_kurzbz;
+			}
+		}
+
 		$dbModel = new DB_Model();
+
+		$params = array($geschaeftsjahr);
 
 		// Erloese werden mit negativen Beträgen exportiert
 		// Investitionen werden nur fuer ein Jahr exportiert (Betrag/Nutzungsdauer)
 		// Investitionen weren immer auf Konto 704000 Abschreibungen Sachanlagen gebucht
-		$csvResult = $dbModel->execReadOnlyQuery('
+		$query = '
 			SELECT
 				CASE WHEN tbl_budget_position.investition=true
 					THEN 704000
@@ -57,7 +81,18 @@ class BudgetExportLib
 					END
 				),
 				tbl_kostenstelle.bezeichnung, tbl_budget_position.benoetigt_am,
-				date_part(\'year\', tbl_geschaeftsjahr.ende) as jahr
+				date_part(\'year\', tbl_geschaeftsjahr.ende) as jahr,';
+
+			if ($unternehmenstyp === self::GMBH_UNTERNEHMENSTYP_NAME)
+			{
+				$query .= self::GMBH_UNTERNEHMEN_CODE;
+			}
+			else
+			{
+				$query .= self::FH_UNTERNEHMEN_CODE;
+			}
+
+		$query .= ' AS unternehmen
 			FROM
 				extension.tbl_budget_antrag
 				JOIN extension.tbl_budget_position USING(budgetantrag_id)
@@ -67,11 +102,28 @@ class BudgetExportLib
 				JOIN public.tbl_geschaeftsjahr USING(geschaeftsjahr_kurzbz)
 			WHERE
 				--tbl_budget_position.erloese=false AND
-				geschaeftsjahr_kurzbz=?
-			GROUP BY 1, tbl_sap_organisationsstruktur.oe_kurzbz_sap,
-				kostenstelle_id, tbl_konto.konto_id,     tbl_kostenstelle.bezeichnung,
+				geschaeftsjahr_kurzbz=?';
+
+			// filter budget depending on unternehmenstyp (gmbh, fh)
+			if (!isEmptyArray($gmbhOes))
+			{
+				if ($unternehmenstyp === self::GMBH_UNTERNEHMENSTYP_NAME)
+				{
+					$query .= ' AND tbl_kostenstelle.oe_kurzbz IN ?';
+				}
+				else
+				{
+					$query .= ' AND tbl_kostenstelle.oe_kurzbz NOT IN ?';
+				}
+				$params[] = $gmbhOes;
+			}
+
+			$query .= ' GROUP BY 1, tbl_sap_organisationsstruktur.oe_kurzbz_sap,
+				kostenstelle_id, tbl_kostenstelle.oe_kurzbz, tbl_konto.konto_id, tbl_kostenstelle.bezeichnung,
 				tbl_budget_position.benoetigt_am, tbl_geschaeftsjahr.ende
-			ORDER BY kostenstelle_id, konto_id', array($geschaeftsjahr));
+			ORDER BY kostenstelle_id, konto_id';
+
+		$csvResult = $dbModel->execReadOnlyQuery($query, $params);
 
 		// If error occurred while retrieving new users from database then return the error
 		if (isError($csvResult)) return getError($csvResult);
@@ -128,7 +180,7 @@ class BudgetExportLib
 
 		for ($month = 1; $month <= 12; $month++)
 		{
-			$unternehmen = "100000";
+			$unternehmen = $budgetRequest->unternehmen;
 			$konto_id = $budgetRequest->ext_id;
 			$kostenstelle_id = $budgetRequest->oe_kurzbz_sap;
 			$profit_center= "";
@@ -159,7 +211,7 @@ class BudgetExportLib
 
 		for ($month = 1; $month <= 12; $month++)
 		{
-			$unternehmen = "100000";
+			$unternehmen = $budgetRequest->unternehmen;;
 			$konto_id = $budgetRequest->ext_id;
 			$kostenstelle_id = $budgetRequest->oe_kurzbz_sap;
 			$profit_center= "";
@@ -222,7 +274,7 @@ class BudgetExportLib
 			if(sizeof($identicalBudgetRequest)>1)
 			{
 				$monthRow = new stdClass();
-				$monthRow->unternehmen = "100000";
+				$monthRow->unternehmen = $identicalBudgetRequest[0]->unternehmen;;
 				$monthRow->konto_id = $identicalBudgetRequest[0]->konto_id;
 				$monthRow->kostenstelle_id = $identicalBudgetRequest[0]->kostenstelle_id;
 				$monthRow->profit_center = "";

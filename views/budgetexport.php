@@ -60,7 +60,7 @@ $this->load->view(
 										FH
 									</option>
 									<option value="gmbh">
-										GBMH
+										GMBH
 									</option>
 								</select>
 							</div>

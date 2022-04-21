@@ -128,30 +128,34 @@ class BudgetExportLib
 		// If error occurred while retrieving new users from database then return the error
 		if (isError($csvResult)) return getError($csvResult);
 
-		$rawDataArray = getData($csvResult);
 		$hashArray = array();
 
-		foreach($rawDataArray as $budgetRequest)
+		if (hasData($csvResult))
 		{
-			if($budgetRequest->benoetigt_am === NULL)
-			{
-				$budgetMonthsArray = $this->distributeBudgetRequestOverYearEqually($budgetRequest);
-			}
-			else
-			{
-				$budgetMonthsArray = $this->distributeBudgetRequestOverYearForRequiredDate($budgetRequest);
-			}
+			$rawDataArray = getData($csvResult);
 
-			foreach($budgetMonthsArray as $bugetMonth)
+			foreach ($rawDataArray as $budgetRequest)
 			{
-				$identifier = (string)"$bugetMonth->konto_id$bugetMonth->kostenstelle_id$bugetMonth->buchungsperiode";
+				if ($budgetRequest->benoetigt_am === NULL)
+				{
+					$budgetMonthsArray = $this->distributeBudgetRequestOverYearEqually($budgetRequest);
+				}
+				else
+				{
+					$budgetMonthsArray = $this->distributeBudgetRequestOverYearForRequiredDate($budgetRequest);
+				}
 
-				if(!array_key_exists($identifier, $hashArray))
+				foreach ($budgetMonthsArray as $bugetMonth)
+				{
+					$identifier = (string)"$bugetMonth->konto_id$bugetMonth->kostenstelle_id$bugetMonth->buchungsperiode";
+
+					if (!array_key_exists($identifier, $hashArray))
 					{
-						$hashArray[$identifier]=array();
+						$hashArray[$identifier] = array();
 					}
 
-				array_push($hashArray[$identifier],$bugetMonth);
+					array_push($hashArray[$identifier], $bugetMonth);
+				}
 			}
 		}
 
@@ -336,14 +340,14 @@ class BudgetExportLib
 	 */
 	private function getGeschaeftsjahrForPeriod($period, $requestedYear)
 	{
-			if($period>4)
-			{
-				return $requestedYear+1;
-			}
-			else
-			{
-				return $requestedYear;
-			}
+		if($period>4)
+		{
+			return $requestedYear+1;
+		}
+		else
+		{
+			return $requestedYear;
+		}
 	}
 
 	/** Export the formatted array as a csv File
@@ -355,26 +359,22 @@ class BudgetExportLib
 			"Geschaeftsjahr", "Buchungsperiode", "Betrag");
 		$delimiter = ',';
 
-		if (count($array) > 0) {
-			header('Content-Type: application/csv; charset=utf-8');
-			header('Content-Disposition: attachment; filename="budgetexport.csv",');
-			ob_start();
-			// prepare the file
-			$fp = fopen('php://output', 'w');
+		header('Content-Type: application/csv; charset=utf-8');
+		header('Content-Disposition: attachment; filename="budgetexport.csv",');
+		ob_start();
+		// prepare the file
+		$fp = fopen('php://output', 'w');
 
-			// Save header
-			//$header = array_keys((array)$array[0]);
-			fputcsv($fp, $header, $delimiter);
+		// Save header
+		//$header = array_keys((array)$array[0]);
+		fputcsv($fp, $header, $delimiter);
 
-			// Save data
-			foreach ($array as $element) {
-				fputcsv($fp, (array)$element, $delimiter);
-			}
-			fclose($fp);
+		// Save data
+		foreach ($array as $element) {
+			fputcsv($fp, (array)$element, $delimiter);
 		}
+		fclose($fp);
 
 		return $fp;
 	}
-
-
 }

@@ -60,7 +60,8 @@ class BudgetExportLib
 		// Investitionen werden nur fuer ein Jahr exportiert (Betrag/Nutzungsdauer)
 		// Investitionen weren immer auf Konto 704000 Abschreibungen Sachanlagen gebucht
 		$query = '
-			SELECT
+			SELECT * FROM (
+				SELECT
 				CASE WHEN tbl_budget_position.investition=true
 					THEN 704000
 					ELSE wawi.tbl_konto.ext_id
@@ -121,6 +122,9 @@ class BudgetExportLib
 			$query .= ' GROUP BY 1, tbl_sap_organisationsstruktur.oe_kurzbz_sap,
 				kostenstelle_id, tbl_kostenstelle.oe_kurzbz, tbl_konto.konto_id, tbl_kostenstelle.bezeichnung,
 				tbl_budget_position.benoetigt_am, tbl_geschaeftsjahr.ende
+			) budget
+			-- exclude Kostenstellen with no sap oe and no konto id
+			WHERE NOT (oe_kurzbz_sap IS NULL AND ext_id IS NULL)
 			ORDER BY kostenstelle_id, konto_id';
 
 		$csvResult = $dbModel->execReadOnlyQuery($query, $params);

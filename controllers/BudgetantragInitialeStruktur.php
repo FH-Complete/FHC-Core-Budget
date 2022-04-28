@@ -23,6 +23,7 @@ class BudgetantragInitialeStruktur extends CLI_Controller
 
 	//------------------------------------------------------------------------------------------------------------------
 	// Public methods
+
 	/** Create predefined initial budget structure for active Kostenstellen for a Geschäftsjahr.
 	 * Can be executed for all Kostenstellen or only one specific Kostenstelle.
 	 * @param $geschaeftsjahr_kurzbz

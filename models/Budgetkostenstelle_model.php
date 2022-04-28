@@ -11,14 +11,15 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 	public function __construct()
 	{
 		parent::__construct();
+		$this->load->model('extensions/FHC-Core-Budget/Budgetantrag_model', 'BudgetantragModel');
 	}
 
 	/**
 	 * Gets all Kostenstellen which are active for a geschaeftsjahr, as determined by the geschaeftsjahr von and bis fields, together with their oe,
 	 * hierarchally sorted, gets Kostenstellen of current Geschaeftsjahr if Geschaeftsjahr not specified
 	 * Also gets sum of budget for each Kostenstelle
-	 * @param null $geschaeftsjahr
-	 * @param bool $alloes if false, only oes which have Kostenstellen or have children with Kostenstellen are retrieved
+	 * @param $geschaeftsjahr
+	 * @param $alloes if false, only oes which have Kostenstellen or have children with Kostenstellen are retrieved
 	 * @return array|null
 	 */
 	public function getKostenstellenForGeschaeftsjahrWithOe($geschaeftsjahr = null, $alloes = false)
@@ -134,19 +135,34 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 	}
 
 	/**
-	 * Wrapper for get Kostenstellen function, checks permissions for the retrieved Kostenstellen
-	 * @param null $geschaeftsjahr
+	 * Wrapper for get Kostenstellen function, checks permissions for the retrieved Kostenstellen.
+	 * Only retrieves Kostenstelle which are active or have Budget planned.
+	 * @param $geschaeftsjahr
 	 * @return mixed Kostenstellen for which user is berechtigt
 	 */
-	public function getKostenstellenForGeschaeftsjahrBerechtigt($geschaeftsjahr = null)
+	public function getKostenstellenForGeschaeftsjahrBerechtigt($geschaeftsjahr)
 	{
 		$kostenstellen = $this->getKostenstellenForGeschaeftsjahr($geschaeftsjahr);
 
 		if (hasData($kostenstellen))
 		{
-			$kostenstellenresult = $this->filterKostenstellenByBerechtigung($kostenstellen->retval);
+			$this->BudgetantragModel->addSelect('kostenstelle_id');
+			$allBudgetantraegeRes = $this->BudgetantragModel->loadWhere(array('geschaeftsjahr_kurzbz' => $geschaeftsjahr));
 
-			$kostenstellen = success($kostenstellenresult);
+			if (isError($allBudgetantraegeRes))
+				return $allBudgetantraegeRes;
+
+			$filteredKostenstellen = $this->filterKostenstellenByBerechtigung($kostenstellen->retval);
+
+			$filterRes = $this->filterKostenstellenByAktiv($filteredKostenstellen, $geschaeftsjahr);
+
+			if (isError($filterRes))
+				return $filterRes;
+
+			if (hasData($filterRes))
+				$filteredKostenstellen = getData($filterRes);
+
+			$kostenstellen = success($filteredKostenstellen);
 		}
 
 		return $kostenstellen;
@@ -194,6 +210,43 @@ class Budgetkostenstelle_model extends Kostenstelle_model
 		}
 
 		return $kostenstellenresult;
+	}
+
+	/**
+	 * Filters Kostenstellen by removing inactive Kostenstellen.
+	 * Kostenstellen for which Budget is planned are considered active in the year.
+	 * @param $kostenstellen
+	 * @param $geschaeftsjahr
+	 * @return mixed filtered Kostenstellen
+	 */
+	private function filterKostenstellenByAktiv($kostenstellen, $geschaeftsjahr)
+	{
+		$kostenstellenresult = array();
+
+		$this->BudgetantragModel->addSelect('kostenstelle_id');
+		$allBudgetantraegeRes = $this->BudgetantragModel->loadWhere(array('geschaeftsjahr_kurzbz' => $geschaeftsjahr));
+
+		if (isError($allBudgetantraegeRes))
+			return $allBudgetantraegeRes;
+
+		if (hasData($allBudgetantraegeRes))
+		{
+			$allKostenstellenWithBudget = array();
+			$allBudgetantraege = getData($allBudgetantraegeRes);
+			foreach ($allBudgetantraege as $budgetantrag)
+			{
+				if (!in_array($budgetantrag->kostenstelle_id, $allKostenstellenWithBudget))
+					$allKostenstellenWithBudget[] = $budgetantrag->kostenstelle_id;
+			}
+
+			foreach ($kostenstellen as $kostenstelle)
+			{
+				if ($kostenstelle->aktiv === true || in_array($kostenstelle->kostenstelle_id, $allKostenstellenWithBudget))
+					$kostenstellenresult[] = $kostenstelle;
+			}
+		}
+
+		return success($kostenstellenresult);
 	}
 
 	/**

@@ -52,6 +52,18 @@ $this->load->view(
 									<?php endforeach; ?>
 								</select>
 							</div>
+							<div class="form-group">
+								<label for="unternehmenstyp">Unternehmenstyp</label>
+								<select class="form-control" id="unternehmenstyp" name="unternehmenstyp">
+									<option value="null">Unternehmen wählen...</option>
+									<option value="fh" selected>
+										FH
+									</option>
+									<option value="gmbh">
+										GMBH
+									</option>
+								</select>
+							</div>
 						</div>
 					</div>
 					<div class="row">

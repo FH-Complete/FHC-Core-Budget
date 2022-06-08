@@ -420,6 +420,28 @@ var BudgetantraegeHtml = {
 				'</div>'+
 			'</div>'+//row
 
+			'<div class="row">'+
+				'<div class="col-lg-6">'+
+					'<div class="form-group row">'+
+						'<label class="col-lg-4 control-label">Projekt</label>'+
+						'<div class="col-lg-8">'+
+							'<select class="form-control" name="projekt_id" '+disabled+'>'+
+								'<option value="null">Projekt wählen...</option>';
+
+		for (var j = 0; j < BudgetantraegeController.global_preloads.projekte.length; j++)
+		{
+			var projekt = BudgetantraegeController.global_preloads.projekte[j];
+			var selected = args.projekt_id === projekt.projekt_id ? ' selected=""' : '';
+			html += '<option value="' + projekt.projekt_id + '"' + selected + '>' + projekt.titel + '</option>';
+		}
+
+		html +=
+							'</select>'+
+						'</div>'+
+					'</div>'+
+				'</div>'+ //column
+			'</div>'+//row
+
 			'<div class="form-group row">'+
 				'<label class="col-lg-2 control-label">Beschreibung</label>'+
 				'<div class="col-lg-9">'+

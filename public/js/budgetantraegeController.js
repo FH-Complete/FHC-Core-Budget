@@ -40,7 +40,7 @@ $(document).ready(function () {
 	);
 
 	//load projects
-	//BudgetantraegeAjax.getProjekte();
+	BudgetantraegeAjax.getProjekte();
 
 	if (BudgetantraegeController.globalGjandKstAreValid())
 	{

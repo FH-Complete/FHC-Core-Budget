@@ -69,7 +69,15 @@ class Budgetexport extends Auth_Controller
 	public function generateCSV()
 	{
 		$geschaeftsjahr = $this->input->post('geschaeftsjahr');
-		$csv = $this->budgetexportlib->generateCSV($geschaeftsjahr);
+		$unternehmenstyp = $this->input->post('unternehmenstyp');
+
+		if (isEmptyString($geschaeftsjahr))
+			show_error("Geschäftsjahr fehlt");
+
+		if (isEmptyString($unternehmenstyp))
+			show_error("Unternehmenstyp fehlt");
+
+		$csv = $this->budgetexportlib->generateCSV($geschaeftsjahr, $unternehmenstyp);
 		return $csv;
 	}
 

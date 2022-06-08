@@ -364,7 +364,7 @@ class BudgetExportLib
 		$delimiter = ',';
 
 		header('Content-Type: application/csv; charset=utf-8');
-		header('Content-Disposition: attachment; filename="budgetexport.csv",');
+		header('Content-Disposition: attachment; filename="budgetexport.csv"');
 		ob_start();
 		// prepare the file
 		$fp = fopen('php://output', 'w');

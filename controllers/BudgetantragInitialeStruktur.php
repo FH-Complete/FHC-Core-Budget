@@ -110,7 +110,7 @@ class BudgetantragInitialeStruktur extends CLI_Controller
 		foreach ($kostenstellen as $kst)
 		{
 			// skip inactive Kostenstellen or filtered kostenstelle
-			if ($kst->aktiv !== true || (isset($kostenstelle_id) && $kst->kostenstelle_id !== $kostenstelle_id))
+			if ($kst->aktiv !== true || (isset($kostenstelle_id) && $kst->kostenstelle_id != $kostenstelle_id))
 				continue;
 
 			// check if Kostenstelle already has Budgetanträge
@@ -197,8 +197,6 @@ class BudgetantragInitialeStruktur extends CLI_Controller
 			$positionen[$i]['insertvon'] = self::INSERT_VON_USER;
 			$positionen[$i]['betrag'] = 0;
 		}
-
-		//var_dump($positionen);
 
 		// insert budgetantrag and position
 		$budgetantragAddRes = $this->BudgetantragModel->addBudgetantrag($budgetantrag, $positionen);

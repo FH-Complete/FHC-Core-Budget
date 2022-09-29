@@ -65,7 +65,7 @@ $this->load->view(
 										<option value="null">Kostenstelle/Kostensammler wählen...</option>
 										<?php
 										foreach ($kostenstellen as $kostenstelle):
-											$selected = $selectedkostenstelle === $kostenstelle->kostenstelle_id ? ' selected' : '';
+											$selected = $selectedkostenstelle == $kostenstelle->kostenstelle_id ? ' selected' : '';
 											$inactivetext = $kostenstelle->aktiv === false ? ' (inaktiv)' : '';
 											$inactiveclass = $kostenstelle->aktiv === false ? ' class = "inactiveoption"' : '';
 											if (is_numeric($kostenstelle->kostenstelle_id)):

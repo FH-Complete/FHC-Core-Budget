@@ -17,7 +17,7 @@ var BudgetantraegeLib = {
 		for(var i = 0; i < array.length; i++)
 		{
 			var element = array[i];
-			if(element.id === id)
+			if(element.id == id)
 				return element;
 		}
 		return false;

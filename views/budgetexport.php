@@ -1,27 +1,28 @@
 <?php
+$sitesettings = array(
+	'title' => 'Budgetexport',
+	'jquery3' => true,
+	'jqueryui1' => true,
+	'bootstrap3' => true,
+	'fontawesome4' => true,
+	'sbadmintemplate3' => true,
+	'dialoglib' => true,
+	'ajaxlib' => true,
+	'navigationwidget' => true,
+	'jquerytreetable3' => true,
+	'customCSSs' =>
+		array(
+			'public/css/sbadmin2/admintemplate.css',
+			'public/extensions/FHC-Core-Budget/css/budgetantraegeuebersicht.css'
+		)
+);
+
 $this->load->view(
 	'templates/FHC-Header',
-	array(
-		'title' => 'Budgetexport',
-		'jquery3' => true,
-		'jqueryui1' => true,
-		'bootstrap3' => true,
-		'fontawesome4' => true,
-		'sbadmintemplate3' => true,
-		'dialoglib' => true,
-		'ajaxlib' => true,
-		'navigationwidget' => true,
-		'jquerytreetable3' => true,
-		'customCSSs' =>
-			array(
-				'public/css/sbadmin2/admintemplate.css',
-				'public/extensions/FHC-Core-Budget/css/budgetantraegeuebersicht.css'
-			)
-	)
+	$sitesettings
 );
 ?>
 
-<body>
 <div id="wrapper">
 	<?php echo $this->widgetlib->widget('NavigationWidget'); ?>
 	<div id="page-wrapper">
@@ -84,4 +85,9 @@ $this->load->view(
 		</div> <!-- ./container-fluid -->
 	</div> <!-- ./page-wrapper -->
 </div> <!-- ./wrapper -->
-</body>
+<?php
+
+$this->load->view(
+	'templates/FHC-Footer',
+	$sitesettings
+);

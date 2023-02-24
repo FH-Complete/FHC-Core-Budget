@@ -44,8 +44,12 @@ class BudgetantragInitialeStruktur extends CLI_Controller
 		$kostenstellen = getData($kostenstellenRes);
 
 		// Personalbudgetanträge: 'name of Budgetantrag' => 'konto_id'
-		// in reverse order, because last inserted in shown first
+		// in reverse order, because last inserted is shown first
 		$personalBudgetantragWithMonths = array(
+			'Personal Sonstiges' => array( // if array, create budgetposten for each month for each budgetposten type
+				'Studentische Hilfskräfte' => 145,
+				'Honorare, Prüfungsgebühren' => 143
+			),
 			'Personal Externe' => 133,
 			'Personal Angestellte' => 132
 		);
@@ -92,16 +96,6 @@ class BudgetantragInitialeStruktur extends CLI_Controller
 					'budgetposten' => 'Sachbudget',
 					'konto_id' => null,
 				)
-			),
-			'Personal Sonstiges' => array(
-				array(
-					'budgetposten' => 'Studentische Hilfskräfte',
-					'konto_id' => 145
-				),
-				array(
-					'budgetposten' => 'Honorare, Prüfungsgebühren',
-					'konto_id' => 143
-				)
 			)
 		);
 
@@ -140,17 +134,27 @@ class BudgetantragInitialeStruktur extends CLI_Controller
 			}
 
 			// Insert Personalbudget
-			foreach ($personalBudgetantragWithMonths as $bezeichnung => $konto_id)
+			foreach ($personalBudgetantragWithMonths as $bezeichnung => $konto_id_arr)
 			{
 				// create budgetpositionen for each month
 				$positionen = array();
-				foreach ($months as $monthNumber => $monthArr)
+
+				// if only one budgetposten type - put in array
+				if (!is_array($konto_id_arr))
 				{
-					$position = array();
-					$position['budgetposten'] = $bezeichnung.'/'.$monthArr['bezeichnung'].' '.$monthArr['jahr'];
-					$position['benoetigt_am'] = $monthArr['jahr'].'-'.$monthNumber.'-01';
-					$position['konto_id'] = $konto_id;
-					$positionen[] = $position;
+					$konto_id_arr = array($bezeichnung => $konto_id_arr);
+				}
+
+				foreach ($konto_id_arr as $budgetposten_bezeichnung => $konto_id)
+				{
+					foreach ($months as $monthNumber => $monthArr)
+					{
+						$position = array();
+						$position['budgetposten'] = $budgetposten_bezeichnung.'/'.$monthArr['bezeichnung'].' '.$monthArr['jahr'];
+						$position['benoetigt_am'] = $monthArr['jahr'].'-'.$monthNumber.'-01';
+						$position['konto_id'] = $konto_id;
+						$positionen[] = $position;
+					}
 				}
 
 				// insert budgetantrag and position

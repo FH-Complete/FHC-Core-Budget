@@ -46,13 +46,13 @@ class BudgetantragInitialeStruktur extends CLI_Controller
 		// Personalbudgetanträge: 'name of Budgetantrag' => 'konto_id'
 		// in reverse order, because last inserted is shown first
 		$personalBudgetantragWithMonths = array(
-			'Personal Sonstiges Studentische Hilfskräfte' => array(
-				'budgetposten' => 'Studentische Hilfskräfte',
-				'konto_id' => 145
-			),
-			'Personal Sonstiges Honorare, Prüfungsgebühren' => array(
+			'Personal Sonstiges - Honorare, Prüfungsgebühren' => array(
 				'budgetposten' => 'Honorare, Prüfungsgebühren',
 				'konto_id' => 143
+			),
+			'Personal Sonstiges - Studentische Hilfskräfte' => array(
+				'budgetposten' => 'Studentische Hilfskräfte',
+				'konto_id' => 145
 			),
 			'Personal Externe' => array(
 				'konto_id' => 133

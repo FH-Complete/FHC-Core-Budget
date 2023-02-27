@@ -5,7 +5,7 @@ if (!defined('BASEPATH')) exit('No direct script access allowed');
 
 class BudgetantragInitialeStruktur extends CLI_Controller
 {
-	CONST INSERT_VON_USER = 'system';
+	const INSERT_VON_USER = 'system';
 
 	/**
 	 * Constructor
@@ -46,12 +46,20 @@ class BudgetantragInitialeStruktur extends CLI_Controller
 		// Personalbudgetanträge: 'name of Budgetantrag' => 'konto_id'
 		// in reverse order, because last inserted is shown first
 		$personalBudgetantragWithMonths = array(
-			'Personal Sonstiges' => array( // if array, create budgetposten for each month for each budgetposten type
-				'Studentische Hilfskräfte' => 145,
-				'Honorare, Prüfungsgebühren' => 143
+			'Personal Sonstiges Studentische Hilfskräfte' => array(
+				'budgetposten' => 'Studentische Hilfskräfte',
+				'konto_id' => 145
 			),
-			'Personal Externe' => 133,
-			'Personal Angestellte' => 132
+			'Personal Sonstiges Honorare, Prüfungsgebühren' => array(
+				'budgetposten' => 'Honorare, Prüfungsgebühren',
+				'konto_id' => 143
+			),
+			'Personal Externe' => array(
+				'konto_id' => 133
+			),
+			'Personal Angestellte' => array(
+				'konto_id' => 132
+			)
 		);
 
 		// other budgetantrag categories, note: order is important!
@@ -134,31 +142,28 @@ class BudgetantragInitialeStruktur extends CLI_Controller
 			}
 
 			// Insert Personalbudget
-			foreach ($personalBudgetantragWithMonths as $bezeichnung => $konto_id_arr)
+			foreach ($personalBudgetantragWithMonths as $budgetantragBezeichnung => $budgetpostenInfo)
 			{
 				// create budgetpositionen for each month
 				$positionen = array();
 
-				// if only one budgetposten type - put in array
-				if (!is_array($konto_id_arr))
-				{
-					$konto_id_arr = array($bezeichnung => $konto_id_arr);
-				}
+				// set Budgetposten name if explicitely given, otherwise Budgetposten name is name of Antrag
+				$budgetposten_bezeichnung = isset($budgetpostenInfo['budgetposten']) ? $budgetpostenInfo['budgetposten'] : $budgetantragBezeichnung;
 
-				foreach ($konto_id_arr as $budgetposten_bezeichnung => $konto_id)
+				$konto_id = $budgetpostenInfo['konto_id'];
+
+				// add position for each month
+				foreach ($months as $monthNumber => $monthArr)
 				{
-					foreach ($months as $monthNumber => $monthArr)
-					{
-						$position = array();
-						$position['budgetposten'] = $budgetposten_bezeichnung.'/'.$monthArr['bezeichnung'].' '.$monthArr['jahr'];
-						$position['benoetigt_am'] = $monthArr['jahr'].'-'.$monthNumber.'-01';
-						$position['konto_id'] = $konto_id;
-						$positionen[] = $position;
-					}
+					$position = array();
+					$position['budgetposten'] = $budgetposten_bezeichnung.'/'.$monthArr['bezeichnung'].' '.$monthArr['jahr'];
+					$position['benoetigt_am'] = $monthArr['jahr'].'-'.$monthNumber.'-01';
+					$position['konto_id'] = $konto_id;
+					$positionen[] = $position;
 				}
 
 				// insert budgetantrag and position
-				$this->_addBudgetantrag($bezeichnung, $budgetantrag, $positionen);
+				$this->_addBudgetantrag($budgetantragBezeichnung, $budgetantrag, $positionen);
 			}
 		}
 	}
@@ -183,7 +188,7 @@ class BudgetantragInitialeStruktur extends CLI_Controller
 			// check if konto id exists for the Kostenstelle
 			if (isset($positionen[$i]['konto_id']))
 			{
-				$this->KontoModel->addJoin('wawi.tbl_konto_kostenstelle', 'konto_id');;
+				$this->KontoModel->addJoin('wawi.tbl_konto_kostenstelle', 'konto_id');
 				$kontoRes = $this->KontoModel->loadWhere(
 					array(
 						'konto_id' => $positionen[$i]['konto_id'],

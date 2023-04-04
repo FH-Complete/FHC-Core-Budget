@@ -19,7 +19,7 @@ class Budgetantragstatus_model extends DB_Model
 	 * @param $budgetantrag_id
 	 * @return mixed
 	 */
-	function getLastStatus($budgetantrag_id)
+	public function getLastStatus($budgetantrag_id)
 	{
 		$query = 'SELECT *
 					FROM extension.tbl_budget_antrag_status

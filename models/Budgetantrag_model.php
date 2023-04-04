@@ -216,4 +216,41 @@ class Budgetantrag_model extends DB_Model
 
 		return $result;
 	}
+
+	/**
+	 * Gets all Budgetanträge of a certain Geschäftsjahr with a certain last status.
+	 * @param $geschaeftsjahr_kurzbz
+	 * @param $last_budgetstatus_kurzbz
+	 * @param $kostenstelle_id optionally limit by Kostenstelle
+	 * @return object success or error
+	 */
+	public function getBudgetantraegeByGeschaeftsjahrAndLastStatus($geschaeftsjahr_kurzbz, $last_budgetstatus_kurzbz, $kostenstelle_id = null)
+	{
+		$qry = "
+			SELECT DISTINCT budgetantrag_id FROM (
+				SELECT
+					antr.budgetantrag_id,st.budgetstatus_kurzbz, kostenstelle_id,
+					rank() OVER (PARTITION BY antr.budgetantrag_id ORDER BY st.datum DESC) AS status_rang
+				FROM
+					extension.tbl_budget_antrag antr
+					JOIN extension.tbl_budget_antrag_status st USING (budgetantrag_id)
+				WHERE
+					antr.geschaeftsjahr_kurzbz = ?
+			) antraege
+			WHERE budgetstatus_kurzbz = ?
+			AND status_rang = 1
+		";
+
+		$params = array($geschaeftsjahr_kurzbz, $last_budgetstatus_kurzbz);
+
+		if (isset($kostenstelle_id))
+		{
+			$qry .= ' AND kostenstelle_id = ?';
+			$params[] = $kostenstelle_id;
+		}
+
+		$qry .= ' ORDER BY budgetantrag_id';
+
+		return $this->execQuery($qry, $params);
+	}
 }

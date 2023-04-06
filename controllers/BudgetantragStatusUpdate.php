@@ -31,6 +31,16 @@ class BudgetantragStatusUpdate extends CLI_Controller
 		$this->_updateMultipleBudgetantragStatus($geschaeftsjahr_kurzbz, Budgetantrag::NEWSTATUS, Budgetantrag::SENT, $kostenstelle_id);
 	}
 
+	/** Sets Budgetanträge from status abgeschickt to freigegeben.
+	 * @param $geschaeftsjahr_kurzbz
+	 * @param $kostenstelle_id
+	 * @return void
+	 */
+	public function setFreigegeben($geschaeftsjahr_kurzbz, $kostenstelle_id = null)
+	{
+		$this->_updateMultipleBudgetantragStatus($geschaeftsjahr_kurzbz, Budgetantrag::SENT, Budgetantrag::APPROVED, $kostenstelle_id);
+	}
+
 	//------------------------------------------------------------------------------------------------------------------
 	// Private methods
 

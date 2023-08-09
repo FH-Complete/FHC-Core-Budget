@@ -183,7 +183,7 @@ class BudgetantragInitialeStruktur extends CLI_Controller
 		$budgetantrag['bezeichnung'] = $bezeichnung;
 
 		// create budgetpositionen
-		for ($i = 0; $i < count($positionen); $i++)
+		for ($i = 0; $i < numberOfElements($positionen); $i++)
 		{
 			// check if konto id exists for the Kostenstelle
 			if (isset($positionen[$i]['konto_id']))

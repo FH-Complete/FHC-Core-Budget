@@ -209,7 +209,7 @@ class BudgetantragUebersicht extends Auth_Controller
 	 */
 	private function appendKstToTree(&$oetree, $parentoe_kurzbz, $kostenstelle, $firstparent, $appended)
 	{
-		$treesize = count($oetree);
+		$treesize = numberOfElements($oetree);
 
 		for ($i = 0; $i < $treesize; $i++)
 		{

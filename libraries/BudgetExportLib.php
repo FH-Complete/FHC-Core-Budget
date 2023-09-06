@@ -11,7 +11,22 @@ class BudgetExportLib
 	const GMBH_UNTERNEHMENSTYP_NAME = 'gmbh';
 	const FH_UNTERNEHMEN_CODE = '100000';
 	const GMBH_UNTERNEHMEN_CODE = '200000';
+
 	private $_ci; // CI instance
+	private $_buchungsperioden = [
+		1 => "5",
+		2 => "6",
+		3 => "7",
+		4 => "8",
+		5 => "9",
+		6 => "10",
+		7 => "11",
+		8 => "12",
+		9 => "1",
+		10 => "2",
+		11 => "3",
+		12 => "4"
+	];
 
 	/**
 	 * Constructor
@@ -149,16 +164,16 @@ class BudgetExportLib
 					$budgetMonthsArray = $this->distributeBudgetRequestOverYearForRequiredDate($budgetRequest);
 				}
 
-				foreach ($budgetMonthsArray as $bugetMonth)
+				foreach ($budgetMonthsArray as $budgetMonth)
 				{
-					$identifier = (string)"$bugetMonth->konto_id$bugetMonth->kostenstelle_id$bugetMonth->buchungsperiode";
+					$identifier = (string)"$budgetMonth->konto_id$budgetMonth->kostenstelle_id";
 
 					if (!array_key_exists($identifier, $hashArray))
 					{
 						$hashArray[$identifier] = array();
 					}
 
-					array_push($hashArray[$identifier], $bugetMonth);
+					array_push($hashArray[$identifier], $budgetMonth);
 				}
 			}
 		}
@@ -184,7 +199,7 @@ class BudgetExportLib
 	private function distributeBudgetRequestOverYearEqually($budgetRequest)
 	{
 		$monthlyBudgetRequestArray = array();
-		$betrag_distributed_equally = number_format((float)$budgetRequest->sum / 12,  $decimals = 2 , $dec_point = ".", $thousands_sep = "");
+		$betrag_distributed_equally = (float) $budgetRequest->sum / 12;
 
 		for ($month = 1; $month <= 12; $month++)
 		{
@@ -192,7 +207,7 @@ class BudgetExportLib
 			$konto_id = $budgetRequest->ext_id;
 			$kostenstelle_id = $budgetRequest->oe_kurzbz_sap;
 			$profit_center= "";
-			$period = $this->getBuchungsperiodeForCorrespondingMonth($month);
+			$period = $this->_buchungsperioden[$month];
 			$geschaeftsjahr = $budgetRequest->jahr;
 
 			$budgetForPeriod = $this->generateBudgetForPeriod($unternehmen, $konto_id, $kostenstelle_id, $profit_center,
@@ -223,11 +238,13 @@ class BudgetExportLib
 			$konto_id = $budgetRequest->ext_id;
 			$kostenstelle_id = $budgetRequest->oe_kurzbz_sap;
 			$profit_center= "";
-			$period = $this->getBuchungsperiodeForCorrespondingMonth($month);
+			$period = $this->_buchungsperioden[$month];
 			$geschaeftsjahr = $budgetRequest->jahr;
 
-			if($month===$benoetigt_am_month) $betrag = number_format((float)$budgetRequest->sum,  $decimals = 2 , $dec_point = ".", $thousands_sep = "");
-			else $betrag = 0.0;
+			if ($month===$benoetigt_am_month)
+				$betrag = (float) $budgetRequest->sum;
+			else
+				$betrag = 0.0;
 
 			$budgetForPeriod = $this->generateBudgetForPeriod($unternehmen, $konto_id, $kostenstelle_id, $profit_center,
 				$period, $geschaeftsjahr, $betrag);
@@ -260,14 +277,15 @@ class BudgetExportLib
 		$budgetPeriod->kostenstelle_id = $kostenstelle_id;
 		$budgetPeriod->profit_center = $profit_center;
 		$budgetPeriod->geschaeftsjahr = $geschaeftsjahr;
-		$budgetPeriod->buchungsperiode = $period;
-		$budgetPeriod->betrag = $betrag;
+		$buchungsperioden = array_fill_keys(array_values($this->_buchungsperioden), 0.0);
+		$buchungsperioden[$period] = (float) $betrag;
+		$budgetPeriod->buchungsperioden = $buchungsperioden;
 
 		return $budgetPeriod;
 	}
 
 	/** Merges all identical Budget Periods in 2 Dimensional Array  and returns a 1 Dimensional Array in which each
-	 *  each entriy represents a Budget Period.
+	 *  each entry represents a Budget Period.
 	 *
 	 * @param $hashArray
 	 *
@@ -287,17 +305,23 @@ class BudgetExportLib
 				$monthRow->kostenstelle_id = $identicalBudgetRequest[0]->kostenstelle_id;
 				$monthRow->profit_center = "";
 				$monthRow->geschaeftsjahr = $identicalBudgetRequest[0]->geschaeftsjahr;
-				$monthRow->buchungsperiode = $identicalBudgetRequest[0]->buchungsperiode;
-
-				$betrag=0.0;
+				$buchungsperioden = array_fill_keys(array_values($this->_buchungsperioden), 0.0);
+				ksort($buchungsperioden);
 
 				foreach($identicalBudgetRequest as $request)
 				{
-					$requestBetrag = $request->betrag;
-					$betrag = $betrag + $requestBetrag;
+					foreach ($request->buchungsperioden as $buchungsperiode => $betrag)
+					{
+						$buchungsperioden[$buchungsperiode] += $betrag;
+					}
 				}
 
-				$monthRow->betrag = number_format((float)$betrag,  $decimals = 2 , $dec_point = ".", $thousands_sep = "");
+				foreach ($buchungsperioden as $buchungsperiode => $betrag)
+				{
+					$monthRow->{$buchungsperiode} = number_format(
+						(float)$betrag,  $decimals = 2 , $dec_point = ".", $thousands_sep = ""
+					);
+				}
 
 				array_push($formattedDataArray, $monthRow);
 			}
@@ -308,31 +332,6 @@ class BudgetExportLib
 		}
 
 		return $formattedDataArray;
-	}
-
-	/** Returns the Buchungsperiode For the corresponding Month
-	 *
-	 * @param $month
-	 *
-	 * @return int
-	 */
-	private function getBuchungsperiodeForCorrespondingMonth($month)
-	{
-		$mapping = [
-			1 => "005",
-			2 => "006",
-			3 => "007",
-			4 => "008",
-			5 => "009",
-			6 => "010",
-			7 => "011",
-			8 => "012",
-			9 => "001",
-			10 => "002",
-			11 => "003",
-			12 => "004"
-		];
-		return $mapping[$month];
 	}
 
 	/** Returns the Geschäftsjahr for given Period and Akademic Year
@@ -359,8 +358,13 @@ class BudgetExportLib
 	 */
 	function array2csv($array)
 	{
-		$header = array("Unternehmen", "Sachkonto", "Kostenstelle", "Profit-Center",
-			"Geschaeftsjahr", "Buchungsperiode", "Betrag");
+		$header = array("Unternehmen", "Sachkonto", "Kostenstelle", "Profit-Center", "Geschaeftsjahr");
+
+		$buchungsperioden = array_values($this->_buchungsperioden);
+		sort($buchungsperioden);
+
+		$header = array_merge($header, $buchungsperioden);
+
 		$delimiter = ',';
 
 		header('Content-Type: application/csv; charset=utf-8');

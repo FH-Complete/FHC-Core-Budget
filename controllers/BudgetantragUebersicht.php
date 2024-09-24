@@ -86,7 +86,7 @@ class BudgetantragUebersicht extends Auth_Controller
 			show_error($geschaeftsjahre->retval);
 		}
 
-		$geschaeftsjahr = $this->GeschaeftsjahrModel->getNextGeschaeftsjahr();
+		$geschaeftsjahr = $this->GeschaeftsjahrModel->getNextGeschaeftsjahr(60);
 
 		if (hasData($geschaeftsjahr))
 		{

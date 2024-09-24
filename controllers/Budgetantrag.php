@@ -89,7 +89,7 @@ class Budgetantrag extends Auth_Controller
 
 		if (!isset($geschaeftsjahr))
 		{
-			$geschaeftsjahr = $this->GeschaeftsjahrModel->getNextGeschaeftsjahr();
+			$geschaeftsjahr = $this->GeschaeftsjahrModel->getNextGeschaeftsjahr(60);
 
 			if (hasData($geschaeftsjahr))
 			{
@@ -175,7 +175,7 @@ class Budgetantrag extends Auth_Controller
 	public function checkIfKostenstelleFreigebbar()
 	{
 		$kostenstelle_id = $this->input->get('kostenstelle_id');
-		
+
 		$freigebenperm = $this->permissionlib->isBerechtigt($this->budgetstatus_permissions[self::APPROVED], 'suid', null, $kostenstelle_id);
 
 		if (is_bool($freigebenperm))

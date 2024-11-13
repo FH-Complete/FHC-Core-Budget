@@ -39,7 +39,7 @@ class Budgetexport extends Auth_Controller
 			show_error($geschaeftsjahre->retval);
 		}
 
-		$geschaeftsjahr = $this->GeschaeftsjahrModel->getNextGeschaeftsjahr(60);
+		$geschaeftsjahr = $this->GeschaeftsjahrModel->getNextGeschaeftsjahr(120);
 
 		if (hasData($geschaeftsjahr))
 		{

@@ -89,7 +89,7 @@ class Budgetantrag extends Auth_Controller
 
 		if (!isset($geschaeftsjahr))
 		{
-			$geschaeftsjahr = $this->GeschaeftsjahrModel->getNextGeschaeftsjahr(60);
+			$geschaeftsjahr = $this->GeschaeftsjahrModel->getNextGeschaeftsjahr(120);
 
 			if (hasData($geschaeftsjahr))
 			{

@@ -143,7 +143,7 @@ class Budgetantrag extends Auth_Controller
 
 			if (isError($currgj))
 				$json = json_encode($currgj);
-			elseif (count($currgj->retval) < 1)
+			elseif (numberOfElements($currgj->retval) < 1)
 				$json = false;
 			else
 			{
@@ -151,7 +151,7 @@ class Budgetantrag extends Auth_Controller
 
 				if (isError($gj))
 					$json = json_encode($gj);
-				elseif (count($gj->retval) < 1)
+				elseif (numberOfElements($gj->retval) < 1)
 					$json = false;
 				else
 				{
@@ -390,7 +390,7 @@ class Budgetantrag extends Auth_Controller
 		if ($this->_checkBudgetverwaltenPermission($budgetantrag_id, 'suid'))
 		{
 			$bestellungen = $this->_getDependentBestellungen($budgetantrag_id);
-			if (count($bestellungen) <= 0)
+			if (numberOfElements($bestellungen) <= 0)
 			{
 				$result = $this->BudgetantragModel->deleteBudgetantrag($budgetantrag_id);
 			}

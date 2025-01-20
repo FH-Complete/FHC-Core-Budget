@@ -203,7 +203,7 @@ class BudgetExportLib
 	 */
 	private function distributeBudgetRequestOverYearEqually($budgetRequest)
 	{
-		$betrag_distributed_equally = (float)$budgetRequest->sum / count($this->_buchungsperioden);
+		$betrag_distributed_equally = (float)$budgetRequest->sum / numberOfElements($this->_buchungsperioden);
 
 		$unternehmen = $budgetRequest->unternehmen;
 		$konto_id = $budgetRequest->ext_id;

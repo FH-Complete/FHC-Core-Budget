@@ -80,7 +80,9 @@ class Budgetantrag extends Auth_Controller
 
 		$this->GeschaeftsjahrModel->addSelect('geschaeftsjahr_kurzbz');
 		$this->GeschaeftsjahrModel->addOrder('start', 'DESC');
-		$geschaeftsjahre = $this->GeschaeftsjahrModel->load();
+
+		// Bei der Eingabe werden nur die naechsten 3 Geschaeftsjahre in die Zukunft angezeigt.
+		$geschaeftsjahre = $this->GeschaeftsjahrModel->loadWhere("start<=now()+'3 years'::interval");
 
 		if (isError($geschaeftsjahre))
 		{

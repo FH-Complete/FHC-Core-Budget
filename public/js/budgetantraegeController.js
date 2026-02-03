@@ -682,6 +682,7 @@ var BudgetantraegeController = {
 		var budgetantragData = {
 			"id": newBudgetantragId,
 			"bezeichnung":budgetantragToAdd.bezeichnung,
+			"status":budgetantragToAdd.budgetstatus.budgetstatus_kurzbz,
 			"positionen": updatedPositionen,
 			"positionentoadd": [],
 			"positionentodelete": []
@@ -744,7 +745,7 @@ var BudgetantraegeController = {
 			for (var j = 0; j < budgetantrag.positionen.length; j++)
 			{
 				var betrag = budgetantrag.positionen[j].betrag;
-				if (betrag !== null)
+				if (betrag !== null && budgetantrag.status != GLOBAL_STATUSES.rejected.bez)
 				{
 					if (budgetantrag.positionen[j].erloese === true)
 					{

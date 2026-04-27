@@ -13,9 +13,8 @@ class BudgetantragStatusUpdate extends CLI_Controller
 	{
 		parent::__construct();
 
-		// load models
-		$this->load->model('extensions/FHC-Core-Budget/budgetantrag_model', 'BudgetantragModel');
-		$this->load->model('extensions/FHC-Core-Budget/budgetantragstatus_model', 'BudgetantragstatusModel');
+		// load libraries
+		$this->load->library('extensions/FHC-Core-Budget/BudgetantragFunktionenLib');
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -28,7 +27,8 @@ class BudgetantragStatusUpdate extends CLI_Controller
 	 */
 	public function setAbgeschickt($geschaeftsjahr_kurzbz, $kostenstelle_id = null)
 	{
-		$this->_updateMultipleBudgetantragStatus($geschaeftsjahr_kurzbz, Budgetantrag::NEWSTATUS, Budgetantrag::SENT, $kostenstelle_id);
+		$result = $this->budgetantragfunktionenlib->setAbgeschickt($geschaeftsjahr_kurzbz, $kostenstelle_id);
+		$this->_outputResult($result);
 	}
 
 	/** Sets Budgetanträge from status abgeschickt to freigegeben.
@@ -38,47 +38,40 @@ class BudgetantragStatusUpdate extends CLI_Controller
 	 */
 	public function setFreigegeben($geschaeftsjahr_kurzbz, $kostenstelle_id = null)
 	{
-		$this->_updateMultipleBudgetantragStatus($geschaeftsjahr_kurzbz, Budgetantrag::SENT, Budgetantrag::APPROVED, $kostenstelle_id);
+		$result = $this->budgetantragfunktionenlib->setFreigegeben($geschaeftsjahr_kurzbz, $kostenstelle_id);
+		$this->_outputResult($result);
 	}
 
-	//------------------------------------------------------------------------------------------------------------------
-	// Private methods
-
-	/**
-	 * Sets all Budgetantraege from a status to another.
+	/** Sets Budgetanträge from status freigegebben to new.
 	 * @param $geschaeftsjahr_kurzbz
-	 * @param $last_budgetstatus_kurzbz
-	 * @param $new_budgetstatus_kurzbz
-	 * @param $kostenstelle_id optionally limit by Kostenstelle
+	 * @param $kostenstelle_id
 	 * @return void
 	 */
-	private function _updateMultipleBudgetantragStatus($geschaeftsjahr_kurzbz, $last_budgetstatus_kurzbz, $new_budgetstatus_kurzbz, $kostenstelle_id)
+	public function setNeu($geschaeftsjahr_kurzbz, $kostenstelle_id = null)
 	{
-		$budgetantraegeRes = $this->BudgetantragModel->getBudgetantraegeByGeschaeftsjahrAndLastStatus(
-			$geschaeftsjahr_kurzbz,
-			$last_budgetstatus_kurzbz,
-			$kostenstelle_id
-		);
+		$result = $this->budgetantragfunktionenlib->setNeu($geschaeftsjahr_kurzbz, $kostenstelle_id);
+		$this->_outputResult($result);
+	}
 
-		if (isError($budgetantraegeRes)) echo "Error when getting Budgetantraege";
+	/**
+	 *  Write result on cli.
+	 * @param string|array $result
+	 */
+	private function _outputResult($result)
+	{
+		if (isError($result)) echo getError($result);
 
-		if (hasData($budgetantraegeRes))
+		if (hasData($result))
 		{
-			$budgetantraege = getData($budgetantraegeRes);
+			$result = getData($result);
+			if (is_string($result)) echo $result."\n";
 
-			foreach ($budgetantraege as $budgetantrag)
+			if (is_array($result))
 			{
-				$budgetantrag_id = $budgetantrag->budgetantrag_id;
-
-				$result = $this->BudgetantragstatusModel->insert(
-					array(
-						'budgetantrag_id' => $budgetantrag_id,
-						'budgetstatus_kurzbz' => $new_budgetstatus_kurzbz,
-						'datum' => date('Y-m-d H:i:s')
-					)
-				);
-
-				if (isError($result)) echo "Error when inserting status for Antrag with id $budgetantrag_id";
+				foreach ($result as $txt)
+				{
+					echo $txt."\n";
+				}
 			}
 		}
 	}

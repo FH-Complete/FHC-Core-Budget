@@ -30,6 +30,12 @@ $config['navigation_menu']['extensions/FHC-Core-Budget/*'] = array(
 		'description' => 'Budgetanträge exportieren',
 		'icon' => 'exchange',
 		'requiredPermissions' => 'extension/budget_freigabe:r'
+	),
+	'Budgetanträge Mehrfachverwaltung' => array(
+		'link' => site_url('extensions/FHC-Core-Budget/BudgetantragMehrfachverwaltung'),
+		'description' => 'Budgetanträge Mehrfachverwaltung',
+		'icon' => 'gear',
+		'requiredPermissions' => 'extension/budget_freigabe:r'
 	)/*,
 	'Budgetanträge Übersicht Excel Export' => array(
 		'link' => site_url('extensions/FHC-Core-Budget/BudgetantragUebersichtExcel'),

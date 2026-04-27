@@ -227,9 +227,9 @@ class Budgetantrag_model extends DB_Model
 	public function getBudgetantraegeByGeschaeftsjahrAndLastStatus($geschaeftsjahr_kurzbz, $last_budgetstatus_kurzbz, $kostenstelle_id = null)
 	{
 		$qry = "
-			SELECT DISTINCT budgetantrag_id FROM (
+			SELECT DISTINCT budgetantrag_id, kostenstelle_id, bezeichnung FROM (
 				SELECT
-					antr.budgetantrag_id,st.budgetstatus_kurzbz, kostenstelle_id,
+					antr.budgetantrag_id, st.budgetstatus_kurzbz, antr.kostenstelle_id, antr.bezeichnung,
 					rank() OVER (PARTITION BY antr.budgetantrag_id ORDER BY st.datum DESC) AS status_rang
 				FROM
 					extension.tbl_budget_antrag antr

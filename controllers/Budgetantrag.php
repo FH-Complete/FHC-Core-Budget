@@ -6,17 +6,7 @@
 class Budgetantrag extends Auth_Controller
 {
 	private $uid;
-	const NEWSTATUS = 'new';
-	const SENT = 'sent';
-	const APPROVED = 'approved';
-	const REJECTED = 'rejected';
 	const VERWALTEN_PERMISSION = 'extension/budget_verwaltung';
-	private $budgetstatus_permissions = array(
-		self::NEWSTATUS => 'extension/budget_freigabe',
-		self::SENT => '',
-		self::APPROVED => 'extension/budget_freigabe',
-		self::REJECTED => 'extension/budget_freigabe'
-	);
 
 	/**
 	 * Constructor
@@ -55,6 +45,7 @@ class Budgetantrag extends Auth_Controller
 		// Loads libraries
 		$this->load->library('WidgetLib');
 		$this->load->library('PermissionLib');
+		$this->load->library('extensions/FHC-Core-Budget/BudgetantragFunktionenLib');
 
 		$this->_setAuthUID(); // sets property uid
 	}
@@ -178,7 +169,7 @@ class Budgetantrag extends Auth_Controller
 	{
 		$kostenstelle_id = $this->input->get('kostenstelle_id');
 
-		$freigebenperm = $this->permissionlib->isBerechtigt($this->budgetstatus_permissions[self::APPROVED], 'suid', null, $kostenstelle_id);
+		$freigebenperm = $this->budgetantragfunktionenlib->checkBudgetantragstatusPermission($kostenstelle_id, BudgetantragFunktionenLib::APPROVED);
 
 		if (is_bool($freigebenperm))
 			$this->outputJsonSuccess(array($freigebenperm));
@@ -512,10 +503,7 @@ class Budgetantrag extends Auth_Controller
 		if (!hasData($result))
 			return false;
 
-		if ($this->budgetstatus_permissions[$budgetstatus_kurzbz] === '')
-			return true;
-
-		return $this->permissionlib->isBerechtigt($this->budgetstatus_permissions[$budgetstatus_kurzbz], 'suid', null, $result->retval[0]->kostenstelle_id);
+		return $this->budgetantragfunktionenlib->checkBudgetantragstatusPermission(getData($result)[0]->kostenstelle_id, $budgetstatus_kurzbz);
 	}
 
 	/**

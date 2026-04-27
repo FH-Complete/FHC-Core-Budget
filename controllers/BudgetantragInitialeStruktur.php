@@ -5,8 +5,6 @@ if (!defined('BASEPATH')) exit('No direct script access allowed');
 
 class BudgetantragInitialeStruktur extends CLI_Controller
 {
-	const INSERT_VON_USER = 'system';
-
 	/**
 	 * Constructor
 	 */
@@ -14,11 +12,7 @@ class BudgetantragInitialeStruktur extends CLI_Controller
 	{
 		parent::__construct();
 
-		// load models
-		$this->load->model('organisation/geschaeftsjahr_model', 'GeschaeftsjahrModel');
-		$this->load->model('accounting/konto_model', 'KontoModel');
-		$this->load->model('accounting/kostenstelle_model', 'KostenstelleModel');
-		$this->load->model('extensions/FHC-Core-Budget/Budgetantrag_model', 'BudgetantragModel');
+		$this->load->library('extensions/FHC-Core-Budget/BudgetantragFunktionenLib');
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
@@ -32,259 +26,22 @@ class BudgetantragInitialeStruktur extends CLI_Controller
 	 */
 	public function createInitialeStruktur($geschaeftsjahr_kurzbz, $kostenstelle_id = null)
 	{
-		// TODO transaction?
-		$kostenstellenRes = $this->KostenstelleModel->getKostenstellenForGeschaeftsjahr($geschaeftsjahr_kurzbz);
+		$result = $this->budgetantragfunktionenlib->createInitialeStruktur($geschaeftsjahr_kurzbz, $kostenstelle_id);
 
-		if (!hasData($kostenstellenRes))
+		if (isError($result)) echo getError($result);
+
+		if (hasData($result))
 		{
-			echo "No Kostenstellen found";
-			return;
-		}
+			$result = getData($result);
+			if (is_string($result)) echo $result."\n";
 
-		$kostenstellen = getData($kostenstellenRes);
-
-		// Personalbudgetanträge: 'name of Budgetantrag' => 'konto_id'
-		// in reverse order, because last inserted is shown first
-		$personalBudgetantragWithMonths = array(
-			'Personal Sonstiges - Honorare, Prüfungsgebühren' => array(
-				'budgetposten' => 'Honorare, Prüfungsgebühren',
-				'konto_id' => 143
-			),
-			'Personal Sonstiges - Studentische Hilfskräfte' => array(
-				'budgetposten' => 'Studentische Hilfskräfte',
-				'konto_id' => 145
-			),
-			'Personal Externe' => array(
-				'konto_id' => 133
-			),
-			'Personal Angestellte' => array(
-				'konto_id' => 132
-			)
-		);
-
-		// other budgetantrag categories, note: order is important!
-		$otherBudgetantraege = array(
-			'Erlöse' => array(
-				array(
-					'budgetposten' => 'Erlöse Bund',
-					'konto_id' => 134,
-					'erloese' => true
-				),
-				array(
-					'budgetposten' => 'Erlöse Studierende',
-					'konto_id' => 135,
-					'erloese' => true
-				),
-				array(
-					'budgetposten' => 'Erlöse WV TW GmbH',
-					'konto_id' => 137,
-					'erloese' => true
-				),
-				array(
-					'budgetposten' => 'Erlöse F&E, sonstige Projekte',
-					'konto_id' => 136,
-					'erloese' => true
-				),
-				array(
-					'budgetposten' => 'Erträge sonstige',
-					'konto_id' => 138,
-					'erloese' => true
-				)
-			),
-			'Investitionen' => array(
-				array(
-					'budgetposten' => 'Investitionen',
-					'konto_id' => null,
-					'investition' => true,
-					'benoetigt_am' => date('Y-09-01')
-				)
-			),
-			'Sachbudget' => array(
-				array(
-					'budgetposten' => 'Sachbudget',
-					'konto_id' => null,
-				)
-			)
-		);
-
-		$months = $this->_getMonths($geschaeftsjahr_kurzbz);
-
-		foreach ($kostenstellen as $kst)
-		{
-			// skip inactive Kostenstellen or filtered kostenstelle
-			if ($kst->aktiv !== true || (isset($kostenstelle_id) && $kst->kostenstelle_id != $kostenstelle_id))
-				continue;
-
-			// check if Kostenstelle already has Budgetanträge
-			$existingBudgetantraegeRes = $this->BudgetantragModel->getBudgetantraege($geschaeftsjahr_kurzbz, $kst->kostenstelle_id);
-
-			if (isError($existingBudgetantraegeRes))
+			if (is_array($result))
 			{
-				echo "Error when getting Budgetanträge: ".getError($existingBudgetantraegeRes);
-				continue;
-			}
-
-			// Do not insert default structure if there are already Budgetanträge present
-			if (hasData($existingBudgetantraegeRes))
-				continue;
-
-			$budgetantrag = array(
-				'kostenstelle_id' => $kst->kostenstelle_id,
-				'geschaeftsjahr_kurzbz' => $geschaeftsjahr_kurzbz,
-				'insertvon' => self::INSERT_VON_USER
-			);
-
-			// Insert other budgetanträge first so they are shown last
-			foreach ($otherBudgetantraege as $bezeichnung => $budetpositionen)
-			{
-				// insert budgetantrag and position
-				$this->_addBudgetantrag($bezeichnung, $budgetantrag, $budetpositionen);
-			}
-
-			// Insert Personalbudget
-			foreach ($personalBudgetantragWithMonths as $budgetantragBezeichnung => $budgetpostenInfo)
-			{
-				// create budgetpositionen for each month
-				$positionen = array();
-
-				// set Budgetposten name if explicitely given, otherwise Budgetposten name is name of Antrag
-				$budgetposten_bezeichnung = isset($budgetpostenInfo['budgetposten']) ? $budgetpostenInfo['budgetposten'] : $budgetantragBezeichnung;
-
-				$konto_id = $budgetpostenInfo['konto_id'];
-
-				// add position for each month
-				foreach ($months as $monthNumber => $monthArr)
+				foreach ($result as $txt)
 				{
-					$position = array();
-					$position['budgetposten'] = $budgetposten_bezeichnung.'/'.$monthArr['bezeichnung'].' '.$monthArr['jahr'];
-					$position['benoetigt_am'] = $monthArr['jahr'].'-'.$monthNumber.'-01';
-					$position['konto_id'] = $konto_id;
-					$positionen[] = $position;
-				}
-
-				// insert budgetantrag and position
-				$this->_addBudgetantrag($budgetantragBezeichnung, $budgetantrag, $positionen);
-			}
-		}
-	}
-
-	//------------------------------------------------------------------------------------------------------------------
-	// Private methods
-
-	/**
-	 * Add a Budgetantrag with Budgetpositionen.
-	 * @param $bezeichnung
-	 * @param $budgetantrag
-	 * @param $positionen
-	 * @return void
-	 */
-	private function _addBudgetantrag($bezeichnung, $budgetantrag, $positionen)
-	{
-		$budgetantrag['bezeichnung'] = $bezeichnung;
-
-		// create budgetpositionen
-		for ($i = 0; $i < count($positionen); $i++)
-		{
-			// check if konto id exists for the Kostenstelle
-			if (isset($positionen[$i]['konto_id']))
-			{
-				$this->KontoModel->addJoin('wawi.tbl_konto_kostenstelle', 'konto_id');
-				$kontoRes = $this->KontoModel->loadWhere(
-					array(
-						'konto_id' => $positionen[$i]['konto_id'],
-						'kostenstelle_id' => $budgetantrag['kostenstelle_id']
-					)
-				);
-
-				if (!hasData($kontoRes))
-				{
-					echo 'Konto Id '.$positionen[$i]['konto_id'].' not found for Kostenstelle '.$budgetantrag['kostenstelle_id'].' ';
-					$positionen[$i]['konto_id'] = null;
+					echo $txt."\n";
 				}
 			}
-
-			$positionen[$i]['insertvon'] = self::INSERT_VON_USER;
-			$positionen[$i]['betrag'] = 0;
 		}
-
-		// insert budgetantrag and position
-		$budgetantragAddRes = $this->BudgetantragModel->addBudgetantrag($budgetantrag, $positionen);
-
-		if (isError($budgetantragAddRes))
-		{
-			echo "Error when adding budgetantrag: ".getError($budgetantragAddRes);
-		}
-	}
-
-	/**
-	 * Gets Months and their number, german name and Geschäftsjahr..
-	 * @param $geschaeftsjahr_kurzbz
-	 * @return array
-	 */
-	private function _getMonths($geschaeftsjahr_kurzbz)
-	{
-		$geschaeftsjahrRes = $this->GeschaeftsjahrModel->load($geschaeftsjahr_kurzbz);
-
-		if (!hasData($geschaeftsjahrRes))
-		{
-			echo "No Geschäftsjahr found";
-			return array();
-		}
-
-		$geschaeftsjahr = getData($geschaeftsjahrRes)[0];
-
-		$geschaeftsjahr_start = substr($geschaeftsjahr->start, 0, 4);
-		$geschaeftsjahr_ende = substr($geschaeftsjahr->ende, 0, 4);
-
-		return array(
-			'09' => array(
-				'bezeichnung' => 'September',
-				'jahr' => $geschaeftsjahr_start,
-			),
-			'10' => array(
-				'bezeichnung' => 'Oktober',
-				'jahr' => $geschaeftsjahr_start,
-			),
-			'11' => array(
-				'bezeichnung' => 'November',
-				'jahr' => $geschaeftsjahr_start,
-			),
-			'12' => array(
-				'bezeichnung' => 'Dezember',
-				'jahr' => $geschaeftsjahr_start,
-			),
-			'01' => array(
-				'bezeichnung' => 'Januar',
-				'jahr' => $geschaeftsjahr_ende,
-			),
-			'02' => array(
-				'bezeichnung' => 'Februar',
-				'jahr' => $geschaeftsjahr_ende,
-			),
-			'03' => array(
-				'bezeichnung' => 'März',
-				'jahr' => $geschaeftsjahr_ende,
-			),
-			'04' => array(
-				'bezeichnung' => 'April',
-				'jahr' => $geschaeftsjahr_ende,
-			),
-			'05' => array(
-				'bezeichnung' => 'Mai',
-				'jahr' => $geschaeftsjahr_ende,
-			),
-			'06' => array(
-				'bezeichnung' => 'Juni',
-				'jahr' => $geschaeftsjahr_ende,
-			),
-			'07' => array(
-				'bezeichnung' => 'Juli',
-				'jahr' => $geschaeftsjahr_ende,
-			),
-			'08' => array(
-				'bezeichnung' => 'August',
-				'jahr' => $geschaeftsjahr_ende,
-			)
-		);
 	}
 }

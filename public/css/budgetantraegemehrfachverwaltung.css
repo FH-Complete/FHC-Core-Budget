@@ -1,0 +1,7 @@
+/* fix because bootstrap 3 does not have class text-lg-right */
+@media (min-width: 1200px) {
+	#kostenstellendropdown
+	{
+		text-align: right;
+	}
+}

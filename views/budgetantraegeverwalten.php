@@ -60,22 +60,7 @@ $this->load->view(
 							</div>
 							<div class="col-lg-7">
 								<div class="form-group" id="kstgroup">
-									<label for="kostenstelle">Kostenstelle/Kostensammler</label>
-									<select class="form-control" id="kostenstelle">
-										<option value="null">Kostenstelle/Kostensammler wählen...</option>
-										<?php
-										foreach ($kostenstellen as $kostenstelle):
-											$selected = $selectedkostenstelle == $kostenstelle->kostenstelle_id ? ' selected' : '';
-											$inactivetext = $kostenstelle->aktiv === false ? ' (inaktiv)' : '';
-											$inactiveclass = $kostenstelle->aktiv === false ? ' class = "inactiveoption"' : '';
-											if (is_numeric($kostenstelle->kostenstelle_id)):
-											?>
-												<option value="<?php echo $kostenstelle->kostenstelle_id; ?>"<?php echo $inactiveclass; ?><?php echo $selected; ?>>
-													<?php echo $kostenstelle->bezeichnung.$inactivetext; ?>
-												</option>
-											<?php endif; ?>
-										<?php endforeach; ?>
-									</select>
+								<?php $this->load->view('extensions/FHC-Core-Budget/budgetkostenstelledropdown'); ?>
 								</div>
 							</div>
 						</div>
